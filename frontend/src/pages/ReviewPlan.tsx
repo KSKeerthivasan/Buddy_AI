@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Zap, Plus, X, ArrowRight, Edit2, AlertCircle } from 'lucide-react';
 
-// Placeholder data representing an AI-generated plan
-const MOCK_PLAN = {
-  title: 'Build user authentication flow',
-  aiPriority: 'High',
-  estimatedEffort: '3 Days',
-  complexity: 'Medium',
-  initialMilestones: [
-    { id: '1', text: 'Design database schema for users', isEditing: false },
-    { id: '2', text: 'Implement Firebase Auth integration', isEditing: false },
-    { id: '3', text: 'Create protected routes and context', isEditing: false },
-    { id: '4', text: 'Build Login and Registration UI', isEditing: false },
-  ]
-};
-
 const ReviewPlan: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const planData = location.state?.planData;
+  const rawTask = location.state?.rawTask;
   
   // State for milestones to make them editable
-  const [milestones, setMilestones] = useState(MOCK_PLAN.initialMilestones);
+  const [milestones, setMilestones] = useState<{id: string, text: string, isEditing: boolean}[]>(
+    planData?.milestones?.map((m: any, idx: number) => ({
+      id: String(idx),
+      text: m.title,
+      isEditing: false
+    })) || []
+  );
   const [newMilestoneText, setNewMilestoneText] = useState('');
+
+  useEffect(() => {
+    if (!planData) {
+      navigate('/new-task', { replace: true });
+    }
+  }, [planData, navigate]);
+
+  if (!planData) return null;
   
   // Handlers for Milestone editing
   const handleAddMilestone = () => {
@@ -80,7 +83,7 @@ const ReviewPlan: React.FC = () => {
             <h1 className="text-sm font-bold tracking-wider text-blue-200 uppercase mb-3 flex items-center gap-2">
               <Zap size={16} /> AI Execution Plan
             </h1>
-            <h2 className="text-3xl font-bold mb-2 relative z-10">{MOCK_PLAN.title}</h2>
+            <h2 className="text-3xl font-bold mb-2 relative z-10">{rawTask?.title || 'New Task Plan'}</h2>
             <p className="text-blue-100 relative z-10 text-lg">Review and customize the suggested approach before proceeding.</p>
           </div>
 
@@ -94,7 +97,7 @@ const ReviewPlan: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">AI Priority</p>
-                  <p className="text-lg font-bold text-gray-900">{MOCK_PLAN.aiPriority}</p>
+                  <p className="text-lg font-bold text-gray-900">{planData.priority}</p>
                 </div>
               </div>
 
@@ -104,7 +107,7 @@ const ReviewPlan: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Estimated Effort</p>
-                  <p className="text-lg font-bold text-gray-900">{MOCK_PLAN.estimatedEffort}</p>
+                  <p className="text-lg font-bold text-gray-900">{planData.estimatedHours} Hours</p>
                 </div>
               </div>
 
@@ -114,7 +117,7 @@ const ReviewPlan: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Complexity</p>
-                  <p className="text-lg font-bold text-gray-900">{MOCK_PLAN.complexity}</p>
+                  <p className="text-lg font-bold text-gray-900">{planData.complexity}</p>
                 </div>
               </div>
             </div>

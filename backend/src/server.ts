@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import taskRoutes from './routes/taskRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/tasks', taskRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
