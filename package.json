@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start"
+  },
+  "dependencies": {
+    "firebase": "^12.15.0",
+    "framer-motion": "^12.42.0",
+    "lucide-react": "^1.21.0",
+    "react-router-dom": "^7.18.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "tailwindcss": "^4.3.1"
+  }
+}
