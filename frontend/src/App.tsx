@@ -3,6 +3,7 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NewTask from './pages/NewTask';
+import ReviewPlan from './pages/ReviewPlan';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="new-task" element={<NewTask />} />
+            <Route path="review-plan" element={<ReviewPlan />} />
           </Route>
         </Routes>
       </Router>

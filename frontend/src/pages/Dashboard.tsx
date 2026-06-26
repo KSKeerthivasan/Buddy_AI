@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { motion } from 'framer-motion';
@@ -12,12 +12,30 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { tasks } = useTasks();
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login', { replace: true });
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/health');
+        const data = await response.json();
+        if (data.status === 'ok') {
+          setBackendStatus('connected');
+        } else {
+          setBackendStatus('offline');
+        }
+      } catch (error) {
+        setBackendStatus('offline');
+      }
+    };
+    checkBackend();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -52,7 +70,24 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">{user.displayName || 'Welcome back'}</h1>
-                <p className="text-gray-500 text-sm">{user.email}</p>
+                <p className="text-gray-500 text-sm mb-2">{user.email}</p>
+                <div className="flex items-center">
+                  {backendStatus === 'checking' && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      Checking backend...
+                    </span>
+                  )}
+                  {backendStatus === 'connected' && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 shadow-sm">
+                      Backend Connected ✅
+                    </span>
+                  )}
+                  {backendStatus === 'offline' && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 shadow-sm">
+                      Backend Offline ❌
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <button
