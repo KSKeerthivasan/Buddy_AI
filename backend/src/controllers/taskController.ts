@@ -46,6 +46,10 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    const now = new Date().toISOString();
+    taskData.createdAt = now;
+    taskData.updatedAt = now;
+
     const savedTask = await repoCreateTask(taskData);
 
     res.json({
@@ -96,7 +100,12 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    await repoUpdateTask(id as string, { status });
+    const updates: any = { status, updatedAt: new Date().toISOString() };
+    if (status === 'completed') {
+      updates.completedAt = new Date().toISOString();
+    }
+
+    await repoUpdateTask(id as string, updates);
 
     res.json({
       success: true,
