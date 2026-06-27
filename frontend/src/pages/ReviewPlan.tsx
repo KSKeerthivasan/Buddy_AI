@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Clock, Zap, Plus, X, ArrowRight, Edit2, AlertCircle, Loader2 } from 'lucide-react';
+import { Target, Clock, Zap, Plus, X, ArrowRight, Edit2, AlertCircle, Loader2, Calendar, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const ReviewPlan: React.FC = () => {
@@ -132,7 +132,7 @@ const ReviewPlan: React.FC = () => {
           <div className="p-8 md:p-10">
             
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
               <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
                   <AlertCircle size={20} />
@@ -162,7 +162,75 @@ const ReviewPlan: React.FC = () => {
                   <p className="text-lg font-bold text-gray-900">{planData.complexity}</p>
                 </div>
               </div>
+
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Task Type</p>
+                  <p className="text-lg font-bold text-gray-900">{planData.taskType || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+                  <Shield size={20} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Risk Level</p>
+                  <p className="text-lg font-bold text-gray-900">{planData.scheduleDetails?.riskLevel || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">AI Confidence</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {planData.confidence ? `${Math.round(planData.confidence * 100)}%` : 'N/A'}
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Daily Plan Timeline */}
+            {planData.scheduleDetails?.schedule && planData.scheduleDetails.schedule.length > 0 && (
+              <div className="mb-10">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Calendar size={22} className="text-blue-600" /> Daily Plan Timeline
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {planData.scheduleDetails.schedule.map((day: any, idx: number) => (
+                    <div key={idx} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
+                        <h4 className="font-bold text-gray-800">Day {idx + 1} <span className="text-sm text-gray-500 font-normal">({day.date})</span></h4>
+                        <span className="text-sm font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                          {day.assignedHours} hrs
+                        </span>
+                      </div>
+                      {day.milestones.length === 0 ? (
+                        <p className="text-sm text-gray-400 italic">No milestones scheduled.</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {day.milestones.map((m: any, mIdx: number) => (
+                            <li key={mIdx} className="flex justify-between items-start gap-3 text-sm text-gray-700">
+                              <span className="flex items-start gap-2 pt-0.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></div>
+                                <span className="leading-tight">{m.title}</span>
+                              </span>
+                              <span className="text-gray-400 font-medium flex-shrink-0">{m.estimatedHours}h</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Editable Milestones */}
             <div className="mb-10">

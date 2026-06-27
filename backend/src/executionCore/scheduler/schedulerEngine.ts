@@ -53,7 +53,7 @@ export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
     planDate.setDate(planDate.getDate() + i);
 
     schedule.push({
-      date: planDate.toISOString().split('T')[0],
+      date: planDate.toISOString().split('T')[0]!,
       assignedHours: hoursPerDay,
       milestones: dailyMilestones[i] || []
     });

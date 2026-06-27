@@ -1,25 +1,87 @@
 import { Milestone } from './types';
+import { calculateWorkload } from './workloadBalancer';
+
+const round1 = (num: number) => Math.round(num * 10) / 10;
 
 /**
- * Distributes milestones evenly across the available days.
- * Preserves the original order and never reorders them.
- * 
- * @param milestones - Array of milestones to distribute.
- * @param availableDays - The total number of days available.
- * @returns An array of arrays, where each inner array represents the milestones assigned to a specific day.
+ * Allocates milestones to days based on strict scheduling rules.
  */
 export const allocateMilestones = (milestones: Milestone[], availableDays: number): Milestone[][] => {
-  if (availableDays <= 0) {
-    return [];
-  }
+  if (availableDays <= 0 || milestones.length === 0) return [];
+
+  const totalHours = milestones.reduce((sum, m) => sum + (m.estimatedHours || 0), 0);
+  const dailyCapacity = calculateWorkload(totalHours, availableDays);
 
   const result: Milestone[][] = [];
-  const n = milestones.length;
+  let currentDay: Milestone[] = [];
+  let currentHours = 0;
 
-  for (let i = 0; i < availableDays; i++) {
-    const start = Math.round((i * n) / availableDays);
-    const end = Math.round(((i + 1) * n) / availableDays);
-    result.push(milestones.slice(start, end));
+  const queue = milestones.map(m => ({ 
+    title: m.title, 
+    estimatedHours: m.estimatedHours || 0, 
+    remainingHours: m.estimatedHours || 0 
+  }));
+
+  while (queue.length > 0) {
+    const m = queue[0]!;
+
+    if (m.remainingHours <= 0) {
+      queue.shift();
+      continue;
+    }
+    
+    // Check if current day is full and we can move to the next day
+    if (round1(currentHours) >= dailyCapacity && currentHours > 0) {
+      if (result.length < availableDays - 1) {
+        result.push(currentDay);
+        currentDay = [];
+        currentHours = 0;
+        continue;
+      }
+    }
+
+    const availableToday = round1(dailyCapacity - currentHours);
+
+    if (round1(m.remainingHours) <= availableToday) {
+      // Milestone fits entirely in the remaining time today
+      const hoursToAllocate = round1(m.remainingHours);
+      currentDay.push({ title: m.title, estimatedHours: hoursToAllocate });
+      currentHours = round1(currentHours + hoursToAllocate);
+      queue.shift();
+    } else {
+      // Milestone exceeds available time today
+      if (round1(m.estimatedHours) > dailyCapacity) {
+        // SPLIT the milestone because it's larger than a full day's capacity
+        const baseChunk = availableToday > 0 ? availableToday : (dailyCapacity > 0 ? dailyCapacity : m.remainingHours);
+        // Ensure we never over-allocate a milestone
+        const chunk = Math.min(baseChunk, m.remainingHours);
+        
+        const hoursToAllocate = round1(chunk);
+        
+        currentDay.push({ title: m.title, estimatedHours: hoursToAllocate });
+        currentHours = round1(currentHours + hoursToAllocate);
+        m.remainingHours = round1(m.remainingHours - hoursToAllocate);
+      } else {
+        // DO NOT SPLIT. Push it to the next day, or force it today if we are out of days.
+        if (result.length < availableDays - 1) {
+          if (currentDay.length > 0) {
+            result.push(currentDay);
+            currentDay = [];
+            currentHours = 0;
+          }
+        } else {
+          // Out of days (High Risk scenario). Force allocate here exceeding capacity.
+          const hoursToAllocate = round1(m.remainingHours);
+          currentDay.push({ title: m.title, estimatedHours: hoursToAllocate });
+          currentHours = round1(currentHours + hoursToAllocate);
+          queue.shift();
+        }
+      }
+    }
+  }
+
+  if (currentDay.length > 0) {
+    result.push(currentDay);
   }
 
   return result;

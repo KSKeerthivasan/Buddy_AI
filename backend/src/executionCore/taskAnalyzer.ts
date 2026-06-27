@@ -1,6 +1,8 @@
 import { classifyTask, generateMilestones } from '../services/taskAnalyzerService';
 import { createTask } from '../repositories/taskRepository';
 import { estimateHours } from './estimationEngine';
+import { scheduleTask } from './scheduler/schedulerEngine';
+import { ScheduleResult } from './scheduler/types';
 
 export interface RawTaskInput {
   title?: string;
@@ -11,6 +13,7 @@ export interface RawTaskInput {
 
 export interface Milestone {
   title: string;
+  estimatedHours?: number;
 }
 
 export interface TaskAnalysisResult {
@@ -20,6 +23,7 @@ export interface TaskAnalysisResult {
   confidence: number;
   milestones: Milestone[];
   estimatedHours?: number;
+  scheduleDetails?: ScheduleResult;
 }
 
 export interface AnalyzeTaskResponse {
@@ -91,11 +95,30 @@ export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskRespo
     throw new Error('AI returned an invalid structured milestones response.');
   }
 
-  // 5. Merge everything into one response
+  // 4.5. Assign estimated hours to milestones evenly for the scheduler
+  const milestoneCount = milestonesData.milestones.length;
+  if (milestoneCount > 0) {
+    const hoursPerMilestone = computedHours / milestoneCount;
+    milestonesData.milestones = milestonesData.milestones.map((m: any) => ({
+      ...m,
+      estimatedHours: hoursPerMilestone
+    }));
+  }
+
+  // 5. Run schedulerEngine
+  const schedulerResult = scheduleTask({
+    taskId: 'temp-id', // Temporary ID since DB save happens later
+    deadline: input.deadline!,
+    estimatedHours: computedHours,
+    milestones: milestonesData.milestones
+  });
+
+  // 6. Merge everything into one response
   const analysisResult: TaskAnalysisResult = {
     ...classification,
     estimatedHours: computedHours,
-    milestones: milestonesData.milestones
+    milestones: milestonesData.milestones,
+    scheduleDetails: schedulerResult
   };
 
   // 6. Build task object and save to DB
