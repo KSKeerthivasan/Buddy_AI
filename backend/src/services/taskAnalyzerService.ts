@@ -15,7 +15,7 @@ interface AIAnalysisInput {
 const callGemini = async (prompt: string): Promise<any> => {
   try {
     const response = await aiClient.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-3.1-flash-lite',
       contents: prompt,
     });
 

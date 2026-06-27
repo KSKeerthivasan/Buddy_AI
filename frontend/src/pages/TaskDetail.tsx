@@ -44,7 +44,17 @@ const TaskDetail: React.FC = () => {
   const analysis = task.analysis || {};
   const milestones = analysis.milestones || [];
   const scheduleDetails = analysis.scheduleDetails || {};
-  const schedule = scheduleDetails.schedule || [];
+  const executionSessions = scheduleDetails.executionSessions || [];
+
+  const dailyPlanMap = new Map<string, any[]>();
+  for (const session of executionSessions) {
+    const date = session.scheduledDate || 'Unscheduled';
+    if (!dailyPlanMap.has(date)) {
+      dailyPlanMap.set(date, []);
+    }
+    dailyPlanMap.get(date)!.push(session);
+  }
+  const dailyPlan = Array.from(dailyPlanMap.entries()).map(([date, sessions]) => ({ date, sessions }));
 
   const completedMilestones = milestones.filter((m: any) => m.isCompleted);
   const progressPercent = milestones.length > 0 ? Math.round((completedMilestones.length / milestones.length) * 100) : 0;
@@ -148,8 +158,8 @@ const TaskDetail: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-8">Daily Execution Plan</h2>
             
             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[1.125rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gray-200 before:via-gray-200 before:to-transparent">
-              {schedule.length === 0 && <p className="text-gray-500 italic relative z-10 pl-12">No schedule generated.</p>}
-              {schedule.map((day: any, idx: number) => (
+              {dailyPlan.length === 0 && <p className="text-gray-500 italic relative z-10 pl-12">No schedule generated.</p>}
+              {dailyPlan.map((day: any, idx: number) => (
                 <div key={idx} className="relative flex items-start group">
                   <div className="flex flex-col items-center shrink-0">
                     <div className="w-9 h-9 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow-sm flex items-center justify-center z-10 font-bold text-sm">
@@ -159,22 +169,31 @@ const TaskDetail: React.FC = () => {
                   <div className="ml-6 flex-1 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-center mb-3">
                       <span className="font-bold text-gray-900 text-lg">{day.date}</span>
-                      <span className="text-xs font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-full">{day.assignedHours}h capacity</span>
+                      <span className="text-xs font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-full">{day.sessions.length} sessions</span>
                     </div>
-                    {day.milestones.length === 0 ? (
+                    {day.sessions.length === 0 ? (
                       <p className="text-sm text-gray-400 italic">No tasks scheduled for today.</p>
                     ) : (
-                      <ul className="space-y-2.5">
-                        {day.milestones.map((m: any, mIdx: number) => (
-                          <li key={mIdx} className="flex justify-between items-start gap-3 text-sm">
-                            <div className="flex items-start gap-2 pt-0.5 text-gray-700 font-medium">
-                              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                              <span className="leading-tight">{m.title}</span>
+                      <div className="space-y-4">
+                        {day.sessions.map((s: any, sIdx: number) => (
+                          <div key={sIdx} className="bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-semibold text-gray-800 text-sm">{s.sessionTitle}</span>
+                              <span className="text-xs font-bold text-gray-500">{s.durationMinutes}m</span>
                             </div>
-                            <span className="text-gray-400 shrink-0 font-medium">{m.estimatedHours}h</span>
-                          </li>
+                            <ul className="space-y-1.5">
+                              {s.tasks?.map((m: any, mIdx: number) => (
+                                <li key={mIdx} className="flex justify-between items-start gap-3 text-sm">
+                                  <div className="flex items-start gap-2 pt-0.5 text-gray-600">
+                                    <div className="w-1 h-1 rounded-full bg-blue-400 mt-2 shrink-0" />
+                                    <span className="leading-tight">{m.title}</span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     )}
                   </div>
                 </div>

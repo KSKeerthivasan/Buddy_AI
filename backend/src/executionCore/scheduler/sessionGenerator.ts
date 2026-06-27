@@ -1,0 +1,131 @@
+import { Milestone } from './types';
+
+export interface ExecutionSession {
+  scheduledDate?: string;
+  sessionTitle: string;
+  durationMinutes: number;
+  tasks: Milestone[];
+  estimatedCompletion?: string;
+}
+
+/**
+ * Generates neutral session titles to avoid assuming implementation details.
+ */
+const determineNeutralSessionTitle = (tasks: Milestone[]): string => {
+  const allTitles = tasks.map(t => t.title.toLowerCase()).join(' ');
+
+  if (allTitles.match(/review|test|check|verify|qa|audit|debug/)) {
+    return 'Review Block';
+  }
+  if (allTitles.match(/study|read|learn|research|analyze|understand/)) {
+    return 'Deep Study Session';
+  }
+  
+  return 'Focused Execution Block';
+};
+
+/**
+ * Converts total estimated work into discrete execution sessions.
+ * Respects milestone boundaries aggressively to prevent arbitrary splitting.
+ */
+export const generateSessions = (
+  estimatedHours: number,
+  milestones: Milestone[],
+  deadline: string
+): ExecutionSession[] => {
+  const sessions: ExecutionSession[] = [];
+  
+  // Clone milestones into a queue of work
+  const queue = milestones
+    .map(m => ({ 
+      original: m, 
+      remainingMins: Math.round((m.estimatedHours || 0) * 60),
+      isContinuation: false
+    }))
+    .filter(m => m.remainingMins > 0);
+
+  let currentDuration = 0;
+  let currentTasks: any[] = [];
+
+  while (queue.length > 0) {
+    const task = queue[0]!;
+
+    // Avoid splitting: if the task doesn't fit in the max session size (120),
+    // and we already have some tasks in the current session (>= 30m),
+    // we should close the current session early so the large task gets a fresh block.
+    if (currentDuration > 0 && currentDuration + task.remainingMins > 120) {
+      if (currentDuration >= 30) {
+        sessions.push({
+          sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
+          durationMinutes: currentDuration,
+          tasks: currentTasks.map(t => ({
+            ...t.original,
+            title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
+          })),
+        });
+        currentDuration = 0;
+        currentTasks = [];
+        continue; // Retry task with a fresh session
+      }
+    }
+
+    const availableRoom = 120 - currentDuration;
+
+    if (task.remainingMins <= availableRoom) {
+      // Consume entire task
+      currentTasks.push({ ...task });
+      currentDuration += task.remainingMins;
+      queue.shift();
+
+      // If we've hit the optimal chunk size (45-90m), close the session.
+      // This preserves chunks while avoiding slicing tasks midway.
+      if (currentDuration >= 45) {
+        sessions.push({
+          sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
+          durationMinutes: currentDuration,
+          tasks: currentTasks.map(t => ({
+            ...t.original,
+            title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
+          })),
+        });
+        currentDuration = 0;
+        currentTasks = [];
+      }
+    } else {
+      // Task exceeds available room, we MUST split it
+      const consumed = availableRoom;
+      currentTasks.push({ ...task });
+      currentDuration += consumed;
+      
+      task.remainingMins -= consumed;
+      task.isContinuation = true;
+
+      // Close the filled session
+      sessions.push({
+        sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
+        durationMinutes: currentDuration,
+        tasks: currentTasks.map(t => ({
+          ...t.original,
+          title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
+        })),
+      });
+      currentDuration = 0;
+      currentTasks = [];
+    }
+  }
+
+  // Flush any remaining tasks into a final session
+  if (currentDuration > 0) {
+    const finalDuration = Math.max(30, currentDuration); // enforce minimum 30
+    sessions.push({
+      sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
+      durationMinutes: finalDuration,
+      tasks: currentTasks.map(t => ({
+        ...t.original,
+        title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
+      })),
+    });
+  }
+
+  return sessions;
+};

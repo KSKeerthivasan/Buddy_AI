@@ -19,11 +19,17 @@ export interface SchedulerInput {
   estimatedHours: number;
   milestones: Milestone[];
   dailyAvailableHours?: number;
+  role?: string;
 }
+
+import { ExecutionSession } from './sessionGenerator';
 
 export interface ScheduleResult {
   isFeasible: boolean;
+  totalDays: number;
+  scheduledDays: number;
+  bufferDays: number;
   riskLevel: RiskLevel;
-  schedule: DailyPlan[];
+  executionSessions: ExecutionSession[];
   message?: string;
 }
