@@ -2,15 +2,18 @@ import { Request, Response } from 'express';
 import { analyzeTask as executeTaskAnalysis } from '../executionCore/taskAnalyzer';
 import { createTask as repoCreateTask, getTasksByUser as repoGetTasksByUser } from '../repositories/taskRepository';
 
+import { validateTaskInput } from '../utils/inputValidator';
+
 export const analyzeTask = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, description, deadline, role } = req.body;
 
-    // Validate required fields
-    if (!title || !deadline) {
+    // Run custom input validation before engaging the AI
+    const validation = validateTaskInput(title, description, deadline);
+    if (!validation.isValid) {
       res.status(400).json({
         error: 'Validation Error',
-        message: 'Both title and deadline are required.',
+        message: validation.message,
       });
       return;
     }
