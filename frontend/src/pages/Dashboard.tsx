@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { LogOut, User as UserIcon, CheckSquare } from 'lucide-react';
 import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
-import { useTasks } from '../context/TaskContext';
 import TaskCard from '../components/common/TaskCard';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { tasks } = useTasks();
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
 
   useEffect(() => {
@@ -34,8 +34,27 @@ const Dashboard: React.FC = () => {
         setBackendStatus('offline');
       }
     };
+    
+    const fetchTasks = async () => {
+      try {
+        if (!user?.uid) return;
+        const response = await fetch(`http://localhost:5000/api/tasks?userId=${user.uid}`);
+        const data = await response.json();
+        if (data.success) {
+          setTasks(data.tasks);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      } finally {
+        setTasksLoading(false);
+      }
+    };
+    
     checkBackend();
-  }, []);
+    if (user) {
+      fetchTasks();
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -110,7 +129,12 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {tasks.length === 0 ? (
+        {tasksLoading ? (
+          <div className="bg-white border border-gray-100 rounded-2xl p-12 text-center shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading your tasks...</h3>
+            <p className="text-gray-500">Please wait while we fetch your active tasks.</p>
+          </div>
+        ) : tasks.length === 0 ? (
           <div className="bg-white border border-gray-100 rounded-2xl p-12 text-center shadow-sm">
             <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <CheckSquare size={32} />

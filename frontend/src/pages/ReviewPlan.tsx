@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Clock, Zap, Plus, X, ArrowRight, Edit2, AlertCircle } from 'lucide-react';
+import { Target, Clock, Zap, Plus, X, ArrowRight, Edit2, AlertCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const ReviewPlan: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const planData = location.state?.planData;
   const rawTask = location.state?.rawTask;
   
@@ -18,6 +20,8 @@ const ReviewPlan: React.FC = () => {
     })) || []
   );
   const [newMilestoneText, setNewMilestoneText] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!planData) {
@@ -58,9 +62,47 @@ const ReviewPlan: React.FC = () => {
   };
 
   // Action handlers
-  const handleAccept = () => {
-    console.log('Accepted Plan', milestones);
-    navigate('/dashboard');
+  const handleAccept = async () => {
+    setIsSaving(true);
+    setError('');
+
+    const finalMilestones = milestones.map((m, idx) => ({
+      title: m.text,
+      estimatedHours: planData.milestones[idx]?.estimatedHours || 0
+    }));
+
+    const finalTaskData = {
+      userId: user?.uid, // Make sure we store the owner of the task
+      title: rawTask?.title,
+      description: rawTask?.description,
+      deadline: rawTask?.deadline,
+      role: rawTask?.role,
+      status: 'approved',
+      analysis: {
+        ...planData,
+        milestones: finalMilestones
+      }
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalTaskData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save the approved task.');
+      }
+
+      alert('Task successfully approved and saved!');
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Error saving approved plan:', err);
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -199,6 +241,14 @@ const ReviewPlan: React.FC = () => {
               </div>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-center gap-2">
+                <AlertCircle size={18} />
+                <p>{error}</p>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t border-gray-100">
               <button 
@@ -214,10 +264,20 @@ const ReviewPlan: React.FC = () => {
               </button>
               <button 
                 onClick={handleAccept}
-                className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                disabled={isSaving}
+                className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
               >
-                Accept Plan
-                <ArrowRight size={18} />
+                {isSaving ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Accept Plan
+                    <ArrowRight size={18} />
+                  </>
+                )}
               </button>
             </div>
 

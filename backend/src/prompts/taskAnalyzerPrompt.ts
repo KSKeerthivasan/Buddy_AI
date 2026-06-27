@@ -15,11 +15,10 @@ Return JSON in this exact format:
   "taskType": "",
   "priority": "",
   "complexity": "",
-  "estimatedHours": 0,
+  "confidence": 0,
   "milestones": [
     {
-      "title": "",
-      "estimatedHours": 0
+      "title": ""
     }
   ]
 }

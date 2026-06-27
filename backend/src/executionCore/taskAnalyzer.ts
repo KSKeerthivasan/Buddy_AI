@@ -1,4 +1,6 @@
 import { analyzeTaskWithAI } from '../services/taskAnalyzerService';
+import { createTask } from '../repositories/taskRepository';
+import { estimateHours } from './estimationEngine';
 
 export interface RawTaskInput {
   title?: string;
@@ -9,15 +11,20 @@ export interface RawTaskInput {
 
 export interface Milestone {
   title: string;
-  estimatedHours: number;
 }
 
 export interface TaskAnalysisResult {
   taskType: string;
   priority: string;
   complexity: string;
-  estimatedHours: number;
+  confidence: number;
   milestones: Milestone[];
+  estimatedHours?: number;
+}
+
+export interface AnalyzeTaskResponse {
+  taskId: string;
+  analysis: TaskAnalysisResult;
 }
 
 /**
@@ -43,11 +50,11 @@ const validateResponse = (result: any): result is TaskAnalysisResult => {
   if (typeof result.taskType !== 'string') return false;
   if (typeof result.priority !== 'string') return false;
   if (typeof result.complexity !== 'string') return false;
-  if (typeof result.estimatedHours !== 'number') return false;
+  if (typeof result.confidence !== 'number') return false;
   if (!Array.isArray(result.milestones)) return false;
 
   for (const milestone of result.milestones) {
-    if (!milestone || typeof milestone.title !== 'string' || typeof milestone.estimatedHours !== 'number') {
+    if (!milestone || typeof milestone.title !== 'string') {
       return false;
     }
   }
@@ -59,7 +66,7 @@ const validateResponse = (result: any): result is TaskAnalysisResult => {
  * Execution Core: Task Analyzer
  * Orchestrates the validation, AI analysis, and response formatting for new tasks.
  */
-export const analyzeTask = async (input: RawTaskInput): Promise<TaskAnalysisResult> => {
+export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskResponse> => {
   // 1. Validate Input
   validateInput(input);
 
@@ -76,6 +83,27 @@ export const analyzeTask = async (input: RawTaskInput): Promise<TaskAnalysisResu
     throw new Error('AI returned an invalid structured response.');
   }
 
-  // 4. Return structured result (No DB or scheduling logic here)
-  return analysisResult;
+  // 4. Calculate Estimates
+  const computedHours = estimateHours(analysisResult.taskType, analysisResult.complexity);
+  analysisResult.estimatedHours = computedHours;
+
+  // 5. Build task object
+  const taskData = {
+    title: input.title,
+    description: input.description || '',
+    deadline: input.deadline,
+    role: input.role || null,
+    analysis: analysisResult,
+    status: 'analyzed',
+    createdAt: new Date().toISOString()
+  };
+
+  // 5. Save to database
+  const savedTask = await createTask(taskData);
+
+  // 6. Return structured result
+  return {
+    taskId: savedTask.id,
+    analysis: analysisResult
+  };
 };

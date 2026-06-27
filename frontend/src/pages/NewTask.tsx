@@ -30,7 +30,8 @@ const NewTask: React.FC = () => {
         throw new Error(errorData.message || 'Failed to analyze task with AI.');
       }
 
-      const planData = await response.json();
+      const responseData = await response.json();
+      const planData = responseData.analysis || responseData; // extract the analysis object
       
       navigate('/review-plan', { 
         state: { 
