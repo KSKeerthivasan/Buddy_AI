@@ -13,7 +13,6 @@ const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -154,8 +153,6 @@ const Dashboard: React.FC = () => {
               <TaskCard 
                 key={task.id} 
                 task={task} 
-                isExpanded={expandedTaskId === task.id}
-                onToggle={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
               />
             ))}
           </div>

@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NewTask from './pages/NewTask';
 import ReviewPlan from './pages/ReviewPlan';
+import TaskDetail from './pages/TaskDetail';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="new-task" element={<NewTask />} />
             <Route path="review-plan" element={<ReviewPlan />} />
+            <Route path="task/:taskId" element={<TaskDetail />} />
           </Route>
         </Routes>
       </Router>
