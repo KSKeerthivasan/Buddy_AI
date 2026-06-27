@@ -7,6 +7,12 @@ export const createTask = async (taskData: any) => {
   return { id: docRef.id, ...taskData };
 };
 
+export const updateTask = async (taskId: string, updates: any) => {
+  const docRef = db.collection(TASKS_COLLECTION).doc(taskId);
+  await docRef.update(updates);
+  return { success: true };
+};
+
 export const getTaskById = async (taskId: string) => {
   const doc = await db.collection(TASKS_COLLECTION).doc(taskId).get();
   if (!doc.exists) {

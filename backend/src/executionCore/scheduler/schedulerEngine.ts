@@ -48,10 +48,32 @@ const addDays = (date: Date, days: number): Date => {
 };
 
 /**
+ * Formats a Date object to a local YYYY-MM-DD string, avoiding UTC shifts.
+ */
+const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Orchestrates the scheduling process with advanced proportional spacing.
  */
 export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
   const availableDays = calculateAvailableDays(input.deadline);
+
+  if (availableDays <= 0) {
+    return {
+      isFeasible: false,
+      totalDays: 0,
+      scheduledDays: 0,
+      bufferDays: 0,
+      riskLevel: 'HIGH',
+      executionSessions: [],
+      message: 'High risk: The deadline has already passed. The plan is infeasible.',
+    };
+  }
 
   // 1. Generate execution sessions (pure chunking, no dates)
   const sessions = generateSessions(input.estimatedHours, input.milestones, input.deadline);
@@ -60,7 +82,6 @@ export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
   const dailyCapacityMins = getDailyCapacityMinutes(input.role, input.dailyAvailableHours);
 
   // 3. Setup Allocation Metrics
-  // Reserve roughly 20-30% buffer
   const bufferDays = Math.max(1, Math.ceil(availableDays * 0.25)); 
   const schedulableDays = availableDays - bufferDays;
 
@@ -74,55 +95,34 @@ export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
   for (let i = 0; i < sessions.length; i++) {
     const session = sessions[i]!;
 
-    // Check capacity: if it doesn't fit on current day, we MUST advance.
-    // Exception: if the day is completely fresh and the session is huge (exceeds daily cap).
-    // The instructions say "Never exceed the user's daily capacity." 
-    // Wait, if a single session is 120m, but cap is 90m, we are stuck.
-    // If it's a fresh day, we must assign it anyway to avoid an infinite loop, 
-    // even though it breaks the strict daily cap rule. The chunker prevents sessions > 120m.
     if (session.durationMinutes > currentDayRemainingMins && currentDayRemainingMins < dailyCapacityMins) {
       currentDayIndex++;
       currentDayRemainingMins = dailyCapacityMins;
     }
 
-    // Assign date
-    session.scheduledDate = addDays(today, currentDayIndex).toISOString().split('T')[0]!;
+    // Assign date using safe local formatting
+    session.scheduledDate = formatLocalDate(addDays(today, currentDayIndex));
     currentDayRemainingMins -= session.durationMinutes;
 
-    // Proportional Spacing Logic
-    // If we have sessions left to schedule, should we intentionally skip days?
     const remainingSessions = sessions.length - 1 - i;
     
     if (remainingSessions > 0) {
       const remainingSchedulableDays = schedulableDays - currentDayIndex - 1;
       
-      // We only insert intentional gaps if we have plenty of days left.
-      // If we insert a gap, we move to the next day AND skip a day (total +2).
-      // Or if we just advance to the next day without packing the current day full (+1).
-      
       if (remainingSchedulableDays >= remainingSessions * 2) {
-        // Aggressive Spacing: We have more than double the days we need. Insert a rest day!
         currentDayIndex += 2;
         currentDayRemainingMins = dailyCapacityMins;
       } else if (remainingSchedulableDays >= remainingSessions) {
-        // Natural Spacing: We have enough days to do exactly 1 session per day. Advance to next day.
         currentDayIndex += 1;
         currentDayRemainingMins = dailyCapacityMins;
-      } else {
-        // Pack mode: We don't have enough days. We MUST stay on the current day 
-        // and keep packing until capacity is full.
       }
     }
   }
 
   // 5. Calculate Final Metrics
-  // The actual days we scheduled on (currentDayIndex is 0-based offset, so total is index + 1)
-  // BUT we might have skipped days. "scheduledDays" usually implies the span of days.
   const spanOfScheduledDays = currentDayIndex + 1;
   const actualBufferDays = availableDays - spanOfScheduledDays;
   
-  // "Never exceed user's daily capacity... Inform user if it cannot meet deadline."
-  // If spanOfScheduledDays > availableDays, we overflowed the deadline.
   const isFeasible = spanOfScheduledDays <= availableDays;
   
   let riskLevel: RiskLevel = 'MEDIUM';

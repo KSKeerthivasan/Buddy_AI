@@ -1,15 +1,98 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut, User as UserIcon, CheckSquare, Target, 
   Clock, ShieldAlert, CalendarDays, Play, 
-  Activity, ArrowRight
+  Activity, ArrowRight, StickyNote, CheckCircle
 } from 'lucide-react';
 import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import TaskCard from '../components/common/TaskCard';
+
+// ----- Reminder Card Component -----
+const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void }> = ({ reminder, onComplete }) => {
+  const [isChecked, setIsChecked] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  const handleCheck = () => {
+    if (isChecked) return;
+    setIsChecked(true);
+    
+    // Call the parent to update backend
+    onComplete(reminder.id);
+
+    // After 3 seconds, fade out of the active list
+    setTimeout(() => {
+      setIsFadingOut(true);
+    }, 3000);
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={isFadingOut ? { opacity: 0, height: 0, margin: 0, overflow: 'hidden' } : { opacity: isChecked ? 0.6 : 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.4 }}
+      className={`relative w-48 sm:w-56 shrink-0 bg-[#fffcd9] p-5 rounded-md shadow-md border border-[#f0ebc0] flex flex-col group
+        before:absolute before:bottom-0 before:right-0 before:border-[12px] before:border-transparent 
+        before:border-b-[#e5e1b3] before:border-r-[#e5e1b3] before:rounded-tl-md
+      `}
+    >
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <button 
+          onClick={handleCheck}
+          className={`shrink-0 w-6 h-6 rounded-md border-[2px] flex items-center justify-center transition-all duration-300 ${
+            isChecked ? 'bg-amber-500 border-amber-500 scale-110 rotate-6' : 'bg-white border-amber-200 hover:border-amber-400'
+          }`}
+        >
+          {isChecked && (
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.6 }}>
+              <CheckCircle size={14} className="text-white" strokeWidth={3} />
+            </motion.div>
+          )}
+        </button>
+        <span className="text-[10px] font-bold text-amber-700/60 uppercase tracking-widest bg-amber-100/50 px-2 py-0.5 rounded">
+          {new Date(reminder.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+        </span>
+      </div>
+
+      <div className="relative">
+        <h4 className={`font-bold text-amber-950 text-sm leading-snug transition-all duration-500 ${isChecked ? 'text-amber-900/50' : ''}`}>
+          {reminder.title}
+        </h4>
+        {isChecked && (
+          <motion.div 
+            initial={{ width: 0 }} 
+            animate={{ width: '100%' }} 
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="absolute top-1/2 left-0 h-0.5 bg-amber-500/60 -translate-y-1/2"
+          />
+        )}
+      </div>
+
+      {reminder.description && (
+        <p className={`mt-2 text-xs text-amber-800/70 font-medium transition-all duration-500 ${isChecked ? 'opacity-50' : ''}`}>
+          {reminder.description}
+        </p>
+      )}
+
+      {isChecked && (
+        <motion.div 
+          initial={{ opacity: 0, y: 5 }} 
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-3 text-[10px] font-black text-amber-600 flex items-center gap-1"
+        >
+          Completed <CheckCircle size={10} />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+};
+// -----------------------------------
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +107,21 @@ const Dashboard: React.FC = () => {
     }
   }, [user, loading, navigate]);
 
+  const fetchTasks = async () => {
+    try {
+      if (!user?.uid) return;
+      const response = await fetch(`http://localhost:5000/api/tasks?userId=${user.uid}`);
+      const data = await response.json();
+      if (data.success) {
+        setTasks(data.tasks);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkBackend = async () => {
       try {
@@ -36,21 +134,6 @@ const Dashboard: React.FC = () => {
         }
       } catch (error) {
         setBackendStatus('offline');
-      }
-    };
-    
-    const fetchTasks = async () => {
-      try {
-        if (!user?.uid) return;
-        const response = await fetch(`http://localhost:5000/api/tasks?userId=${user.uid}`);
-        const data = await response.json();
-        if (data.success) {
-          setTasks(data.tasks);
-        }
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      } finally {
-        setTasksLoading(false);
       }
     };
     
@@ -69,44 +152,71 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Derive Today's Sessions & Metrics
-  const { todaySessions, tasksDueSoon, tasksAtRisk, totalBufferDays } = useMemo(() => {
+  const handleCompleteReminder = async (id: string) => {
+    try {
+      await fetch(`http://localhost:5000/api/tasks/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      });
+      // Optionally we could mutate local state here, but the 3-second UI fade handles the visual removal perfectly.
+      // Next time they fetch, it'll be marked completed.
+    } catch (error) {
+      console.error('Failed to update status', error);
+    }
+  };
+
+  // Segregate Tasks and Derived Metrics
+  const { 
+    todaySessions, 
+    tasksDueSoon, 
+    tasksAtRisk, 
+    totalBufferDays,
+    aiTasks,
+    activeReminders
+  } = useMemo(() => {
     const localToday = new Date();
-    // Create a local YYYY-MM-DD string that safely aligns with local dates
     const todayStr = new Date(localToday.getTime() - localToday.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     
     let dueSoonCount = 0;
     let riskCount = 0;
     let bufferSum = 0;
     const sessionsForToday: { session: any, task: any }[] = [];
+    
+    const aiList: any[] = [];
+    const reminderList: any[] = [];
 
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
     tasks.forEach(task => {
-      // Metric: Due Soon
-      const deadlineDate = new Date(task.deadline);
-      if (deadlineDate <= threeDaysFromNow && deadlineDate >= localToday) {
-        dueSoonCount++;
-      }
-
-      const schedule = task.analysis?.scheduleDetails;
-      if (schedule) {
-        // Metric: At Risk
-        if (schedule.riskLevel === 'HIGH') {
-          riskCount++;
+      if (task.taskType === 'REMINDER') {
+        // Daily Archive Logic: If it's completed and the deadline (or completion date) was before today, hide it.
+        // For simplicity, we just hide ANY completed reminder upon full refresh.
+        if (task.status !== 'completed') {
+          reminderList.push(task);
         }
-        
-        // Metric: Buffer
-        bufferSum += (schedule.bufferDays || 0);
+      } else {
+        aiList.push(task);
 
-        // Extract today's execution sessions
-        const sessions = schedule.executionSessions || [];
-        sessions.forEach((session: any) => {
-          if (session.scheduledDate === todayStr) {
-            sessionsForToday.push({ session, task });
-          }
-        });
+        // Metric: Due Soon
+        const deadlineDate = new Date(task.deadline);
+        if (deadlineDate <= threeDaysFromNow && deadlineDate >= localToday) {
+          dueSoonCount++;
+        }
+
+        const schedule = task.analysis?.scheduleDetails;
+        if (schedule) {
+          if (schedule.riskLevel === 'HIGH') riskCount++;
+          bufferSum += (schedule.bufferDays || 0);
+
+          const sessions = schedule.executionSessions || [];
+          sessions.forEach((session: any) => {
+            if (session.scheduledDate === todayStr) {
+              sessionsForToday.push({ session, task });
+            }
+          });
+        }
       }
     });
 
@@ -114,7 +224,9 @@ const Dashboard: React.FC = () => {
       todaySessions: sessionsForToday,
       tasksDueSoon: dueSoonCount,
       tasksAtRisk: riskCount,
-      totalBufferDays: bufferSum
+      totalBufferDays: bufferSum,
+      aiTasks: aiList,
+      activeReminders: reminderList
     };
   }, [tasks]);
 
@@ -122,7 +234,7 @@ const Dashboard: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans selection:bg-indigo-100 overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -213,6 +325,25 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Quick Reminders Widget */}
+        {activeReminders.length > 0 && (
+          <section className="pt-2">
+            <div className="flex items-center gap-2 mb-4">
+              <StickyNote size={18} className="text-amber-500" />
+              <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Quick Reminders</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+              <AnimatePresence>
+                {activeReminders.map(reminder => (
+                  <div key={reminder.id} className="snap-start">
+                    <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} />
+                  </div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </section>
+        )}
+
         {/* Today's Focus Section */}
         <section className="bg-indigo-900 rounded-[2rem] p-8 md:p-10 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-indigo-500 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -284,7 +415,7 @@ const Dashboard: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-2">Loading your tasks...</h3>
               <p className="text-gray-500 font-medium">Please wait while we fetch your active tasks.</p>
             </div>
-          ) : tasks.length === 0 ? (
+          ) : aiTasks.length === 0 ? (
             <div className="bg-white border border-gray-100 rounded-2xl p-12 text-center shadow-sm">
               <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
                 <CheckSquare size={32} />
@@ -300,7 +431,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {tasks.map(task => (
+              {aiTasks.map(task => (
                 <TaskCard 
                   key={task.id} 
                   task={task} 

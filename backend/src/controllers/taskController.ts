@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { analyzeTask as executeTaskAnalysis } from '../executionCore/taskAnalyzer';
-import { createTask as repoCreateTask, getTasksByUser as repoGetTasksByUser } from '../repositories/taskRepository';
+import { createTask as repoCreateTask, getTasksByUser as repoGetTasksByUser, updateTask as repoUpdateTask } from '../repositories/taskRepository';
 
 import { validateTaskInput } from '../utils/inputValidator';
 
@@ -82,6 +82,31 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
       success: false,
       error: 'Internal Server Error',
       message: error.message || 'An unexpected error occurred while fetching tasks.',
+    });
+  }
+};
+
+export const updateTaskStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!id || !status) {
+      res.status(400).json({ success: false, message: 'Task ID and status are required' });
+      return;
+    }
+
+    await repoUpdateTask(id as string, { status });
+
+    res.json({
+      success: true,
+    });
+  } catch (error: any) {
+    console.error('Error updating task status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: error.message || 'An unexpected error occurred while updating the task.',
     });
   }
 };
