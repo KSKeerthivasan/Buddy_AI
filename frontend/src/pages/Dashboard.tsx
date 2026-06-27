@@ -13,6 +13,7 @@ const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -148,24 +149,18 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {tasks.map(task => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard 
+                key={task.id} 
+                task={task} 
+                isExpanded={expandedTaskId === task.id}
+                onToggle={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
+              />
             ))}
           </div>
         )}
       </motion.div>
-
-      {/* Floating Action Button */}
-      <button
-        onClick={() => navigate('/new-task')}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-50 focus:outline-none focus:ring-4 focus:ring-blue-500/30"
-        aria-label="Create New Task"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
     </div>
   );
 };

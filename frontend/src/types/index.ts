@@ -1,12 +1,13 @@
 export type TaskPriority = 'Low' | 'Medium' | 'High';
-export type TaskStatus = 'Active' | 'Completed';
+export type TaskStatus = 'Active' | 'Completed' | 'analyzed' | 'approved';
 
 export interface Task {
   id: string;
   title: string;
   description: string;
-  deadline: Date;
-  priority: TaskPriority;
+  deadline: string; // ISO String
+  role?: string;
   status: TaskStatus;
-  createdAt: Date;
+  createdAt: string; // ISO String
+  analysis?: any; // The full execution core analysis output
 }
