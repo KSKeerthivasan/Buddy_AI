@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import taskRoutes from './routes/taskRoutes';
+import schedulerRoutes from './routes/schedulerRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/tasks', taskRoutes);
+app.use('/api/scheduler', schedulerRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
