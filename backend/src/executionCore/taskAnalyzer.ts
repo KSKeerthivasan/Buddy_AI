@@ -1,4 +1,4 @@
-import { analyzeTaskWithAI } from '../services/taskAnalyzerService';
+import { classifyTask, generateMilestones } from '../services/taskAnalyzerService';
 import { createTask } from '../repositories/taskRepository';
 import { estimateHours } from './estimationEngine';
 
@@ -27,9 +27,6 @@ export interface AnalyzeTaskResponse {
   analysis: TaskAnalysisResult;
 }
 
-/**
- * Validates the raw input before sending to the AI service.
- */
 const validateInput = (input: RawTaskInput): void => {
   if (!input) {
     throw new Error('Input payload is missing entirely.');
@@ -42,52 +39,66 @@ const validateInput = (input: RawTaskInput): void => {
   }
 };
 
-/**
- * Validates the AI response to ensure it adheres to the expected schema.
- */
-const validateResponse = (result: any): result is TaskAnalysisResult => {
+const validateClassification = (result: any): boolean => {
   if (!result || typeof result !== 'object') return false;
   if (typeof result.taskType !== 'string') return false;
   if (typeof result.priority !== 'string') return false;
   if (typeof result.complexity !== 'string') return false;
   if (typeof result.confidence !== 'number') return false;
-  if (!Array.isArray(result.milestones)) return false;
+  return true;
+};
 
+const validateMilestones = (result: any): boolean => {
+  if (!result || typeof result !== 'object') return false;
+  if (!Array.isArray(result.milestones)) return false;
   for (const milestone of result.milestones) {
     if (!milestone || typeof milestone.title !== 'string') {
       return false;
     }
   }
-
   return true;
 };
 
-/**
- * Execution Core: Task Analyzer
- * Orchestrates the validation, AI analysis, and response formatting for new tasks.
- */
 export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskResponse> => {
   // 1. Validate Input
   validateInput(input);
 
-  // 2. Call AI Service (Role is accepted but not yet utilized in the prompt strictly, can be passed if needed)
-  const analysisResult = await analyzeTaskWithAI({
+  // 2. Classify task
+  const classification = await classifyTask({
     title: input.title!,
     description: input.description || '',
     deadline: input.deadline,
     role: input.role,
   });
 
-  // 3. Validate Response
-  if (!validateResponse(analysisResult)) {
-    throw new Error('AI returned an invalid structured response.');
+  if (!validateClassification(classification)) {
+    throw new Error('AI returned an invalid structured classification response.');
   }
 
-  // 4. Calculate Estimates
-  const computedHours = estimateHours(analysisResult.taskType, analysisResult.complexity);
-  analysisResult.estimatedHours = computedHours;
+  // 3. Estimate hours using estimationEngine
+  const computedHours = estimateHours(classification.taskType, classification.complexity);
 
-  // 5. Build task object
+  // 4. Generate milestones using the estimated hours
+  const milestonesData = await generateMilestones({
+    title: input.title!,
+    description: input.description || '',
+    taskType: classification.taskType,
+    complexity: classification.complexity,
+    estimatedHours: computedHours
+  });
+
+  if (!validateMilestones(milestonesData)) {
+    throw new Error('AI returned an invalid structured milestones response.');
+  }
+
+  // 5. Merge everything into one response
+  const analysisResult: TaskAnalysisResult = {
+    ...classification,
+    estimatedHours: computedHours,
+    milestones: milestonesData.milestones
+  };
+
+  // 6. Build task object and save to DB
   const taskData = {
     title: input.title,
     description: input.description || '',
@@ -98,10 +109,9 @@ export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskRespo
     createdAt: new Date().toISOString()
   };
 
-  // 5. Save to database
   const savedTask = await createTask(taskData);
 
-  // 6. Return structured result
+  // 7. Return the final object
   return {
     taskId: savedTask.id,
     analysis: analysisResult

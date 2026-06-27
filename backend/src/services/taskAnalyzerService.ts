@@ -1,29 +1,22 @@
 import { aiClient } from '../ai/client';
-import { TASK_ANALYZER_PROMPT } from '../prompts/taskAnalyzerPrompt';
+import { CLASSIFY_TASK_PROMPT } from '../prompts/taskAnalyzerPrompt';
+import { GENERATE_MILESTONES_PROMPT } from '../prompts/milestoneGeneratorPrompt';
 
 interface AIAnalysisInput {
   title: string;
   description: string;
   deadline?: string | undefined;
   role?: string | undefined;
+  taskType?: string;
+  complexity?: string;
+  estimatedHours?: number;
 }
 
-export const analyzeTaskWithAI = async (input: AIAnalysisInput): Promise<any> => {
-  // Construct the final prompt
-  const finalPrompt = `
-${TASK_ANALYZER_PROMPT}
-
-User Task Details:
-- Title: ${input.title}
-- Description: ${input.description || 'N/A'}
-- Deadline: ${input.deadline || 'N/A'}
-- Role: ${input.role || 'N/A'}
-`;
-
+const callGemini = async (prompt: string): Promise<any> => {
   try {
     const response = await aiClient.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: finalPrompt,
+      model: 'gemini-2.5-flash-lite',
+      contents: prompt,
     });
 
     const text = response.text;
@@ -32,7 +25,6 @@ User Task Details:
       throw new Error('Received empty response from Gemini.');
     }
 
-    // Try to parse the JSON output strictly without business validation
     try {
       const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
       return JSON.parse(jsonStr);
@@ -44,4 +36,45 @@ User Task Details:
     console.error('Error analyzing task with Gemini:', error);
     throw error;
   }
+};
+
+export const classifyTask = async (input: AIAnalysisInput): Promise<any> => {
+  const finalPrompt = `
+${CLASSIFY_TASK_PROMPT}
+
+User Task Details:
+- Title: ${input.title}
+- Description: ${input.description || 'N/A'}
+- Deadline: ${input.deadline || 'N/A'}
+- Role: ${input.role || 'N/A'}
+`;
+  return callGemini(finalPrompt);
+};
+
+export const generateMilestones = async (input: AIAnalysisInput): Promise<any> => {
+  const finalPrompt = `
+${GENERATE_MILESTONES_PROMPT}
+
+User Task Details:
+- Title: ${input.title}
+- Description: ${input.description || 'N/A'}
+- Task Type: ${input.taskType || 'N/A'}
+- Complexity: ${input.complexity || 'N/A'}
+- Estimated Hours: ${input.estimatedHours !== undefined ? input.estimatedHours : 'N/A'}
+`;
+  return callGemini(finalPrompt);
+};
+
+export const analyzeTaskWithAI = async (input: AIAnalysisInput): Promise<any> => {
+  // Execute both calls in parallel
+  const [classification, milestonesData] = await Promise.all([
+    classifyTask(input),
+    generateMilestones(input)
+  ]);
+  
+  // Re-combine for the API contract
+  return {
+    ...classification,
+    milestones: milestonesData.milestones
+  };
 };
