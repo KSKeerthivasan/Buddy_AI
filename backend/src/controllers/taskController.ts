@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { analyzeTask as executeTaskAnalysis } from '../executionCore/taskAnalyzer';
-import { createTask as repoCreateTask, getTasksByUser as repoGetTasksByUser, updateTask as repoUpdateTask } from '../repositories/taskRepository';
+import { createTask as repoCreateTask, getTasksByUser as repoGetTasksByUser, updateTask as repoUpdateTask, getTaskById } from '../repositories/taskRepository';
 
 import { validateTaskInput } from '../utils/inputValidator';
 
@@ -116,6 +116,147 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
       success: false,
       error: 'Internal Server Error',
       message: error.message || 'An unexpected error occurred while updating the task.',
+    });
+  }
+};
+
+export const completeSession = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id, sessionId } = req.params;
+    const { notes, accumulatedTime, completionMethod, earlyCompletionReason, reflectionNotes, attachment, referenceLink } = req.body;
+
+    if (!id || !sessionId) {
+      res.status(400).json({ success: false, message: 'Task ID and Session ID are required' });
+      return;
+    }
+
+    const task: any = await getTaskById(id as string);
+    if (!task) {
+      res.status(404).json({ success: false, message: 'Task not found' });
+      return;
+    }
+
+    const sessions = task.analysis?.scheduleDetails?.executionSessions;
+    if (!sessions || !Array.isArray(sessions)) {
+      res.status(400).json({ success: false, message: 'Task has no execution sessions' });
+      return;
+    }
+
+    const sessionIndex = sessions.findIndex((s: any) => s.sessionId === sessionId || sessions.indexOf(s).toString() === sessionId);
+    if (sessionIndex === -1) {
+      res.status(404).json({ success: false, message: 'Session not found' });
+      return;
+    }
+
+    // Update the session
+    sessions[sessionIndex].isCompleted = true;
+    sessions[sessionIndex].completedAt = new Date().toISOString();
+    if (notes) sessions[sessionIndex].notes = notes;
+    if (accumulatedTime !== undefined) sessions[sessionIndex].accumulatedTime = accumulatedTime;
+    if (completionMethod) sessions[sessionIndex].completionMethod = completionMethod;
+    if (earlyCompletionReason) sessions[sessionIndex].earlyCompletionReason = earlyCompletionReason;
+    if (reflectionNotes) sessions[sessionIndex].reflectionNotes = reflectionNotes;
+    if (attachment) sessions[sessionIndex].attachment = attachment;
+    if (referenceLink) sessions[sessionIndex].referenceLink = referenceLink;
+
+    // Check if all sessions are completed
+    const allCompleted = sessions.every((s: any) => s.isCompleted);
+
+    const updates: any = { 
+      'analysis.scheduleDetails.executionSessions': sessions,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (allCompleted) {
+      updates.status = 'completed';
+      updates.completedAt = new Date().toISOString();
+    }
+
+    await repoUpdateTask(id as string, updates);
+
+    res.json({
+      success: true,
+      allCompleted
+    });
+  } catch (error: any) {
+    console.error('Error completing session:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: error.message || 'An unexpected error occurred.',
+    });
+  }
+};
+
+export const updateSessionProgress = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id, sessionId } = req.params;
+    const { 
+      notes, 
+      accumulatedTime,
+      status,
+      technique,
+      cycleCount,
+      timerPhase,
+      timeLeft,
+      isRunning,
+      startedAt
+    } = req.body;
+
+    if (!id || !sessionId) {
+      res.status(400).json({ success: false, message: 'Task ID and Session ID are required' });
+      return;
+    }
+
+    const task: any = await getTaskById(id as string);
+    if (!task) {
+      res.status(404).json({ success: false, message: 'Task not found' });
+      return;
+    }
+
+    const sessions = task.analysis?.scheduleDetails?.executionSessions;
+    if (!sessions || !Array.isArray(sessions)) {
+      res.status(400).json({ success: false, message: 'Task has no execution sessions' });
+      return;
+    }
+
+    const sessionIndex = sessions.findIndex((s: any) => s.sessionId === sessionId || sessions.indexOf(s).toString() === sessionId);
+    if (sessionIndex === -1) {
+      res.status(404).json({ success: false, message: 'Session not found' });
+      return;
+    }
+
+    // Update the session progress
+    if (notes !== undefined) sessions[sessionIndex].notes = notes;
+    if (accumulatedTime !== undefined) sessions[sessionIndex].accumulatedTime = accumulatedTime;
+    if (status !== undefined) sessions[sessionIndex].status = status;
+    if (technique !== undefined) sessions[sessionIndex].technique = technique;
+    if (cycleCount !== undefined) sessions[sessionIndex].cycleCount = cycleCount;
+    if (timerPhase !== undefined) sessions[sessionIndex].timerPhase = timerPhase;
+    if (timeLeft !== undefined) sessions[sessionIndex].timeLeft = timeLeft;
+    if (isRunning !== undefined) sessions[sessionIndex].isRunning = isRunning;
+    if (startedAt !== undefined && !sessions[sessionIndex].startedAt) {
+      sessions[sessionIndex].startedAt = startedAt;
+    }
+    
+    sessions[sessionIndex].updatedAt = new Date().toISOString();
+
+    const updates: any = { 
+      'analysis.scheduleDetails.executionSessions': sessions,
+      updatedAt: new Date().toISOString()
+    };
+
+    await repoUpdateTask(id as string, updates);
+
+    res.json({
+      success: true
+    });
+  } catch (error: any) {
+    console.error('Error updating session progress:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: error.message || 'An unexpected error occurred.',
     });
   }
 };

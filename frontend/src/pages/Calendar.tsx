@@ -20,6 +20,7 @@ interface CalendarEvent {
   relatedTaskTitle?: string;
   goals?: string[];
   taskId?: string;
+  sessionId?: string;
 }
 
 const getCategoryStyles = (category: EventCategory) => {
@@ -121,12 +122,13 @@ const Calendar: React.FC = () => {
             // A more complex app might track session status individually.
             list.push({
               id: `session-${task.id}-${idx}`,
-              title: session.sessionTitle,
+              title: task.title,
               dateStr: session.scheduledDate,
               category: isCompleted ? 'Completed' : 'Execution Session',
               durationMinutes: session.durationMinutes,
-              relatedTaskTitle: task.title,
+              relatedTaskTitle: session.sessionTitle,
               taskId: task.id,
+              sessionId: session.sessionId || idx.toString(),
               goals: session.includedTasks || []
             });
           });
@@ -375,10 +377,11 @@ const Calendar: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Conditional Data based on type */}
                 {selectedEvent.relatedTaskTitle && (
                   <div className="pb-4 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Related Task</p>
+                    <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">
+                      {selectedEvent.category === 'Execution Session' ? 'Session Block' : 'Related Task'}
+                    </p>
                     <p className="text-sm font-bold text-gray-800">{selectedEvent.relatedTaskTitle}</p>
                   </div>
                 )}
@@ -398,8 +401,11 @@ const Calendar: React.FC = () => {
 
                 {/* Call to Actions */}
                 <div className="pt-2 flex flex-col gap-2">
-                  {selectedEvent.category === 'Execution Session' && (
-                    <button className="w-full py-3 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group shadow-md">
+                  {selectedEvent.category === 'Execution Session' && selectedEvent.taskId && selectedEvent.sessionId && (
+                    <button 
+                      onClick={() => navigate(`/focus/${selectedEvent.taskId}/${selectedEvent.sessionId}`)}
+                      className="w-full py-3 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group shadow-md"
+                    >
                       <Play size={16} className="group-hover:scale-110 transition-transform" />
                       Start Session
                     </button>

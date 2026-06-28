@@ -23,6 +23,8 @@ const ReviewPlan: React.FC = () => {
   // Edit Mode State
   const [isEditMode, setIsEditMode] = useState(false);
   const [isRecomputing, setIsRecomputing] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   
   // Form State for editing
   const [editDeadline, setEditDeadline] = useState('');
@@ -30,6 +32,11 @@ const ReviewPlan: React.FC = () => {
   const [editDailyHours, setEditDailyHours] = useState('');
   const [editMilestones, setEditMilestones] = useState<{id: string, title: string, estimatedHours: number}[]>([]);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
+  
+  // Override Confirmation State
+  const [showOverrideConfirm, setShowOverrideConfirm] = useState(false);
+  const [overrideReason, setOverrideReason] = useState<string>('');
+  const [overrideOtherNote, setOverrideOtherNote] = useState<string>('');
 
   useEffect(() => {
     if (!currentPlanData) {
@@ -52,6 +59,8 @@ const ReviewPlan: React.FC = () => {
       }))
     );
     setIsEditMode(true);
+    setHasUnsavedChanges(false);
+    setShowCloseConfirm(false);
   };
 
   const handleAddMilestone = () => {
@@ -62,19 +71,51 @@ const ReviewPlan: React.FC = () => {
       estimatedHours: 0
     }]);
     setNewMilestoneTitle('');
+    setHasUnsavedChanges(true);
   };
 
   const handleRemoveMilestone = (id: string) => {
     setEditMilestones(editMilestones.filter(m => m.id !== id));
+    setHasUnsavedChanges(true);
   };
 
   const handleUpdateMilestone = (id: string, field: 'title' | 'estimatedHours', value: any) => {
     setEditMilestones(editMilestones.map(m => 
       m.id === id ? { ...m, [field]: value } : m
     ));
+    setHasUnsavedChanges(true);
   };
 
-  const handleUpdatePlan = async () => {
+  const handleEstimatedHoursChange = (newHours: number) => {
+    setEditEstimatedHours(newHours);
+    setHasUnsavedChanges(true);
+    
+    // Auto-scale milestones
+    const currentTotal = editMilestones.reduce((acc, m) => acc + (m.estimatedHours || 0), 0);
+    if (currentTotal > 0 && newHours > 0) {
+      const ratio = newHours / currentTotal;
+      setEditMilestones(prev => prev.map(m => ({
+        ...m,
+        estimatedHours: parseFloat(((m.estimatedHours || 0) * ratio).toFixed(1))
+      })));
+    }
+  };
+
+  const handleCloseModal = () => {
+    if (hasUnsavedChanges) {
+      setShowCloseConfirm(true);
+    } else {
+      setIsEditMode(false);
+    }
+  };
+
+  const handleUpdatePlan = async (forceRegenerate: boolean = false) => {
+    // Intelligent Override Check
+    if (!forceRegenerate && editEstimatedHours < (currentPlanData.estimatedHours * 0.5)) {
+      setShowOverrideConfirm(true);
+      return;
+    }
+
     setIsRecomputing(true);
     setError('');
 
@@ -113,10 +154,14 @@ const ReviewPlan: React.FC = () => {
         ...currentPlanData,
         estimatedHours: editEstimatedHours,
         milestones: finalMilestones,
-        scheduleDetails: scheduleResult
+        scheduleDetails: scheduleResult,
+        overrideReason: overrideReason === 'Other' ? `Other: ${overrideOtherNote}` : overrideReason
       });
 
       setIsEditMode(false);
+      setHasUnsavedChanges(false);
+      setShowCloseConfirm(false);
+      setShowOverrideConfirm(false);
     } catch (err: any) {
       console.error('Error recomputing plan:', err);
       setError(err.message || 'An unexpected error occurred while modifying the plan.');
@@ -190,10 +235,17 @@ const ReviewPlan: React.FC = () => {
                   </span>
                   <h2 className="text-xl font-extrabold text-gray-900">Modify Plan</h2>
                 </div>
-                <button onClick={() => setIsEditMode(false)} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
+                <button onClick={handleCloseModal} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
                   <X size={20} />
                 </button>
               </div>
+
+              {hasUnsavedChanges && (
+                <div className="bg-amber-50 px-6 py-2 border-b border-amber-100 flex items-center gap-2">
+                  <AlertCircle size={14} className="text-amber-600" />
+                  <span className="text-xs font-bold text-amber-700 tracking-wide">Plan has unsaved changes.</span>
+                </div>
+              )}
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 
@@ -204,7 +256,10 @@ const ReviewPlan: React.FC = () => {
                     <input 
                       type="date" 
                       value={editDeadline}
-                      onChange={(e) => setEditDeadline(e.target.value)}
+                      onChange={(e) => {
+                        setEditDeadline(e.target.value);
+                        setHasUnsavedChanges(true);
+                      }}
                       className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
@@ -216,7 +271,7 @@ const ReviewPlan: React.FC = () => {
                         step="0.5"
                         min="0.5"
                         value={editEstimatedHours}
-                        onChange={(e) => setEditEstimatedHours(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleEstimatedHoursChange(parseFloat(e.target.value) || 0)}
                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                       />
                     </div>
@@ -227,7 +282,10 @@ const ReviewPlan: React.FC = () => {
                         step="0.5"
                         placeholder="e.g. 2"
                         value={editDailyHours}
-                        onChange={(e) => setEditDailyHours(e.target.value)}
+                        onChange={(e) => {
+                          setEditDailyHours(e.target.value);
+                          setHasUnsavedChanges(true);
+                        }}
                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                       />
                     </div>
@@ -293,11 +351,112 @@ const ReviewPlan: React.FC = () => {
               
               <div className="p-6 border-t border-gray-100 bg-white">
                 <button 
-                  onClick={handleUpdatePlan}
+                  onClick={() => handleUpdatePlan(false)}
                   disabled={isRecomputing}
                   className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-200"
                 >
-                  {isRecomputing ? <><Loader2 size={18} className="animate-spin" /> Regenerating...</> : 'Save & Regenerate Schedule'}
+                  {isRecomputing ? <><Loader2 size={18} className="animate-spin" /> Regenerating...</> : 'Save & Regenerate Plan'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCloseConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Unsaved Changes</h3>
+                <p className="text-gray-500 text-sm">You have unsaved planning changes. What would you like to do?</p>
+              </div>
+              <div className="space-y-3">
+                <button onClick={() => handleUpdatePlan()} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
+                  Save & Regenerate
+                </button>
+                <button onClick={() => { setShowCloseConfirm(false); setIsEditMode(false); }} className="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition-colors">
+                  Discard Changes
+                </button>
+                <button onClick={() => setShowCloseConfirm(false)} className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold rounded-xl transition-colors">
+                  Continue Editing
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showOverrideConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl relative my-8"
+            >
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Are you sure?</h3>
+              <p className="text-gray-500 font-medium mb-6">You've significantly reduced the estimated effort. What makes you confident you can finish within this time?</p>
+              
+              <div className="space-y-3 mb-6">
+                {[
+                  "I've completed similar tasks before.",
+                  "The task is smaller than originally described.",
+                  "I only need to complete part of the task.",
+                  "Most of the work is already done.",
+                  "Other"
+                ].map(reason => (
+                  <button
+                    key={reason}
+                    onClick={() => setOverrideReason(reason)}
+                    className={`w-full text-left px-5 py-3 rounded-xl border-2 font-bold transition-all ${
+                      overrideReason === reason 
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-800'
+                      : 'border-gray-100 bg-white text-gray-600 hover:border-indigo-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+
+              {overrideReason === 'Other' && (
+                <div className="mb-6">
+                  <textarea 
+                    className="w-full bg-gray-50 rounded-xl p-4 border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm font-medium"
+                    placeholder="Optional note..."
+                    rows={2}
+                    value={overrideOtherNote}
+                    onChange={(e) => setOverrideOtherNote(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <button 
+                  onClick={() => handleUpdatePlan(true)}
+                  disabled={!overrideReason}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-black rounded-2xl transition-colors"
+                >
+                  Regenerate using my estimate
+                </button>
+                <button 
+                  onClick={() => {
+                    handleEstimatedHoursChange(currentPlanData.estimatedHours);
+                    setShowOverrideConfirm(false);
+                    setHasUnsavedChanges(false);
+                  }} 
+                  className="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-colors"
+                >
+                  Keep Buddy AI estimate
                 </button>
               </div>
             </motion.div>
@@ -440,9 +599,12 @@ const ReviewPlan: React.FC = () => {
                     </span>
                   </div>
                   
-                  <h3 className="font-bold text-gray-900 text-lg mb-5 leading-tight group-hover:text-indigo-600 transition-colors">
-                    {session.sessionTitle}
+                  <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-indigo-600 transition-colors">
+                    {currentRawTask.title}
                   </h3>
+                  <p className="text-sm font-medium text-gray-500 mb-5 flex items-center gap-1.5">
+                    <span className="truncate">{session.sessionTitle}</span>
+                  </p>
                   
                   <div className="mt-auto pt-4 border-t border-gray-200/60">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">

@@ -399,15 +399,18 @@ const Dashboard: React.FC = () => {
                   </div>
                   
                   <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-indigo-600 transition-colors">
-                    {item.session.sessionTitle}
+                    {item.task.title}
                   </h3>
                   <p className="text-sm font-medium text-gray-500 mb-6 flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded bg-gray-100 flex items-center justify-center text-[10px] shrink-0 border border-gray-200">📁</span>
-                    <span className="truncate">{item.task.title}</span>
+                    <span className="w-4 h-4 rounded bg-gray-100 flex items-center justify-center text-[10px] shrink-0 border border-gray-200">⏱️</span>
+                    <span className="truncate">{item.session.sessionTitle}</span>
                   </p>
                   
                   <div className="mt-auto pt-5 border-t border-gray-100">
-                    <button className="w-full py-3.5 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group/btn shadow-md">
+                    <button 
+                      onClick={() => navigate(`/focus/${item.task.id}/${item.session.sessionId || item.task.analysis?.scheduleDetails?.executionSessions.indexOf(item.session).toString()}`)}
+                      className="w-full py-3.5 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group/btn shadow-md"
+                    >
                       <Play size={16} className="group-hover/btn:scale-110 transition-transform" />
                       Start Session
                     </button>

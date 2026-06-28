@@ -1,11 +1,30 @@
 import { Milestone } from './types';
+import crypto from 'crypto';
 
 export interface ExecutionSession {
+  sessionId: string;
   scheduledDate?: string;
   sessionTitle: string;
   durationMinutes: number;
   tasks: Milestone[];
   estimatedCompletion?: string;
+  isCompleted?: boolean;
+  completedAt?: string;
+  accumulatedTime?: number;
+  notes?: string;
+  status?: 'Pending' | 'In Progress' | 'Completed';
+  technique?: string;
+  cycleCount?: number;
+  timerPhase?: 'idle' | 'work' | 'break';
+  timeLeft?: number;
+  isRunning?: boolean;
+  startedAt?: string;
+  updatedAt?: string;
+  completionMethod?: 'early' | 'full';
+  earlyCompletionReason?: string;
+  reflectionNotes?: string;
+  attachment?: any;
+  referenceLink?: string;
 }
 
 /**
@@ -56,6 +75,7 @@ export const generateSessions = (
     if (currentDuration > 0 && currentDuration + task.remainingMins > 120) {
       if (currentDuration >= 30) {
         sessions.push({
+          sessionId: crypto.randomUUID(),
           sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
           durationMinutes: currentDuration,
           tasks: currentTasks.map(t => ({
@@ -81,6 +101,7 @@ export const generateSessions = (
       // This preserves chunks while avoiding slicing tasks midway.
       if (currentDuration >= 45) {
         sessions.push({
+          sessionId: crypto.randomUUID(),
           sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
           durationMinutes: currentDuration,
           tasks: currentTasks.map(t => ({
@@ -102,6 +123,7 @@ export const generateSessions = (
 
       // Close the filled session
       sessions.push({
+        sessionId: crypto.randomUUID(),
         sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
         durationMinutes: currentDuration,
         tasks: currentTasks.map(t => ({
@@ -116,8 +138,9 @@ export const generateSessions = (
 
   // Flush any remaining tasks into a final session
   if (currentDuration > 0) {
-    const finalDuration = Math.max(30, currentDuration); // enforce minimum 30
+    const finalDuration = Math.max(5, currentDuration); // enforce minimum 5 for micro tasks
     sessions.push({
+      sessionId: crypto.randomUUID(),
       sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
       durationMinutes: finalDuration,
       tasks: currentTasks.map(t => ({

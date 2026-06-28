@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { analyzeTask, createTask, getTasks, updateTaskStatus } from '../controllers/taskController';
+import { analyzeTask, createTask, getTasks, updateTaskStatus, completeSession, updateSessionProgress } from '../controllers/taskController';
 
 const router = Router();
 
@@ -14,5 +14,11 @@ router.post('/', createTask);
 
 // PATCH /:id/status -> update a task status
 router.patch('/:id/status', updateTaskStatus);
+
+// PATCH /:id/sessions/:sessionId/complete -> complete a specific session
+router.patch('/:id/sessions/:sessionId/complete', completeSession);
+
+// PATCH /:id/sessions/:sessionId/progress -> update session progress
+router.patch('/:id/sessions/:sessionId/progress', updateSessionProgress);
 
 export default router;

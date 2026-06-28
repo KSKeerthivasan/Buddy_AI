@@ -7,6 +7,7 @@ import ReviewPlan from './pages/ReviewPlan';
 import TaskDetail from './pages/TaskDetail';
 import Activity from './pages/Activity';
 import Calendar from './pages/Calendar.tsx';
+import FocusMode from './pages/FocusMode.tsx';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="activity" element={<Activity />} />
             <Route path="calendar" element={<Calendar />} />
+            <Route path="focus/:taskId/:sessionId" element={<FocusMode />} />
             <Route path="new-task" element={<NewTask />} />
             <Route path="review-plan" element={<ReviewPlan />} />
             <Route path="task/:taskId" element={<TaskDetail />} />

@@ -37,29 +37,72 @@ const Activity: React.FC = () => {
     fetchTasks();
   }, [user]);
 
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
-      // Search logic
-      const matchesSearch = task.title?.toLowerCase().includes(searchQuery.toLowerCase());
-      if (!matchesSearch) return false;
+  const activities = useMemo(() => {
+    const arr: any[] = [];
+    
+    tasks.forEach(task => {
+      // Search filter check first on task title
+      if (searchQuery && !task.title?.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return;
+      }
 
-      // Filter logic
-      switch (activeFilter) {
-        case 'Execution Tasks':
-          return task.taskType !== 'REMINDER';
-        case 'Quick Reminders':
-          return task.taskType === 'REMINDER';
-        case 'Completed':
-          return task.status === 'completed';
-        case 'Pending':
-          return task.status !== 'completed';
-        default:
-          return true; // 'All'
+      if (task.taskType === 'REMINDER') {
+        if (activeFilter === 'Execution Tasks') return;
+        if (activeFilter === 'Completed' && task.status !== 'completed') return;
+        if (activeFilter === 'Pending' && task.status === 'completed') return;
+        
+        arr.push({
+          id: task.id,
+          title: task.title,
+          type: 'Reminder',
+          status: task.status,
+          timestamp: task.completedAt || task.createdAt || task.deadline || new Date().toISOString()
+        });
+      } else {
+        if (activeFilter === 'Quick Reminders') return;
+        
+        // Push the overarching task
+        if (
+           (activeFilter === 'All' || activeFilter === 'Execution Tasks') || 
+           (activeFilter === 'Completed' && task.status === 'completed') ||
+           (activeFilter === 'Pending' && task.status !== 'completed')
+        ) {
+          arr.push({
+            id: task.id + (task.status === 'completed' ? '-complete' : '-create'),
+            title: task.title,
+            type: 'Task',
+            status: task.status,
+            timestamp: task.completedAt || task.createdAt || new Date().toISOString()
+          });
+        }
+        
+        // Extract completed individual sessions for the timeline!
+        // We only show completed sessions on the timeline to reduce clutter of "pending" sessions.
+        if (activeFilter !== 'Pending') {
+          const sessions = task.analysis?.scheduleDetails?.executionSessions || [];
+          sessions.forEach((s: any, idx: number) => {
+            if (s.isCompleted && s.completedAt) {
+              arr.push({
+                id: `${task.id}-session-${idx}`,
+                title: task.title,
+                parentTitle: s.sessionTitle,
+                type: 'Session',
+                status: 'completed',
+                timestamp: s.completedAt,
+                duration: s.durationMinutes,
+                completionMethod: s.completionMethod,
+                earlyCompletionReason: s.earlyCompletionReason
+              });
+            }
+          });
+        }
       }
     });
+
+    return arr;
   }, [tasks, searchQuery, activeFilter]);
 
-  const groupedTasks = useMemo(() => {
+  const groupedActivities = useMemo(() => {
     const groups: { [key: string]: any[] } = {
       'Today': [],
       'Yesterday': [],
@@ -78,34 +121,30 @@ const Activity: React.FC = () => {
     lastWeek.setDate(lastWeek.getDate() - 7);
     const lastWeekStr = new Date(lastWeek.getTime() - lastWeek.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
-    filteredTasks.forEach(task => {
-      // Use completedAt if available, otherwise fallback to createdAt or deadline
-      const refDateString = task.completedAt || task.createdAt || task.deadline || new Date().toISOString();
-      const refDateObj = new Date(refDateString);
+    activities.forEach(act => {
+      const refDateObj = new Date(act.timestamp);
       const refDateIso = new Date(refDateObj.getTime() - refDateObj.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
       if (refDateIso === todayStr) {
-        groups['Today'].push(task);
+        groups['Today'].push(act);
       } else if (refDateIso === yesterdayStr) {
-        groups['Yesterday'].push(task);
+        groups['Yesterday'].push(act);
       } else if (refDateIso > lastWeekStr) {
-        groups['Last Week'].push(task);
+        groups['Last Week'].push(act);
       } else {
-        groups['Older'].push(task);
+        groups['Older'].push(act);
       }
     });
 
     // Sort each group (newest first based on ref date)
     Object.keys(groups).forEach(key => {
       groups[key].sort((a, b) => {
-        const dateA = new Date(a.completedAt || a.createdAt || a.deadline).getTime();
-        const dateB = new Date(b.completedAt || b.createdAt || b.deadline).getTime();
-        return dateB - dateA;
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       });
     });
 
     return groups;
-  }, [filteredTasks]);
+  }, [activities]);
 
   const formatTime = (isoString?: string) => {
     if (!isoString) return '';
@@ -118,10 +157,10 @@ const Activity: React.FC = () => {
   };
 
   if (loading || tasksLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-400">Loading History...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-400 font-bold">Loading History...</div>;
   }
 
-  const hasAnyTasks = filteredTasks.length > 0;
+  const hasAnyActivities = activities.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans selection:bg-indigo-100">
@@ -179,7 +218,7 @@ const Activity: React.FC = () => {
         </div>
 
         {/* Activity Feed */}
-        {!hasAnyTasks ? (
+        {!hasAnyActivities ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
             <div className="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
               <Search size={24} />
@@ -190,8 +229,8 @@ const Activity: React.FC = () => {
         ) : (
           <div className="space-y-8">
             <AnimatePresence mode="popLayout">
-              {Object.entries(groupedTasks).map(([groupName, groupTasks]) => (
-                groupTasks.length > 0 && (
+              {Object.entries(groupedActivities).map(([groupName, groupActs]) => (
+                groupActs.length > 0 && (
                   <motion.div 
                     key={groupName}
                     layout
@@ -205,15 +244,31 @@ const Activity: React.FC = () => {
                     </h2>
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100/60 overflow-hidden">
                       <div className="divide-y divide-gray-50">
-                        {groupTasks.map((task) => {
-                          const isCompleted = task.status === 'completed';
-                          const isReminder = task.taskType === 'REMINDER';
+                        {groupActs.map((act) => {
+                          const isCompleted = act.status === 'completed';
+                          
+                          let badgeClass = 'bg-gray-100 text-gray-600';
+                          let badgeText = act.type;
+                          let isEarly = false;
+                          
+                          if (act.type === 'Reminder') badgeClass = 'bg-amber-50 text-amber-600';
+                          if (act.type === 'Task') badgeClass = 'bg-indigo-50 text-indigo-600';
+                          if (act.type === 'Session') {
+                             if (act.completionMethod === 'early' || act.earlyCompletionReason) {
+                               badgeClass = 'bg-teal-50 text-teal-600 border border-teal-200';
+                               badgeText = `Completed early`;
+                               isEarly = true;
+                             } else {
+                               badgeClass = 'bg-emerald-50 text-emerald-600';
+                               badgeText = `${act.duration}m Focus Session`;
+                             }
+                          }
 
                           return (
-                            <div key={task.id} className="p-4 sm:p-5 flex items-start gap-4 hover:bg-gray-50/50 transition-colors">
+                            <div key={act.id} className="p-4 sm:p-5 flex items-start gap-4 hover:bg-gray-50/50 transition-colors">
                               <div className="pt-0.5">
                                 {isCompleted ? (
-                                  <CheckCircle2 size={20} className="text-emerald-500" strokeWidth={2.5} />
+                                  <CheckCircle2 size={20} className={isEarly ? "text-teal-500" : "text-emerald-500"} strokeWidth={2.5} />
                                 ) : (
                                   <Clock size={20} className="text-amber-400" strokeWidth={2.5} />
                                 )}
@@ -221,22 +276,30 @@ const Activity: React.FC = () => {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h4 className={`text-base font-bold truncate ${isCompleted ? 'text-gray-600 line-through decoration-gray-300' : 'text-gray-900'}`}>
-                                    {task.title}
+                                    {act.title}
                                   </h4>
-                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex-shrink-0 ${isReminder ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                                    {isReminder ? 'Reminder' : 'Execution'}
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex-shrink-0 ${badgeClass}`}>
+                                    {badgeText}
                                   </span>
                                 </div>
-                                <div className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+                                
+                                {act.parentTitle && (
+                                  <p className="text-xs font-bold text-gray-400 mb-1 flex items-center gap-1">
+                                    <span className="w-3 h-3 flex items-center justify-center rounded bg-gray-100">⏱️</span>
+                                    {act.parentTitle}
+                                  </p>
+                                )}
+                                
+                                <div className="text-xs font-medium text-gray-400 flex items-center gap-1.5 mt-1">
                                   {isCompleted ? (
                                     <>
-                                      Completed at {formatTime(task.completedAt)} 
-                                      {groupName === 'Older' && ` on ${formatDate(task.completedAt)}`}
+                                      Completed at {formatTime(act.timestamp)} 
+                                      {groupName === 'Older' && ` on ${formatDate(act.timestamp)}`}
                                     </>
                                   ) : (
                                     <>
-                                      Created at {formatTime(task.createdAt)}
-                                      {groupName === 'Older' && ` on ${formatDate(task.createdAt)}`}
+                                      Started at {formatTime(act.timestamp)}
+                                      {groupName === 'Older' && ` on ${formatDate(act.timestamp)}`}
                                       <span className="text-gray-300">•</span> 
                                       <span className="text-amber-500">Pending</span>
                                     </>

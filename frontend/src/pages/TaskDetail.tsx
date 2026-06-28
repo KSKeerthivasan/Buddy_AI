@@ -179,7 +179,22 @@ const TaskDetail: React.FC = () => {
                           <div key={sIdx} className="bg-gray-50/50 p-3 rounded-xl border border-gray-100">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-semibold text-gray-800 text-sm">{s.sessionTitle}</span>
-                              <span className="text-xs font-bold text-gray-500">{s.durationMinutes}m</span>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold text-gray-500">{s.durationMinutes}m</span>
+                                {!s.isCompleted && s.sessionId && (
+                                  <button 
+                                    onClick={() => navigate(`/focus/${task.id}/${s.sessionId}`)}
+                                    className="px-3 py-1.5 bg-gray-900 hover:bg-indigo-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+                                  >
+                                    Start Session
+                                  </button>
+                                )}
+                                {s.isCompleted && (
+                                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold">
+                                    Completed
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <ul className="space-y-1.5">
                               {s.tasks?.map((m: any, mIdx: number) => (
