@@ -11,29 +11,18 @@ import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import TaskCard from '../components/common/TaskCard';
 
-// ----- Reminder Card Component -----
-const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void }> = ({ reminder, onComplete }) => {
-  const [isChecked, setIsChecked] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-
+const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void, isCompleted: boolean }> = ({ reminder, onComplete, isCompleted }) => {
   const handleCheck = () => {
-    if (isChecked) return;
-    setIsChecked(true);
-    
-    // Call the parent to update backend
+    if (isCompleted) return;
     onComplete(reminder.id);
-
-    // After 3 seconds, fade out of the active list
-    setTimeout(() => {
-      setIsFadingOut(true);
-    }, 3000);
   };
 
   return (
     <motion.div
+      layoutId={`reminder-${reminder.id}`}
       layout
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
-      animate={isFadingOut ? { opacity: 0, height: 0, margin: 0, overflow: 'hidden' } : { opacity: isChecked ? 0.6 : 1, scale: 1, y: 0 }}
+      animate={{ opacity: isCompleted ? 0.5 : 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.4 }}
       className={`relative w-48 sm:w-56 shrink-0 bg-[#fffcd9] p-5 rounded-md shadow-md border border-[#f0ebc0] flex flex-col group
@@ -44,11 +33,12 @@ const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void }
       <div className="flex items-start justify-between gap-2 mb-3">
         <button 
           onClick={handleCheck}
+          disabled={isCompleted}
           className={`shrink-0 w-6 h-6 rounded-md border-[2px] flex items-center justify-center transition-all duration-300 ${
-            isChecked ? 'bg-amber-500 border-amber-500 scale-110 rotate-6' : 'bg-white border-amber-200 hover:border-amber-400'
+            isCompleted ? 'bg-amber-500 border-amber-500' : 'bg-white border-amber-200 hover:border-amber-400'
           }`}
         >
-          {isChecked && (
+          {isCompleted && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.6 }}>
               <CheckCircle size={14} className="text-white" strokeWidth={3} />
             </motion.div>
@@ -60,10 +50,10 @@ const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void }
       </div>
 
       <div className="relative">
-        <h4 className={`font-bold text-amber-950 text-sm leading-snug transition-all duration-500 ${isChecked ? 'text-amber-900/50' : ''}`}>
+        <h4 className={`font-bold text-amber-950 text-sm leading-snug transition-all duration-500 ${isCompleted ? 'text-amber-900/50' : ''}`}>
           {reminder.title}
         </h4>
-        {isChecked && (
+        {isCompleted && (
           <motion.div 
             initial={{ width: 0 }} 
             animate={{ width: '100%' }} 
@@ -74,12 +64,12 @@ const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void }
       </div>
 
       {reminder.description && (
-        <p className={`mt-2 text-xs text-amber-800/70 font-medium transition-all duration-500 ${isChecked ? 'opacity-50' : ''}`}>
+        <p className={`mt-2 text-xs text-amber-800/70 font-medium transition-all duration-500 ${isCompleted ? 'opacity-50' : ''}`}>
           {reminder.description}
         </p>
       )}
 
-      {isChecked && (
+      {isCompleted && (
         <motion.div 
           initial={{ opacity: 0, y: 5 }} 
           animate={{ opacity: 1, y: 0 }}
@@ -153,16 +143,20 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCompleteReminder = async (id: string) => {
+    // Optimistic UI Update
+    setTasks(prevTasks => prevTasks.map(t => 
+      t.id === id ? { ...t, status: 'completed', completedAt: new Date().toISOString() } : t
+    ));
+    
     try {
       await fetch(`http://localhost:5000/api/tasks/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'completed' })
       });
-      // Optionally we could mutate local state here, but the 3-second UI fade handles the visual removal perfectly.
-      // Next time they fetch, it'll be marked completed.
     } catch (error) {
       console.error('Failed to update status', error);
+      // We could revert the optimistic update here if needed.
     }
   };
 
@@ -173,7 +167,8 @@ const Dashboard: React.FC = () => {
     tasksAtRisk, 
     totalBufferDays,
     aiTasks,
-    activeReminders
+    pendingReminders,
+    completedTodayReminders
   } = useMemo(() => {
     const localToday = new Date();
     const todayStr = new Date(localToday.getTime() - localToday.getTimezoneOffset() * 60000).toISOString().split('T')[0];
@@ -183,18 +178,22 @@ const Dashboard: React.FC = () => {
     let bufferSum = 0;
     const sessionsForToday: { session: any, task: any }[] = [];
     
+    let pendingReminders: any[] = [];
+    let completedTodayReminders: any[] = [];
     const aiList: any[] = [];
-    const reminderList: any[] = [];
 
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
     tasks.forEach(task => {
       if (task.taskType === 'REMINDER') {
-        // Daily Archive Logic: If it's completed and the deadline (or completion date) was before today, hide it.
-        // For simplicity, we just hide ANY completed reminder upon full refresh.
         if (task.status !== 'completed') {
-          reminderList.push(task);
+          pendingReminders.push(task);
+        } else if (task.completedAt) {
+          const completedDate = new Date(task.completedAt).toISOString().split('T')[0];
+          if (completedDate === todayStr) {
+            completedTodayReminders.push(task);
+          }
         }
       } else {
         aiList.push(task);
@@ -226,7 +225,8 @@ const Dashboard: React.FC = () => {
       tasksAtRisk: riskCount,
       totalBufferDays: bufferSum,
       aiTasks: aiList,
-      activeReminders: reminderList
+      pendingReminders,
+      completedTodayReminders
     };
   }, [tasks]);
 
@@ -340,21 +340,47 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Quick Reminders Widget */}
-        {activeReminders.length > 0 && (
-          <section className="pt-2">
-            <div className="flex items-center gap-2 mb-4">
-              <StickyNote size={18} className="text-amber-500" />
-              <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Quick Reminders</h2>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
-              <AnimatePresence>
-                {activeReminders.map(reminder => (
-                  <div key={reminder.id} className="snap-start">
-                    <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} />
-                  </div>
-                ))}
-              </AnimatePresence>
-            </div>
+        {(pendingReminders.length > 0 || completedTodayReminders.length > 0) && (
+          <section className="pt-2 flex flex-col gap-6">
+            
+            {/* Pending Reminders Row */}
+            {pendingReminders.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <StickyNote size={18} className="text-amber-500" />
+                  <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Quick Reminders</h2>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+                  <AnimatePresence>
+                    {pendingReminders.map(reminder => (
+                      <div key={reminder.id} className="snap-start shrink-0">
+                        <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} isCompleted={false} />
+                      </div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
+
+            {/* Completed Today Row */}
+            {completedTodayReminders.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle size={18} className="text-emerald-500" />
+                  <h2 className="text-sm font-bold tracking-widest text-emerald-600/70 uppercase">Completed Today</h2>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x opacity-80">
+                  <AnimatePresence>
+                    {completedTodayReminders.map(reminder => (
+                      <div key={reminder.id} className="snap-start shrink-0">
+                        <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} isCompleted={true} />
+                      </div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
+            
           </section>
         )}
 
