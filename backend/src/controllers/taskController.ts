@@ -149,7 +149,8 @@ export const completeSession = async (req: Request, res: Response): Promise<void
     }
 
     // Update the session
-    sessions[sessionIndex].isCompleted = true;
+    sessions[sessionIndex].isCompleted = true; // Legacy backward compatibility
+    sessions[sessionIndex].status = 'COMPLETED'; // New single source of truth
     sessions[sessionIndex].completedAt = new Date().toISOString();
     if (notes) sessions[sessionIndex].notes = notes;
     if (accumulatedTime !== undefined) sessions[sessionIndex].accumulatedTime = accumulatedTime;

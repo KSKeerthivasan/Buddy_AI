@@ -82,6 +82,7 @@ export const generateSessions = (
             ...t.original,
             title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
           })),
+          status: 'Pending'
         });
         currentDuration = 0;
         currentTasks = [];
@@ -108,6 +109,7 @@ export const generateSessions = (
             ...t.original,
             title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
           })),
+          status: 'Pending'
         });
         currentDuration = 0;
         currentTasks = [];
@@ -130,6 +132,7 @@ export const generateSessions = (
           ...t.original,
           title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
         })),
+        status: 'Pending'
       });
       currentDuration = 0;
       currentTasks = [];
@@ -147,6 +150,7 @@ export const generateSessions = (
         ...t.original,
         title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
       })),
+      status: 'Pending'
     });
   }
 

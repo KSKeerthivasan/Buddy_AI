@@ -211,8 +211,11 @@ const Dashboard: React.FC = () => {
 
           const sessions = schedule.executionSessions || [];
           sessions.forEach((session: any) => {
-            if (session.scheduledDate === todayStr) {
-              sessionsForToday.push({ session, task });
+            // On-the-fly legacy status migration for Dashboard rendering
+            const sessionStatus = session.status || (session.isCompleted ? 'COMPLETED' : 'PENDING');
+            
+            if (session.scheduledDate === todayStr && sessionStatus !== 'COMPLETED') {
+              sessionsForToday.push({ session: { ...session, status: sessionStatus }, task });
             }
           });
         }

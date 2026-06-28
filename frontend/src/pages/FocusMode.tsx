@@ -111,8 +111,10 @@ const FocusMode: React.FC = () => {
               setSessionDurationSeconds(requiredSeconds);
               setAccumulatedWorkTime(sess.accumulatedTime || 0);
 
+              const sessionStatus = sess.status || (sess.isCompleted ? 'COMPLETED' : 'PENDING');
+
               // Check if session is already in progress and has valid saved state
-              if (sess.status === 'In Progress' && sess.technique) {
+              if (sessionStatus === 'IN_PROGRESS' || (sess.status === 'In Progress' && sess.technique)) {
                 setSavedSessionData(sess);
                 setShowRestorePrompt(true);
               }
@@ -250,7 +252,7 @@ const FocusMode: React.FC = () => {
     setCycleCount(1);
     setIsRunning(true);
     setTimeout(() => {
-      saveProgressToBackend({ technique: t, phase: 'work', timeLeft: initialTime, cycleCount: 1, isRunning: true, status: 'In Progress' });
+      saveProgressToBackend({ technique: t, phase: 'work', timeLeft: initialTime, cycleCount: 1, isRunning: true, status: 'IN_PROGRESS' });
     }, 0);
   };
 
@@ -432,9 +434,39 @@ const FocusMode: React.FC = () => {
         </div>
 
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-indigo-900/5 border border-gray-100 flex flex-col relative overflow-hidden min-h-[400px]">
-            {phase === 'idle' ? (
-              <div className="flex flex-col h-full justify-center">
+          {(() => {
+            const sessionStatus = session.status || (session.isCompleted ? 'COMPLETED' : 'PENDING');
+            if (sessionStatus === 'COMPLETED') {
+              return (
+                <div className="bg-emerald-50 rounded-[2.5rem] p-8 border border-emerald-100 flex flex-col items-center justify-center text-center min-h-[400px] shadow-sm">
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle size={40} />
+                  </div>
+                  <h3 className="text-2xl font-black text-emerald-900 mb-2">Session Completed</h3>
+                  <p className="text-emerald-700/80 font-medium mb-8">Great job! You accumulated {Math.floor((session.accumulatedTime || accumulatedWorkTime) / 60)} minutes of focus time.</p>
+                  
+                  {session.completionMethod === 'early' && (
+                    <div className="bg-white p-4 rounded-2xl border border-emerald-100 w-full mb-4 shadow-sm text-left">
+                      <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-1">Finished Early</p>
+                      <p className="text-sm font-medium text-emerald-900">{session.earlyCompletionReason}</p>
+                    </div>
+                  )}
+
+                  <button 
+                    onClick={() => navigate('/dashboard')}
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl transition-colors shadow-lg shadow-emerald-200"
+                  >
+                    Return to Dashboard
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <>
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-indigo-900/5 border border-gray-100 flex flex-col relative overflow-hidden min-h-[400px]">
+                  {phase === 'idle' ? (
+                    <div className="flex flex-col h-full justify-center">
                 
                 {/* Dynamic Selection Logic */}
                 {(() => {
@@ -561,24 +593,27 @@ const FocusMode: React.FC = () => {
             )}
           </div>
 
-          <button 
-            onClick={handleFullComplete}
-            disabled={!canComplete || isCompleting || session.isCompleted}
-            className={`
-              w-full py-5 rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 transition-all shadow-xl
-              ${session.isCompleted 
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none' 
-                : !canComplete
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border border-gray-200'
-                  : isCompleting 
-                    ? 'bg-emerald-500 text-white animate-pulse'
-                    : 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-emerald-500/20 hover:-translate-y-1'
-              }
-            `}
-          >
-            <CheckCircle size={24} />
-            {isCompleting ? 'Completing...' : session.isCompleted ? 'Completed' : 'Mark Session Complete'}
-          </button>
+                <button 
+                  onClick={handleFullComplete}
+                  disabled={!canComplete || isCompleting || session.isCompleted}
+                  className={`
+                    w-full py-5 rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 transition-all shadow-xl
+                    ${session.isCompleted 
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none' 
+                      : !canComplete
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border border-gray-200'
+                        : isCompleting 
+                          ? 'bg-emerald-500 text-white animate-pulse'
+                          : 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-emerald-500/20 hover:-translate-y-1'
+                    }
+                  `}
+                >
+                  <CheckCircle size={24} />
+                  {isCompleting ? 'Completing...' : session.isCompleted ? 'Completed' : 'Mark Session Complete'}
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
 
