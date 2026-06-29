@@ -20,6 +20,8 @@ export interface SchedulerInput {
   milestones: Milestone[];
   dailyAvailableHours?: number;
   role?: string;
+  plannerStartDate?: string;
+  activeTasks?: any[]; // For time-aware capacity calculation
 }
 
 import { ExecutionSession } from './sessionGenerator';

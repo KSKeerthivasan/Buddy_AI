@@ -4,14 +4,14 @@ import { generateSessions } from './sessionGenerator';
 /**
  * Calculates the number of full days available from today until the deadline.
  */
-const calculateAvailableDays = (deadlineStr: string): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+const calculateAvailableDays = (deadlineStr: string, startDateStr?: string): number => {
+  const start = startDateStr ? new Date(startDateStr) : new Date();
+  start.setHours(0, 0, 0, 0);
   
   const deadline = new Date(deadlineStr);
   deadline.setHours(23, 59, 59, 999);
   
-  const diffTime = deadline.getTime() - today.getTime();
+  const diffTime = deadline.getTime() - start.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
   return diffDays > 0 ? diffDays : 0;
@@ -58,10 +58,10 @@ const formatLocalDate = (date: Date): string => {
 };
 
 /**
- * Orchestrates the scheduling process with advanced proportional spacing.
+ * Orchestrates the scheduling process with advanced proportional spacing and time-awareness.
  */
 export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
-  const availableDays = calculateAvailableDays(input.deadline);
+  const availableDays = calculateAvailableDays(input.deadline, input.plannerStartDate);
 
   if (availableDays <= 0) {
     return {
@@ -81,27 +81,76 @@ export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
   // 2. Determine daily capacity constraint
   const dailyCapacityMins = getDailyCapacityMinutes(input.role, input.dailyAvailableHours);
 
-  // 3. Setup Allocation Metrics
+  // 3. Pre-calculate existing workload from active tasks
+  const existingWorkload: Record<string, number> = {};
+  if (input.activeTasks) {
+    input.activeTasks.forEach(task => {
+      const activeSessions = task.analysis?.scheduleDetails?.executionSessions || [];
+      activeSessions.forEach((s: any) => {
+        if (s.scheduledDate) {
+          existingWorkload[s.scheduledDate] = (existingWorkload[s.scheduledDate] || 0) + (s.durationMinutes || 0);
+        }
+      });
+    });
+  }
+
+  // 4. Setup Allocation Metrics
   const bufferDays = Math.max(1, Math.ceil(availableDays * 0.25)); 
   const schedulableDays = availableDays - bufferDays;
 
   let currentDayIndex = 0;
-  let currentDayRemainingMins = dailyCapacityMins;
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const start = input.plannerStartDate ? new Date(input.plannerStartDate) : new Date();
+  start.setHours(0, 0, 0, 0);
 
-  // 4. Spread Sessions across the schedulable window
+  const todayStr = formatLocalDate(new Date());
+
+  // Helper to get capacity for a specific day index
+  const getCapacityForDay = (dayIndex: number): number => {
+    const date = addDays(start, dayIndex);
+    const dateStr = formatLocalDate(date);
+    
+    let baseCapacity = dailyCapacityMins;
+    
+    // Time-aware check for today
+    if (dateStr === todayStr) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      let remainingWorkingMins = 0;
+      const endHour = 22; // Working window ends at 22:00
+      
+      if (currentHour < 8) {
+        remainingWorkingMins = (endHour - 8) * 60;
+      } else if (currentHour < endHour) {
+        remainingWorkingMins = (endHour - currentHour) * 60 - currentMinute;
+      }
+      
+      baseCapacity = Math.min(dailyCapacityMins, Math.max(0, remainingWorkingMins));
+    }
+    
+    const existing = existingWorkload[dateStr] || 0;
+    return Math.max(0, baseCapacity - existing);
+  };
+
+  let currentDayRemainingMins = getCapacityForDay(currentDayIndex);
+
+  // 5. Spread Sessions across the schedulable window
   for (let i = 0; i < sessions.length; i++) {
     const session = sessions[i]!;
 
-    if (session.durationMinutes > currentDayRemainingMins && currentDayRemainingMins < dailyCapacityMins) {
+    // Find the next available day with enough capacity for this session
+    // Or if the session is larger than the daily capacity, we just put it on the day with max capacity available
+    while (currentDayRemainingMins < session.durationMinutes && currentDayRemainingMins < dailyCapacityMins && currentDayIndex < availableDays) {
       currentDayIndex++;
-      currentDayRemainingMins = dailyCapacityMins;
+      currentDayRemainingMins = getCapacityForDay(currentDayIndex);
     }
 
     // Assign date using safe local formatting
-    session.scheduledDate = formatLocalDate(addDays(today, currentDayIndex));
+    const assignedDate = formatLocalDate(addDays(start, currentDayIndex));
+    session.scheduledDate = assignedDate;
+    
+    // Update capacity tracking for this loop
     currentDayRemainingMins -= session.durationMinutes;
 
     const remainingSessions = sessions.length - 1 - i;
@@ -111,15 +160,15 @@ export const scheduleTask = (input: SchedulerInput): ScheduleResult => {
       
       if (remainingSchedulableDays >= remainingSessions * 2) {
         currentDayIndex += 2;
-        currentDayRemainingMins = dailyCapacityMins;
+        currentDayRemainingMins = getCapacityForDay(currentDayIndex);
       } else if (remainingSchedulableDays >= remainingSessions) {
         currentDayIndex += 1;
-        currentDayRemainingMins = dailyCapacityMins;
+        currentDayRemainingMins = getCapacityForDay(currentDayIndex);
       }
     }
   }
 
-  // 5. Calculate Final Metrics
+  // 6. Calculate Final Metrics
   const spanOfScheduledDays = currentDayIndex + 1;
   const actualBufferDays = availableDays - spanOfScheduledDays;
   

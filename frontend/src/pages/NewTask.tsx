@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle2, Loader2, AlertCircle, Sparkles, StickyNote } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -8,6 +8,7 @@ type TaskMode = 'AI' | 'REMINDER';
 
 const NewTask: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   
   const [taskMode, setTaskMode] = useState<TaskMode>('AI');
@@ -17,7 +18,7 @@ const NewTask: React.FC = () => {
   const [deadline, setDeadline] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(location.state?.error || null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

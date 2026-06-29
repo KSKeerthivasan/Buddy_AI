@@ -3,12 +3,15 @@ import { createTask } from '../repositories/taskRepository';
 import { estimateHours } from './estimationEngine';
 import { scheduleTask } from './scheduler/schedulerEngine';
 import { ScheduleResult } from './scheduler/types';
+import { analyzeConflicts, ConflictAnalysisResult } from './scheduler/conflictAnalyzer';
+import { getTasksByUser } from '../repositories/taskRepository';
 
 export interface RawTaskInput {
   title?: string;
   description?: string;
   deadline?: string;
   role?: string;
+  userId?: string;
 }
 
 export interface Milestone {
@@ -24,6 +27,7 @@ export interface TaskAnalysisResult {
   milestones: Milestone[];
   estimatedHours?: number;
   scheduleDetails?: ScheduleResult;
+  conflictDetails?: ConflictAnalysisResult;
 }
 
 export interface AnalyzeTaskResponse {
@@ -80,7 +84,12 @@ export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskRespo
   }
 
   // 3. Estimate hours using estimationEngine
-  const computedHours = estimateHours(classification.taskType, classification.complexity);
+  const computedHours = estimateHours(
+    classification.taskType, 
+    classification.complexity,
+    input.title,
+    input.description
+  );
 
   // 4. Generate milestones using the estimated hours
   const milestonesData = await generateMilestones({
@@ -106,37 +115,34 @@ export const analyzeTask = async (input: RawTaskInput): Promise<AnalyzeTaskRespo
   }
 
   // 5. Run schedulerEngine
+  let activeTasks: any[] = [];
+  if (input.userId) {
+    activeTasks = await getTasksByUser(input.userId);
+  }
+
   const schedulerResult = scheduleTask({
     taskId: 'temp-id', // Temporary ID since DB save happens later
     deadline: input.deadline!,
     estimatedHours: computedHours,
-    milestones: milestonesData.milestones
+    milestones: milestonesData.milestones,
+    activeTasks: activeTasks // Pass activeTasks to scheduler
   });
 
-  // 6. Merge everything into one response
+  // 6. Run Conflict Analyzer
+  const conflictResult = analyzeConflicts(schedulerResult, activeTasks, input.deadline!, input.role);
+
+  // 7. Merge everything into one response
   const analysisResult: TaskAnalysisResult = {
     ...classification,
     estimatedHours: computedHours,
     milestones: milestonesData.milestones,
-    scheduleDetails: schedulerResult
+    scheduleDetails: schedulerResult,
+    conflictDetails: conflictResult
   };
 
-  // 6. Build task object and save to DB
-  const taskData = {
-    title: input.title,
-    description: input.description || '',
-    deadline: input.deadline,
-    role: input.role || null,
-    analysis: analysisResult,
-    status: 'analyzed',
-    createdAt: new Date().toISOString()
-  };
-
-  const savedTask = await createTask(taskData);
-
-  // 7. Return the final object
+  // 8. Return the final stateless object
   return {
-    taskId: savedTask.id,
+    taskId: 'preview', // No longer saved to DB here
     analysis: analysisResult
   };
 };

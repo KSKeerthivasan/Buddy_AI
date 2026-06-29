@@ -13,9 +13,24 @@ const ReviewPlan: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // Convert location state to local state so we can mutate it after modifying the plan
-  const [currentPlanData, setCurrentPlanData] = useState<any>(location.state?.planData);
-  const [currentRawTask, setCurrentRawTask] = useState<any>(location.state?.rawTask);
+  // Convert location state to local state so we can mutate it
+  const [currentPlanData, setCurrentPlanData] = useState<any>(() => {
+    if (location.state?.planData) {
+      sessionStorage.setItem('buddy_preview_plan', JSON.stringify(location.state.planData));
+      return location.state.planData;
+    }
+    const cached = sessionStorage.getItem('buddy_preview_plan');
+    return cached ? JSON.parse(cached) : null;
+  });
+
+  const [currentRawTask, setCurrentRawTask] = useState<any>(() => {
+    if (location.state?.rawTask) {
+      sessionStorage.setItem('buddy_preview_raw', JSON.stringify(location.state.rawTask));
+      return location.state.rawTask;
+    }
+    const cached = sessionStorage.getItem('buddy_preview_raw');
+    return cached ? JSON.parse(cached) : null;
+  });
   
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -30,6 +45,7 @@ const ReviewPlan: React.FC = () => {
   const [editDeadline, setEditDeadline] = useState('');
   const [editEstimatedHours, setEditEstimatedHours] = useState(0);
   const [editDailyHours, setEditDailyHours] = useState('');
+  const [plannerStartDate, setPlannerStartDate] = useState('');
   const [editMilestones, setEditMilestones] = useState<{id: string, title: string, estimatedHours: number}[]>([]);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
   
@@ -40,7 +56,7 @@ const ReviewPlan: React.FC = () => {
 
   useEffect(() => {
     if (!currentPlanData) {
-      navigate('/new-task', { replace: true });
+      navigate('/new-task', { replace: true, state: { error: 'No active review plan found. Please generate a new plan.' } });
     }
   }, [currentPlanData, navigate]);
 
@@ -134,7 +150,8 @@ const ReviewPlan: React.FC = () => {
           estimatedHours: editEstimatedHours,
           milestones: finalMilestones,
           dailyAvailableHours: editDailyHours ? parseFloat(editDailyHours) : undefined,
-          role: currentRawTask.role
+          role: currentRawTask.role,
+          plannerStartDate: plannerStartDate || undefined
         }),
       });
 
@@ -142,21 +159,30 @@ const ReviewPlan: React.FC = () => {
         throw new Error('Failed to recompute the schedule.');
       }
 
-      const scheduleResult = await response.json();
+      const responseData = await response.json();
 
       // Update local state to reflect the new plan
-      setCurrentRawTask({
+      const newRawTask = {
         ...currentRawTask,
         deadline: editDeadline
-      });
+      };
       
-      setCurrentPlanData({
+      const newPlanData = {
         ...currentPlanData,
         estimatedHours: editEstimatedHours,
         milestones: finalMilestones,
-        scheduleDetails: scheduleResult,
-        overrideReason: overrideReason === 'Other' ? `Other: ${overrideOtherNote}` : overrideReason
-      });
+        scheduleDetails: responseData.scheduleDetails,
+        conflictDetails: responseData.conflictDetails,
+        overrideReason: overrideReason === 'Other' ? `Other: ${overrideOtherNote}` : overrideReason,
+        lastModified: new Date().toISOString()
+      };
+
+      setCurrentRawTask(newRawTask);
+      setCurrentPlanData(newPlanData);
+
+      // Persist to session storage
+      sessionStorage.setItem('buddy_preview_raw', JSON.stringify(newRawTask));
+      sessionStorage.setItem('buddy_preview_plan', JSON.stringify(newPlanData));
 
       setIsEditMode(false);
       setHasUnsavedChanges(false);
@@ -165,6 +191,64 @@ const ReviewPlan: React.FC = () => {
     } catch (err: any) {
       console.error('Error recomputing plan:', err);
       setError(err.message || 'An unexpected error occurred while modifying the plan.');
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
+
+  const handleApplyRecommendation = async (actionParams: any) => {
+    if (!actionParams) return;
+    
+    let newDailyHours = editDailyHours;
+    let newStartDate = plannerStartDate;
+    
+    if (actionParams.action === 'INCREASE_DAILY_HOURS') {
+      newDailyHours = actionParams.newValue.toString();
+      setEditDailyHours(newDailyHours);
+    } else if (actionParams.action === 'DELAY_TASK') {
+      newStartDate = actionParams.plannerStartDate;
+      setPlannerStartDate(newStartDate);
+    }
+
+    setIsRecomputing(true);
+    setError('');
+
+    const finalMilestones = editMilestones.map(m => ({
+      title: m.title,
+      estimatedHours: m.estimatedHours
+    }));
+
+    try {
+      const response = await fetch('http://localhost:5000/api/scheduler/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deadline: editDeadline,
+          estimatedHours: editEstimatedHours,
+          milestones: finalMilestones,
+          dailyAvailableHours: parseFloat(newDailyHours),
+          role: currentRawTask.role,
+          userId: user?.uid,
+          plannerStartDate: newStartDate || undefined
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to apply recommendation.');
+
+      const result = await response.json();
+      const newPlanData = {
+        ...currentPlanData,
+        estimatedHours: editEstimatedHours,
+        milestones: finalMilestones,
+        scheduleDetails: result.scheduleDetails,
+        conflictDetails: result.conflictDetails,
+        lastModified: new Date().toISOString()
+      };
+      
+      setCurrentPlanData(newPlanData);
+      sessionStorage.setItem('buddy_preview_plan', JSON.stringify(newPlanData));
+    } catch (err: any) {
+      setError(err.message || 'Failed to apply recommendation.');
     } finally {
       setIsRecomputing(false);
     }
@@ -197,6 +281,10 @@ const ReviewPlan: React.FC = () => {
         throw new Error('Failed to save the approved task.');
       }
 
+      // Clear session storage once accepted
+      sessionStorage.removeItem('buddy_preview_raw');
+      sessionStorage.removeItem('buddy_preview_plan');
+
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Error saving approved plan:', err);
@@ -204,6 +292,12 @@ const ReviewPlan: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDiscard = () => {
+    sessionStorage.removeItem('buddy_preview_raw');
+    sessionStorage.removeItem('buddy_preview_plan');
+    navigate('/new-task', { replace: true });
   };
 
   const { scheduleDetails } = currentPlanData;
@@ -528,6 +622,189 @@ const ReviewPlan: React.FC = () => {
             </div>
           </section>
 
+          {/* 2.5 Buddy AI Decision Analysis */}
+          {currentPlanData.conflictDetails && (
+            <section className="bg-white rounded-[2rem] p-8 shadow-sm border border-indigo-100 col-span-1 md:col-span-2">
+              <div className="flex items-center gap-2 mb-8">
+                <span className="bg-indigo-100 text-indigo-700 p-2 rounded-xl">
+                  <BrainCircuit size={20} strokeWidth={2.5} />
+                </span>
+                <h2 className="text-sm font-bold tracking-widest text-indigo-600 uppercase flex-1">Buddy AI Decision Analysis</h2>
+                {currentPlanData.confidence && (
+                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                    AI Confidence: {Math.round(currentPlanData.confidence * 100)}%
+                  </span>
+                )}
+              </div>
+
+              {/* Grid of 4 Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {/* 1. Overall Risk */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Overall Risk</p>
+                  <p className={`text-lg font-black uppercase tracking-widest ${
+                    currentPlanData.conflictDetails.overallRisk === 'CRITICAL' ? 'text-red-600' : 
+                    currentPlanData.conflictDetails.overallRisk === 'HIGH' ? 'text-orange-600' :
+                    currentPlanData.conflictDetails.overallRisk === 'MEDIUM' ? 'text-yellow-600' : 'text-emerald-600'
+                  }`}>
+                    {currentPlanData.conflictDetails.overallRisk}
+                  </p>
+                </div>
+
+                {/* 2. Workload Score */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Workload Score</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${
+                      currentPlanData.conflictDetails.workloadScore.score > 85 ? 'bg-red-500' :
+                      currentPlanData.conflictDetails.workloadScore.score > 70 ? 'bg-orange-500' :
+                      currentPlanData.conflictDetails.workloadScore.score > 40 ? 'bg-yellow-500' : 'bg-emerald-500'
+                    }`}></span>
+                    <p className="text-lg font-black text-gray-900">{currentPlanData.conflictDetails.workloadScore.score} <span className="text-sm text-gray-500 font-bold">/ 100</span></p>
+                  </div>
+                  <p className="text-xs font-medium text-gray-600 mt-1">{currentPlanData.conflictDetails.workloadScore.label}</p>
+                </div>
+
+                {/* 3. Daily Capacity */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Peak Workload</p>
+                  <p className="text-lg font-black text-gray-900 mb-2">
+                    {Math.round(currentPlanData.conflictDetails.dailyCapacity.plannedMinutes / 60 * 10) / 10} <span className="text-sm text-gray-500 font-bold">/ {Math.round(currentPlanData.conflictDetails.dailyCapacity.capacityMinutes / 60 * 10) / 10} hrs</span>
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`h-1.5 rounded-full ${currentPlanData.conflictDetails.dailyCapacity.plannedMinutes > currentPlanData.conflictDetails.dailyCapacity.capacityMinutes ? 'bg-red-500' : 'bg-indigo-500'}`} 
+                      style={{ width: `${Math.min(100, (currentPlanData.conflictDetails.dailyCapacity.plannedMinutes / currentPlanData.conflictDetails.dailyCapacity.capacityMinutes) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* 4. Buffer Protection */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Buffer Protection</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg font-black text-gray-900">
+                      {currentPlanData.conflictDetails.bufferProtection.status}
+                    </span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                      currentPlanData.conflictDetails.bufferProtection.status === 'Safe' ? 'bg-emerald-100 text-emerald-700' :
+                      currentPlanData.conflictDetails.bufferProtection.status === 'Limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {currentPlanData.conflictDetails.bufferProtection.days} Days
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deadline Pressure */}
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-8 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">Deadline Pressure</p>
+                  <p className="text-sm text-blue-900 font-medium">{currentPlanData.conflictDetails.deadlinePressure.explanation}</p>
+                </div>
+                <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                  currentPlanData.conflictDetails.deadlinePressure.level === 'HIGH' ? 'bg-red-100 text-red-700' :
+                  currentPlanData.conflictDetails.deadlinePressure.level === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'
+                }`}>
+                  {currentPlanData.conflictDetails.deadlinePressure.level}
+                </span>
+              </div>
+              
+              {/* Conflict Summary */}
+              <div className="mb-8">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Conflict Summary</h3>
+                {currentPlanData.conflictDetails.conflicts.length === 0 ? (
+                  <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl flex flex-col gap-3">
+                    <div className="flex items-center gap-2 text-emerald-700">
+                      <CheckCircle size={20} className="flex-shrink-0" />
+                      <p className="font-bold">No scheduling conflicts detected.</p>
+                    </div>
+                    <ul className="space-y-1.5 ml-7 text-sm text-emerald-800">
+                      <li className="flex items-center gap-2"><span>✓</span> Daily capacity verified</li>
+                      <li className="flex items-center gap-2"><span>✓</span> Deadline collisions checked</li>
+                      <li className="flex items-center gap-2"><span>✓</span> Priority overlap verified</li>
+                      <li className="flex items-center gap-2"><span>✓</span> Buffer preservation checked</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentPlanData.conflictDetails.conflicts.map((conflict: any, idx: number) => (
+                      <div key={idx} className="bg-red-50/50 p-4 rounded-xl border border-red-100 flex items-start gap-3">
+                        <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-red-900 text-sm">{conflict.type}</h3>
+                            <span className="text-[9px] font-black tracking-wider uppercase text-red-500 bg-red-100 px-1.5 py-0.5 rounded">{conflict.level}</span>
+                          </div>
+                          <p className="text-sm text-red-800">{conflict.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Recommendations Section */}
+              {currentPlanData.conflictDetails.primaryRecommendation && (
+                <div className="bg-white border-2 border-indigo-500 p-6 rounded-2xl shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                  
+                  <div className="flex items-center justify-between mb-4 pl-3">
+                    <h3 className="font-black text-indigo-900 text-lg flex items-center gap-2">
+                      <Zap size={20} className="text-indigo-600" />
+                      Buddy Recommendation
+                    </h3>
+                  </div>
+                  
+                  <div className="pl-3 mb-6">
+                    <p className="text-lg font-bold text-gray-900 mb-2">{currentPlanData.conflictDetails.primaryRecommendation.action}</p>
+                    <p className="text-sm text-gray-700">{currentPlanData.conflictDetails.primaryRecommendation.suggestion}</p>
+                  </div>
+                  
+                  {currentPlanData.conflictDetails.primaryRecommendation.action !== 'Keep Current Plan' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pl-3">
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expected Improvement</p>
+                        <p className="text-sm font-medium text-gray-900">{currentPlanData.conflictDetails.primaryRecommendation.workloadImprovement}</p>
+                        <p className="text-sm font-medium text-gray-900 mt-1">{currentPlanData.conflictDetails.primaryRecommendation.riskReduction}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 pl-3">
+                    {currentPlanData.conflictDetails.primaryRecommendation.action !== 'Keep Current Plan' ? (
+                      <>
+                        <button 
+                          onClick={() => handleApplyRecommendation(currentPlanData.conflictDetails.primaryRecommendation.actionParams)}
+                          disabled={isRecomputing}
+                          className="flex-1 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {isRecomputing ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                          Apply Recommendation
+                        </button>
+                        <button 
+                          onClick={() => {/* no-op, user ignores suggestion */}}
+                          disabled={isRecomputing}
+                          className="px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                        >
+                          Keep Current Plan
+                        </button>
+                      </>
+                    ) : (
+                      <button 
+                        disabled={true}
+                        className="w-full text-sm font-bold bg-gray-100 text-gray-400 px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle size={16} />
+                        Plan is Optimal
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
           {/* 3. Work Estimate */}
           <section className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100/60 flex flex-col">
             <div className="flex items-center gap-2 mb-8">
@@ -635,6 +912,12 @@ const ReviewPlan: React.FC = () => {
 
         {/* 5. Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4 pb-12">
+          <button 
+            onClick={handleDiscard}
+            className="w-full sm:w-auto px-6 py-4 text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-2xl font-bold transition-all duration-200"
+          >
+            Discard Plan
+          </button>
           <button 
             onClick={openEditMode}
             className="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-2xl font-bold transition-all duration-200 flex items-center justify-center gap-2"

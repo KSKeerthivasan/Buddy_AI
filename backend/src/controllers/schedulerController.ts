@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { scheduleTask } from '../executionCore/scheduler/schedulerEngine';
+import { analyzeConflicts } from '../executionCore/scheduler/conflictAnalyzer';
+import { getTasksByUser } from '../repositories/taskRepository';
 
 /**
  * TEMPORARY DEVELOPMENT ENDPOINT
@@ -7,7 +9,7 @@ import { scheduleTask } from '../executionCore/scheduler/schedulerEngine';
  */
 export const testScheduler = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { deadline, estimatedHours, milestones } = req.body;
+    const { deadline, estimatedHours, milestones, dailyAvailableHours, role, userId, plannerStartDate } = req.body;
 
     if (!deadline || estimatedHours === undefined || !Array.isArray(milestones)) {
       res.status(400).json({ 
@@ -17,15 +19,29 @@ export const testScheduler = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    let activeTasks: any[] = [];
+    if (userId) {
+      activeTasks = await getTasksByUser(userId);
+    }
+
     // Call the scheduler engine synchronously
     const result = scheduleTask({
       taskId: 'test-task-id',
       deadline,
       estimatedHours,
-      milestones
+      milestones,
+      dailyAvailableHours,
+      role,
+      plannerStartDate,
+      activeTasks
     });
 
-    res.json(result);
+    const conflictResult = analyzeConflicts(result, activeTasks, deadline, role, dailyAvailableHours);
+
+    res.json({
+      scheduleDetails: result,
+      conflictDetails: conflictResult
+    });
   } catch (error: any) {
     console.error('Error in testScheduler:', error);
     res.status(500).json({ 

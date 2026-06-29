@@ -12,7 +12,7 @@ export interface ExecutionSession {
   completedAt?: string;
   accumulatedTime?: number;
   notes?: string;
-  status?: 'Pending' | 'In Progress' | 'Completed';
+  status?: 'Pending' | 'In Progress' | 'Completed' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
   technique?: string;
   cycleCount?: number;
   timerPhase?: 'idle' | 'work' | 'break';
@@ -25,6 +25,8 @@ export interface ExecutionSession {
   reflectionNotes?: string;
   attachment?: any;
   referenceLink?: string;
+  plannedStartTime?: string | null;
+  plannedEndTime?: string | null;
 }
 
 /**
@@ -66,6 +68,17 @@ export const generateSessions = (
   let currentDuration = 0;
   let currentTasks: any[] = [];
 
+  // Determine optimal chunk size based on total estimated time
+  const totalMinutes = estimatedHours * 60;
+  let optimalChunkSize = 45;
+  if (totalMinutes <= 60) {
+    optimalChunkSize = 60; // Try to fit in one session
+  } else if (totalMinutes <= 120) {
+    optimalChunkSize = totalMinutes / 2; // Split into two equal sessions
+  } else {
+    optimalChunkSize = 60; // Standard 60 min focus blocks
+  }
+
   while (queue.length > 0) {
     const task = queue[0]!;
 
@@ -82,7 +95,9 @@ export const generateSessions = (
             ...t.original,
             title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
           })),
-          status: 'Pending'
+          status: 'Pending',
+          plannedStartTime: null,
+          plannedEndTime: null
         });
         currentDuration = 0;
         currentTasks = [];
@@ -98,9 +113,9 @@ export const generateSessions = (
       currentDuration += task.remainingMins;
       queue.shift();
 
-      // If we've hit the optimal chunk size (45-90m), close the session.
+      // If we've hit the optimal chunk size, close the session.
       // This preserves chunks while avoiding slicing tasks midway.
-      if (currentDuration >= 45) {
+      if (currentDuration >= optimalChunkSize) {
         sessions.push({
           sessionId: crypto.randomUUID(),
           sessionTitle: determineNeutralSessionTitle(currentTasks.map(t => t.original)),
@@ -109,7 +124,9 @@ export const generateSessions = (
             ...t.original,
             title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
           })),
-          status: 'Pending'
+          status: 'Pending',
+          plannedStartTime: null,
+          plannedEndTime: null
         });
         currentDuration = 0;
         currentTasks = [];
@@ -132,7 +149,9 @@ export const generateSessions = (
           ...t.original,
           title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
         })),
-        status: 'Pending'
+        status: 'Pending',
+        plannedStartTime: null,
+        plannedEndTime: null
       });
       currentDuration = 0;
       currentTasks = [];
@@ -150,7 +169,9 @@ export const generateSessions = (
         ...t.original,
         title: t.isContinuation ? `${t.original.title} (Continuation)` : t.original.title
       })),
-      status: 'Pending'
+      status: 'Pending',
+      plannedStartTime: null,
+      plannedEndTime: null
     });
   }
 
