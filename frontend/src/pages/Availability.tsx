@@ -6,12 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export type ActivityCategory = 'Education' | 'Work' | 'Exercise' | 'Personal' | 'Travel' | 'Meal' | 'Other';
 
+export type SchedulingType = 'FIXED' | 'FLEXIBLE' | 'FOCUS_BLOCK';
+
 export interface ScheduleBlock {
   id?: string;
   start: string; // HH:mm
   end: string;   // HH:mm
   activity: string;
   category: ActivityCategory;
+  schedulingType?: SchedulingType;
   note?: string;
   colorOverride?: string;
   isPinned?: boolean;
@@ -35,6 +38,18 @@ export const resolveBlockColor = (activity: string, category: ActivityCategory, 
   if (colorOverride) return colorOverride;
   if (profileStyles && profileStyles[activity]?.color) return profileStyles[activity].color;
   return CATEGORY_COLORS[category];
+};
+
+export const getSchedulingStyle = (type?: SchedulingType) => {
+  if (type === 'FLEXIBLE') return 'border-dashed border-opacity-70';
+  if (type === 'FOCUS_BLOCK') return 'ring-2 ring-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] border-solid';
+  return 'border-solid';
+};
+
+export const getSchedulingName = (type?: SchedulingType) => {
+  if (type === 'FLEXIBLE') return 'Flexible Commitment';
+  if (type === 'FOCUS_BLOCK') return 'Focus Block';
+  return 'Fixed Commitment';
 };
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -98,6 +113,7 @@ type CellData = {
   id: string;
   activity: string;
   category: ActivityCategory;
+  schedulingType?: SchedulingType;
   note?: string;
   colorOverride?: string;
   isPinned?: boolean;
@@ -148,6 +164,7 @@ const Availability: React.FC = () => {
   const [modalEnd, setModalEnd] = useState<number | null>(null);
   const [modalActivity, setModalActivity] = useState('');
   const [modalCategory, setModalCategory] = useState<ActivityCategory>('Other');
+  const [modalSchedulingType, setModalSchedulingType] = useState<SchedulingType>('FIXED');
   const [modalNote, setModalNote] = useState('');
 
   const [confirmDelete, setConfirmDelete] = useState<{ dayIdx: number, startHour: number, endHour: number, activity: string } | null>(null);
@@ -218,6 +235,7 @@ const Availability: React.FC = () => {
                   id: cellId,
                   activity: block.activity, 
                   category: block.category,
+                  schedulingType: block.schedulingType || 'FIXED',
                   note: block.note,
                   colorOverride: block.colorOverride,
                   isPinned: block.isPinned
@@ -289,6 +307,7 @@ const Availability: React.FC = () => {
       setModalEnd(hour);
       setModalActivity('');
       setModalCategory('Other');
+      setModalSchedulingType('FIXED');
       setModalNote('');
       setModalOpen(true);
     } else {
@@ -299,6 +318,7 @@ const Availability: React.FC = () => {
       setModalEnd(e);
       setModalActivity(cell.activity);
       setModalCategory(cell.category);
+      setModalSchedulingType(cell.schedulingType || 'FIXED');
       setModalNote(cell.note || '');
       setModalOpen(true);
     }
@@ -473,6 +493,7 @@ const Availability: React.FC = () => {
     setModalEnd(contextMenu.endHour);
     setModalActivity(contextMenu.block.activity);
     setModalCategory(contextMenu.block.category);
+    setModalSchedulingType(contextMenu.block.schedulingType || 'FIXED');
     setModalNote(contextMenu.block.note || '');
     setModalOpen(true);
   };
@@ -580,6 +601,7 @@ const Availability: React.FC = () => {
         id: existingId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)), 
         activity: modalActivity.trim(), 
         category,
+        schedulingType: modalSchedulingType,
         note: modalNote.trim() || undefined,
         colorOverride: existingColor,
         isPinned: existingPinned
@@ -628,6 +650,7 @@ const Availability: React.FC = () => {
               end: `${(h + 1).toString().padStart(2, '0')}:00`,
               activity: cell.activity,
               category: cell.category,
+              schedulingType: cell.schedulingType || 'FIXED',
               note: cell.note,
               colorOverride: cell.colorOverride,
               isPinned: cell.isPinned
@@ -899,13 +922,14 @@ const Availability: React.FC = () => {
                               <div 
                                 className={`absolute inset-x-0 mx-1 border-l-4 z-10 flex flex-col justify-start rounded-md shadow-sm overflow-hidden
                                   ${resolveBlockColor(cellData.activity, cellData.category, cellData.colorOverride, profile.activityStyles)}
+                                  ${getSchedulingStyle(cellData.schedulingType)}
                                 `}
                                 style={{ 
                                   top: 0, 
                                   height: `${(getBlockSpan(dayIdx, hour, cellData.id).e - getBlockSpan(dayIdx, hour, cellData.id).s + 1) * 64}px`,
                                   cursor: 'grab' 
                                 }}
-                                title={`${cellData.activity}\n${cellData.category}\nDouble-click to edit • Right-click for more options`}
+                                title={`${cellData.activity}\n${cellData.category}\n${getSchedulingName(cellData.schedulingType)}\nDouble-click to edit • Right-click for more options`}
                                 onMouseDown={(e) => {
                                   setInteraction(prev => ({...prev, activityName: cellData.id})); 
                                   handleMouseDown(e, dayIdx, hour, 'moving');
@@ -947,6 +971,7 @@ const Availability: React.FC = () => {
                               <div 
                                 className={`absolute inset-x-0 mx-1 border-l-4 z-20 flex flex-col justify-start opacity-70 shadow-lg pointer-events-none rounded-md overflow-hidden
                                   ${interaction.activityName ? resolveBlockColor(grid[interaction.dayIdx!][interaction.startHour!]!.activity, grid[interaction.dayIdx!][interaction.startHour!]!.category, grid[interaction.dayIdx!][interaction.startHour!]!.colorOverride, profile.activityStyles) : 'bg-indigo-100 border-indigo-300 text-indigo-800'}
+                                  ${interaction.activityName ? getSchedulingStyle(grid[interaction.dayIdx!][interaction.startHour!]!.schedulingType) : 'border-solid'}
                                 `}
                                 style={{ top: 0, height: `${(preview.previewEnd - preview.previewStart + 1) * 64}px` }}
                               >
@@ -966,6 +991,7 @@ const Availability: React.FC = () => {
                               <div 
                                 className={`absolute inset-x-0 mx-1 border-l-4 z-20 flex flex-col justify-start shadow-xl pointer-events-none rounded-md overflow-hidden
                                   ${validPlacement ? resolveBlockColor(placementMode.block.activity, placementMode.block.category, placementMode.block.colorOverride, profile.activityStyles) : 'bg-red-100 border-red-400 text-red-900 opacity-80'}
+                                  ${getSchedulingStyle(placementMode.block.schedulingType)}
                                 `}
                                 style={{ top: 0, height: `${placementMode.duration * 64}px` }}
                               >
@@ -1281,6 +1307,60 @@ const Availability: React.FC = () => {
                 if (e.key === 'Enter') saveModalActivity();
               }}
             />
+
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Scheduling Type</label>
+            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 hover:border-indigo-200 bg-gray-50/50 hover:bg-indigo-50/30 cursor-pointer transition-colors group">
+                <div className="mt-0.5">
+                  <input 
+                    type="radio" 
+                    name="modalSchedulingType" 
+                    value="FIXED"
+                    checked={modalSchedulingType === 'FIXED'}
+                    onChange={() => setModalSchedulingType('FIXED')}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600" 
+                  />
+                </div>
+                <div>
+                  <span className="block font-bold text-gray-900 text-sm group-hover:text-indigo-900">Fixed Commitment</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">Buddy AI will never schedule tasks here. Cannot be moved automatically.</span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 hover:border-indigo-200 bg-gray-50/50 hover:bg-indigo-50/30 cursor-pointer transition-colors group">
+                <div className="mt-0.5">
+                  <input 
+                    type="radio" 
+                    name="modalSchedulingType" 
+                    value="FLEXIBLE"
+                    checked={modalSchedulingType === 'FLEXIBLE'}
+                    onChange={() => setModalSchedulingType('FLEXIBLE')}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600" 
+                  />
+                </div>
+                <div>
+                  <span className="block font-bold text-gray-900 text-sm group-hover:text-indigo-900">Flexible Commitment</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">Reserved by default, but Buddy AI may recommend moving it later.</span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 hover:border-indigo-200 bg-gray-50/50 hover:bg-indigo-50/30 cursor-pointer transition-colors group">
+                <div className="mt-0.5">
+                  <input 
+                    type="radio" 
+                    name="modalSchedulingType" 
+                    value="FOCUS_BLOCK"
+                    checked={modalSchedulingType === 'FOCUS_BLOCK'}
+                    onChange={() => setModalSchedulingType('FOCUS_BLOCK')}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600" 
+                  />
+                </div>
+                <div>
+                  <span className="block font-bold text-gray-900 text-sm group-hover:text-indigo-900">Focus Block</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">Intentional planning window. Buddy AI will schedule tasks inside these blocks.</span>
+                </div>
+              </label>
+            </div>
 
             <label className="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
             <input
