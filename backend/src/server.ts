@@ -7,6 +7,12 @@ import schedulerRoutes from './routes/schedulerRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import profileRoutes from './routes/profileRoutes';
 import availabilityRoutes from './routes/availabilityRoutes';
+import commitmentRoutes from './routes/commitmentRoutes';
+import routineRoutes from './routes/routineRoutes';
+import capacityRoutes from './routes/capacityRoutes';
+import healthRoutes from './routes/healthRoutes';
+import observationRoutes from './routes/observationRoutes';
+import reflectionRoutes from './routes/reflectionRoutes';
 import path from 'path';
 
 // Load environment variables
@@ -28,6 +34,12 @@ app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/availability', availabilityRoutes);
+app.use('/api/commitments', commitmentRoutes);
+app.use('/api/routine', routineRoutes);
+app.use('/api/capacity', capacityRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/observations', observationRoutes);
+app.use('/api/reflections', reflectionRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

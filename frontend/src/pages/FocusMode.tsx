@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Play, Pause, CheckCircle, Clock, X, StopCircle, RefreshCw, UploadCloud, Link as LinkIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReflectionModal from '../components/ReflectionModal';
 
 type Technique = 'Pomodoro' | 'Deep Work' | '52/17' | 'Quick Focus' | 'Continuous Focus';
 type TimerPhase = 'idle' | 'work' | 'break';
@@ -61,6 +62,11 @@ const FocusMode: React.FC = () => {
   const [referenceLink, setReferenceLink] = useState('');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // General Reflection State
+  const [showReflectionModal, setShowReflectionModal] = useState(false);
+  const [reflectionMandatory, setReflectionMandatory] = useState(false);
+  const [reflectionSubmitting, setReflectionSubmitting] = useState(false);
 
   // Persistence prompt
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
@@ -143,13 +149,10 @@ const FocusMode: React.FC = () => {
         body: JSON.stringify({
           notes: currentState.notes,
           accumulatedTime: currentState.accumulatedWorkTime,
-          status: currentState.status,
           technique: currentState.technique,
           cycleCount: currentState.cycleCount,
           timerPhase: currentState.phase,
-          timeLeft: currentState.timeLeft,
-          isRunning: currentState.isRunning,
-          startedAt: new Date().toISOString()
+          timeLeft: currentState.timeLeft
         })
       });
     } catch (error) {
@@ -168,7 +171,7 @@ const FocusMode: React.FC = () => {
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (phase !== 'idle') {
-        saveProgressToBackend({ isRunning: false });
+        saveProgressToBackend();
         e.preventDefault();
         e.returnValue = '';
       }
@@ -210,7 +213,7 @@ const FocusMode: React.FC = () => {
       setCycleCount(c => c + 1);
       setTimeLeft(config.work);
     }
-    setTimeout(() => saveProgressToBackend({ isRunning: false }), 0);
+    setTimeout(() => saveProgressToBackend(), 0);
   };
 
   const handleRestore = (choice: 'continue' | 'restart') => {
@@ -239,7 +242,7 @@ const FocusMode: React.FC = () => {
     }
   };
 
-  const startSessionWithTechnique = (t: Technique) => {
+  const startSessionWithTechnique = async (t: Technique) => {
     setTechnique(t);
     setPhase('work');
     
@@ -251,16 +254,33 @@ const FocusMode: React.FC = () => {
     setTimeLeft(initialTime);
     setCycleCount(1);
     setIsRunning(true);
-    setTimeout(() => {
-      saveProgressToBackend({ technique: t, phase: 'work', timeLeft: initialTime, cycleCount: 1, isRunning: true, status: 'IN_PROGRESS' });
-    }, 0);
+    
+    try {
+      await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      saveProgressToBackend({ technique: t, phase: 'work', timeLeft: initialTime, cycleCount: 1, status: 'IN_PROGRESS' });
+    } catch (e) {
+      console.error('Failed to start session lifecycle', e);
+    }
   };
 
-  const toggleTimer = () => {
+  const toggleTimer = async () => {
     if (phase === 'idle') return;
     const nextRunningState = !isRunning;
     setIsRunning(nextRunningState);
-    saveProgressToBackend({ isRunning: nextRunningState });
+    
+    const endpoint = nextRunningState ? 'resume' : 'pause';
+    try {
+      await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      saveProgressToBackend();
+    } catch (e) {
+      console.error(`Failed to ${endpoint} session lifecycle`, e);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -279,9 +299,16 @@ const FocusMode: React.FC = () => {
   const performCompletion = async (method: 'full' | 'early', additionalData: any = {}) => {
     if (!taskId || (!session?.sessionId && !sessionId)) return;
     setIsCompleting(true);
+    
+    if (isRunning) {
+      try {
+        await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/pause`, { method: 'POST' });
+      } catch (e) {}
+    }
+
     try {
       await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/complete`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           notes, 
@@ -290,7 +317,10 @@ const FocusMode: React.FC = () => {
           ...additionalData
         })
       });
-      navigate('/dashboard');
+      
+      setIsCompleting(false);
+      setReflectionMandatory(false);
+      setShowReflectionModal(true);
     } catch (error) {
       console.error('Failed to complete session:', error);
       setIsCompleting(false);
@@ -337,8 +367,50 @@ const FocusMode: React.FC = () => {
 
   const handleSaveProgress = async () => {
     setIsSavingProgress(true);
-    await saveProgressToBackend({ isRunning: false });
+    if (isRunning) {
+      try {
+        await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/pause`, { method: 'POST' });
+      } catch (e) {}
+    }
+    await saveProgressToBackend();
     navigate('/dashboard');
+  };
+
+  const handleCancelSession = async () => {
+    if (!taskId || (!session?.sessionId && !sessionId)) return;
+    try {
+      await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/cancel`, {
+        method: 'POST'
+      });
+      setReflectionMandatory(true);
+      setShowReflectionModal(true);
+      setShowFinishEarly(false);
+    } catch (e) {
+      console.error('Failed to cancel session', e);
+    }
+  };
+
+  const handleReflectionSubmit = async (data: any) => {
+    if (!user) return;
+    setReflectionSubmitting(true);
+    try {
+      await fetch(`http://localhost:5000/api/reflections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          taskId,
+          sessionId: session?.sessionId || sessionId,
+          ...data
+        })
+      });
+    } catch (e) {
+      console.error('Reflection submission failed', e);
+    } finally {
+      setReflectionSubmitting(false);
+      setShowReflectionModal(false);
+      navigate('/dashboard');
+    }
   };
 
   if (loading) {
@@ -695,6 +767,17 @@ const FocusMode: React.FC = () => {
                       </span>
                       <Pause size={20} />
                     </button>
+
+                    <button 
+                      onClick={handleCancelSession}
+                      className="w-full py-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-2xl transition-colors flex items-center justify-between px-6"
+                    >
+                      <span className="text-left">
+                        <span className="block text-rose-900">Cancel Session</span>
+                        <span className="text-xs font-medium opacity-80">This block didn't work out.</span>
+                      </span>
+                      <X size={20} />
+                    </button>
                   </div>
                 </>
               ) : (
@@ -774,6 +857,16 @@ const FocusMode: React.FC = () => {
         )}
       </AnimatePresence>
 
+      <ReflectionModal
+        isOpen={showReflectionModal}
+        onClose={() => {
+          setShowReflectionModal(false);
+          navigate('/dashboard');
+        }}
+        onSubmit={handleReflectionSubmit}
+        isMandatory={reflectionMandatory}
+        isSubmitting={reflectionSubmitting}
+      />
     </div>
   );
 };

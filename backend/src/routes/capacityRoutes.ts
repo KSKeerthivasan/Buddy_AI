@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAvailabilityForDate, getAvailabilityForWeek } from '../executionCore/availability/availabilityEngine';
+import { getCapacityForDate, getCapacityForWeek } from '../executionCore/capacity/capacityEngine';
 
 const router = express.Router();
 
@@ -11,10 +11,10 @@ router.get('/:userId/:date', async (req, res) => {
   }
 
   try {
-    const result = await getAvailabilityForDate(userId, date);
+    const result = await getCapacityForDate(userId, date);
     res.json(result);
   } catch (error: any) {
-    console.error(`[AvailabilityEngine API] Error calculating availability:`, error);
+    console.error(`[CapacityEngine API] Error calculating capacity:`, error);
     res.status(500).json({ error: 'Unexpected server error', details: error.message });
   }
 });
@@ -27,10 +27,10 @@ router.get('/:userId/week/:startDate', async (req, res) => {
   }
 
   try {
-    const results = await getAvailabilityForWeek(userId, startDate);
+    const results = await getCapacityForWeek(userId, startDate);
     res.json(results);
   } catch (error: any) {
-    console.error(`[AvailabilityEngine API] Error calculating availability:`, error);
+    console.error(`[CapacityEngine API] Error calculating capacity:`, error);
     res.status(500).json({ error: 'Unexpected server error', details: error.message });
   }
 });

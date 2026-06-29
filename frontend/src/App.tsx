@@ -9,6 +9,9 @@ import Activity from './pages/Activity';
 import Calendar from './pages/Calendar.tsx';
 import FocusMode from './pages/FocusMode.tsx';
 import Availability from './pages/Availability';
+import Onboarding from './pages/Onboarding';
+import ProfileSettings from './pages/ProfileSettings';
+import Commitments from './pages/Commitments';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -19,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="onboarding" element={<Onboarding />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="activity" element={<Activity />} />
             <Route path="calendar" element={<Calendar />} />
@@ -27,6 +31,8 @@ function App() {
             <Route path="review-plan" element={<ReviewPlan />} />
             <Route path="task/:taskId" element={<TaskDetail />} />
             <Route path="settings/availability" element={<Availability />} />
+            <Route path="settings/profile" element={<ProfileSettings />} />
+            <Route path="commitments" element={<Commitments />} />
           </Route>
         </Routes>
       </Router>

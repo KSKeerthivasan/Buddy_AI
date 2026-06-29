@@ -36,3 +36,18 @@ export const getAllTasks = async () => {
   }
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+
+export const getActiveTasksWithSessions = async (userId: string) => {
+  const snapshot = await db.collection(TASKS_COLLECTION)
+    .where('userId', '==', userId)
+    .get();
+  
+  if (snapshot.empty) {
+    return [];
+  }
+  
+  const excluded = ['COMPLETED', 'CANCELLED', 'ARCHIVED'];
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter((task: any) => !excluded.includes(task.status));
+};

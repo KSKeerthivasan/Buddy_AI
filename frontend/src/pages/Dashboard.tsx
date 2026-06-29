@@ -269,6 +269,13 @@ const Dashboard: React.FC = () => {
           
           <div className="flex items-center gap-4">
             <button
+              onClick={() => navigate('/commitments')}
+              className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
+            >
+              <CalendarDays size={18} strokeWidth={2.5} />
+              Commitments
+            </button>
+            <button
               onClick={() => navigate('/calendar')}
               className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
             >
@@ -290,7 +297,7 @@ const Dashboard: React.FC = () => {
               New Goal
             </button>
             <button
-              onClick={() => navigate('/settings/availability')}
+              onClick={() => navigate('/settings/profile')}
               className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors border border-gray-200 shadow-sm"
               title="Settings"
             >
