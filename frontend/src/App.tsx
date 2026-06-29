@@ -8,6 +8,7 @@ import TaskDetail from './pages/TaskDetail';
 import Activity from './pages/Activity';
 import Calendar from './pages/Calendar.tsx';
 import FocusMode from './pages/FocusMode.tsx';
+import Availability from './pages/Availability';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="new-task" element={<NewTask />} />
             <Route path="review-plan" element={<ReviewPlan />} />
             <Route path="task/:taskId" element={<TaskDetail />} />
+            <Route path="settings/availability" element={<Availability />} />
           </Route>
         </Routes>
       </Router>

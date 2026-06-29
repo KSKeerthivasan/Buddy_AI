@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut, User as UserIcon, CheckSquare, Target, 
   Clock, ShieldAlert, CalendarDays, Play, 
-  Activity, ArrowRight, StickyNote, CheckCircle
+  Activity, ArrowRight, StickyNote, CheckCircle, Settings
 } from 'lucide-react';
 import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -288,6 +288,13 @@ const Dashboard: React.FC = () => {
             >
               <Target size={18} />
               New Goal
+            </button>
+            <button
+              onClick={() => navigate('/settings/availability')}
+              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors border border-gray-200 shadow-sm"
+              title="Settings"
+            >
+              <Settings size={18} />
             </button>
             <button
               onClick={handleLogout}

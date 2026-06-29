@@ -5,6 +5,7 @@ import taskRoutes from './routes/taskRoutes';
 import schedulerRoutes from './routes/schedulerRoutes';
 
 import uploadRoutes from './routes/uploadRoutes';
+import profileRoutes from './routes/profileRoutes';
 import path from 'path';
 
 // Load environment variables
@@ -24,6 +25,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/tasks', taskRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
