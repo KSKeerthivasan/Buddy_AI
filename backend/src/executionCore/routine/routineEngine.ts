@@ -6,8 +6,8 @@ const PROFILES_COLLECTION = 'userProfiles';
 // Helper to add minutes to "HH:mm"
 function addMinutesToTime(timeStr: string, minsToAdd: number): string {
   const [hStr, mStr] = timeStr.split(':');
-  let h = parseInt(hStr, 10);
-  let m = parseInt(mStr, 10);
+  let h = parseInt(hStr!, 10);
+  let m = parseInt(mStr!, 10);
 
   m += minsToAdd;
   h += Math.floor(m / 60);
@@ -143,7 +143,7 @@ export async function getRoutineForWeek(userId: string, startDateStr: string): P
   for (let i = 0; i < 7; i++) {
     const d = new Date(start);
     d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = d.toISOString().split('T')[0]!;
     const routine = await getRoutineForDate(userId, dateStr);
     routines.push(routine);
   }

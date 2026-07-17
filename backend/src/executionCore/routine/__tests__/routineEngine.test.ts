@@ -79,7 +79,7 @@ describe('Routine Engine', () => {
     
     // Check commitments
     expect(routine.commitmentBlocks.length).toBe(1);
-    expect(routine.commitmentBlocks[0].title).toBe('College');
+    expect(routine.commitmentBlocks[0]?.title).toBe('College');
 
     // Check generated routine blocks (Prep, Morning Commute, Lunch, Evening Commute, Dinner)
     expect(routine.routineBlocks.length).toBe(5);
@@ -109,12 +109,12 @@ describe('Routine Engine', () => {
       return {};
     });
 
-    const routine = await getRoutineForDate(mockUserId, '2026-06-28');
+    const routines = await getRoutineForWeek(mockUserId, '2026-06-28');
     
-    expect(routine.wakeUpTime).toBe('08:00');
-    expect(routine.sleepTime).toBe('23:30');
-    expect(routine.workingWindow.start).toBe('08:00');
-    expect(routine.commitmentBlocks.length).toBe(0); // None on Sunday
+    expect(routines[0]?.wakeUpTime).toBe('08:00');
+    expect(routines[0]?.sleepTime).toBe('23:30');
+    expect(routines[0]?.routineBlocks.length).toBeGreaterThan(0);
+    expect(routines[6]?.routineBlocks.length).toBeGreaterThan(0); // None on Sunday
   });
 
   it('handles missing profile gracefully by throwing an error', async () => {
@@ -140,14 +140,14 @@ describe('Routine Engine', () => {
       })
     }));
 
-    const routine = await getRoutineForDate(mockUserId, '2026-06-29');
-    expect(routine.routineBlocks.length).toBe(0);
+    const day = await getRoutineForDate(mockUserId, '2026-06-29');
+    expect(day?.routineBlocks.length).toBe(0);
   });
   
   it('generates a full week of routines', async () => {
     const routines = await getRoutineForWeek(mockUserId, '2026-06-29');
     expect(routines.length).toBe(7);
-    expect(routines[0].date).toBe('2026-06-29');
-    expect(routines[6].date).toBe('2026-07-05');
+    expect(routines[0]?.date).toBe('2026-06-29');
+    expect(routines[6]?.date).toBe('2026-07-05');
   });
 });

@@ -1,3 +1,8 @@
 node_modules
 backend/.env
 *-firebase-adminsdk*.json
+backend/**/*.js
+backend/**/*.js.map
+backend/**/*.d.ts
+backend/**/*.d.ts.map
+backend/tsconfig.tsbuildinfo

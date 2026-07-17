@@ -1,10 +1,11 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { getAvailabilityForDate, getAvailabilityForWeek } from '../executionCore/availability/availabilityEngine';
 
 const router = express.Router();
 
-router.get('/:userId/:date', async (req, res) => {
-  const { userId, date } = req.params;
+router.get('/:userId/:date', async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.params.userId as string;
+  const date = req.params.date as string;
   
   if (!date || !date.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return res.status(400).json({ error: 'Invalid date format. Expected YYYY-MM-DD.' });
@@ -14,13 +15,13 @@ router.get('/:userId/:date', async (req, res) => {
     const result = await getAvailabilityForDate(userId, date);
     res.json(result);
   } catch (error: any) {
-    console.error(`[AvailabilityEngine API] Error calculating availability:`, error);
-    res.status(500).json({ error: 'Unexpected server error', details: error.message });
+    next(error);
   }
 });
 
-router.get('/:userId/week/:startDate', async (req, res) => {
-  const { userId, startDate } = req.params;
+router.get('/:userId/week/:startDate', async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.params.userId as string;
+  const startDate = req.params.startDate as string;
   
   if (!startDate || !startDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return res.status(400).json({ error: 'Invalid date format. Expected YYYY-MM-DD.' });
@@ -30,8 +31,7 @@ router.get('/:userId/week/:startDate', async (req, res) => {
     const results = await getAvailabilityForWeek(userId, startDate);
     res.json(results);
   } catch (error: any) {
-    console.error(`[AvailabilityEngine API] Error calculating availability:`, error);
-    res.status(500).json({ error: 'Unexpected server error', details: error.message });
+    next(error);
   }
 });
 

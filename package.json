@@ -4,6 +4,11 @@
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm run start"
   },
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
   "dependencies": {
     "firebase": "^12.15.0",
     "framer-motion": "^12.42.0",

@@ -909,7 +909,7 @@ const Availability: React.FC = () => {
                           <div 
                             key={`${dayIdx}-${hour}`}
                             className={`flex-1 border-r border-gray-100 last:border-0 relative transition-colors
-                              ${isPreviewCell && !preview.isValid ? 'bg-red-50' : 'hover:bg-gray-50/80'}
+                              ${isPreviewCell && !preview?.isValid ? 'bg-red-50' : 'hover:bg-gray-50/80'}
                               ${!cellData && !placementMode && isToday ? 'bg-indigo-50/30' : ''}
                               ${!cellData && !placementMode ? 'cursor-pointer' : ''}
                             `}
@@ -973,13 +973,13 @@ const Availability: React.FC = () => {
                                   ${interaction.activityName ? resolveBlockColor(grid[interaction.dayIdx!][interaction.startHour!]!.activity, grid[interaction.dayIdx!][interaction.startHour!]!.category, grid[interaction.dayIdx!][interaction.startHour!]!.colorOverride, profile.activityStyles) : 'bg-indigo-100 border-indigo-300 text-indigo-800'}
                                   ${interaction.activityName ? getSchedulingStyle(grid[interaction.dayIdx!][interaction.startHour!]!.schedulingType) : 'border-solid'}
                                 `}
-                                style={{ top: 0, height: `${(preview.previewEnd - preview.previewStart + 1) * 64}px` }}
+                                style={{ top: 0, height: `${(preview!.previewEnd - preview!.previewStart + 1) * 64}px` }}
                               >
                                 {interaction.dayIdx !== null && interaction.startHour !== null && (
                                   <div className="px-2 pt-1.5 flex flex-col justify-start">
                                     <span className="text-sm font-bold truncate block leading-tight">{grid[interaction.dayIdx][interaction.startHour]?.activity}</span>
                                     <span className="text-xs font-medium opacity-80 mt-0.5">
-                                      {preview.previewStart.toString().padStart(2, '0')}:00 - {(preview.previewEnd + 1).toString().padStart(2, '0')}:00
+                                      {preview!.previewStart.toString().padStart(2, '0')}:00 - {(preview!.previewEnd + 1).toString().padStart(2, '0')}:00
                                     </span>
                                   </div>
                                 )}

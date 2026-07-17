@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Task } from '../types';
+import type { Task } from '@buddy-ai/shared';
 
 interface TaskContextType {
   tasks: Task[];

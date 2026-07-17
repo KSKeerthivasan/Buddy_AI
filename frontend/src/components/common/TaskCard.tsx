@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Target, Clock, Shield, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Task } from '../../types';
+import type { Task } from '@buddy-ai/shared';
 
 interface TaskCardProps {
   task: Task;

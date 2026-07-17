@@ -13,18 +13,18 @@ describe('Availability Engine v2', () => {
   });
 
   it('handles a completely free day correctly', async () => {
-    (getRoutineForDate as jest.Mock).mockResolvedValue({
+    (getRoutineForDate as jest.MockedFunction<typeof getRoutineForDate>).mockResolvedValue({
       date: '2026-07-02',
       workingWindow: { start: '06:00', end: '22:00' },
       routineBlocks: [],
       commitmentBlocks: []
-    });
+    } as any);
 
     const availability = await getAvailabilityForDate('user1', '2026-07-02');
     
     expect(availability.availableBlocks.length).toBe(1);
-    expect(availability.availableBlocks[0].start).toBe('06:00');
-    expect(availability.availableBlocks[0].end).toBe('22:00');
+    expect(availability.availableBlocks[0]!.start).toBe('06:00');
+    expect(availability.availableBlocks[0]!.end).toBe('22:00');
     expect(availability.totalAvailableMinutes).toBe(16 * 60); // 960
     expect(availability.longestContinuousBlock!.durationMinutes).toBe(960);
     expect(availability.fragmentationScore).toBe('LOW');
@@ -32,14 +32,14 @@ describe('Availability Engine v2', () => {
   });
 
   it('handles a fully occupied day correctly', async () => {
-    (getRoutineForDate as jest.Mock).mockResolvedValue({
+    (getRoutineForDate as jest.MockedFunction<typeof getRoutineForDate>).mockResolvedValue({
       date: '2026-07-02',
       workingWindow: { start: '08:00', end: '18:00' },
       routineBlocks: [],
       commitmentBlocks: [
         { start: '08:00', end: '18:00', type: 'COMMITMENT' }
       ]
-    });
+    } as any);
 
     const availability = await getAvailabilityForDate('user1', '2026-07-02');
     
@@ -52,7 +52,7 @@ describe('Availability Engine v2', () => {
   });
 
   it('merges overlapping and touching occupied blocks', async () => {
-    (getRoutineForDate as jest.Mock).mockResolvedValue({
+    (getRoutineForDate as jest.MockedFunction<typeof getRoutineForDate>).mockResolvedValue({
       date: '2026-07-02',
       workingWindow: { start: '08:00', end: '18:00' },
       routineBlocks: [
@@ -63,20 +63,20 @@ describe('Availability Engine v2', () => {
         { start: '12:00', end: '14:00' },
         { start: '13:00', end: '15:00' }  // overlapping
       ]
-    });
+    } as any);
 
     const availability = await getAvailabilityForDate('user1', '2026-07-02');
     
     expect(availability.occupiedBlocks.length).toBe(2);
-    expect(availability.occupiedBlocks[0].start).toBe('09:00');
-    expect(availability.occupiedBlocks[0].end).toBe('11:00');
+    expect(availability.occupiedBlocks[0]!.start).toBe('09:00');
+    expect(availability.occupiedBlocks[0]!.end).toBe('11:00');
     
-    expect(availability.occupiedBlocks[1].start).toBe('12:00');
-    expect(availability.occupiedBlocks[1].end).toBe('15:00');
+    expect(availability.occupiedBlocks[1]!.start).toBe('12:00');
+    expect(availability.occupiedBlocks[1]!.end).toBe('15:00');
   });
 
   it('calculates fragmentation score correctly for highly fragmented day', async () => {
-    (getRoutineForDate as jest.Mock).mockResolvedValue({
+    (getRoutineForDate as jest.MockedFunction<typeof getRoutineForDate>).mockResolvedValue({
       date: '2026-07-02',
       workingWindow: { start: '08:00', end: '18:00' },
       routineBlocks: [],
@@ -90,7 +90,7 @@ describe('Availability Engine v2', () => {
         { start: '15:00', end: '15:30' },
         { start: '16:00', end: '16:30' }
       ]
-    });
+    } as any);
 
     const availability = await getAvailabilityForDate('user1', '2026-07-02');
     

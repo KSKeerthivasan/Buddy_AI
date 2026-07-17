@@ -1,0 +1,14 @@
+{
+  "name": "@buddy-ai/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities for Buddy AI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

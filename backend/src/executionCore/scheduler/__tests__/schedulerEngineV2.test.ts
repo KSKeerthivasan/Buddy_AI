@@ -42,17 +42,17 @@ describe('Scheduler Engine v2', () => {
 
     expect(plan.schedulerVersion).toBe('v2');
     expect(plan.sessions.length).toBe(2);
-    expect(plan.sessions[0].durationMinutes).toBe(60);
-    expect(plan.sessions[1].durationMinutes).toBe(60);
+    expect(plan.sessions[0]?.durationMinutes).toBe(60);
+    expect(plan.sessions[1]?.durationMinutes).toBe(60);
 
     // Both should fit on day 1 since capacity is 120 and there are two 60 min blocks
-    expect(plan.sessions[0].scheduledDate).toBe('2026-07-02');
-    expect(plan.sessions[1].scheduledDate).toBe('2026-07-02');
+    expect(plan.sessions[0]?.scheduledDate).toBe('2026-07-02');
+    expect(plan.sessions[1]?.scheduledDate).toBe('2026-07-02');
     expect(plan.feasibility.status).toBe('FEASIBLE');
   });
 
   it('rolls over to the next day if a session does not fit in remaining continuous gaps', async () => {
-    (getAvailabilityForDate as jest.Mock<any>).mockImplementation((userId, dateStr) => {
+    (getAvailabilityForDate as jest.Mock<any>).mockImplementation((userId: string, dateStr: string) => {
       if (dateStr === '2026-07-02') {
         return Promise.resolve({
           availableBlocks: [ { start: '10:00', end: '10:30', durationMinutes: 30 } ]
@@ -76,12 +76,12 @@ describe('Scheduler Engine v2', () => {
     const plan = await scheduleExecutionPlan(input);
 
     expect(plan.sessions.length).toBe(1);
-    expect(plan.sessions[0].scheduledDate).toBe('2026-07-03');
+    expect(plan.sessions[0]?.scheduledDate).toBe('2026-07-03');
     expect(plan.bufferDays).toBe(7); // 10 - 3 = 7
   });
 
   it('reports NOT_FEASIBLE if capacity is exhausted before deadline', async () => {
-    (getCapacityForDate as jest.Mock<any>).mockImplementation((userId, dateStr) => {
+    (getCapacityForDate as jest.Mock<any>).mockImplementation((userId: string, dateStr: string) => {
       if (dateStr <= '2026-07-03') {
         return Promise.resolve({ remainingCapacity: 0 }); // No capacity before deadline
       }

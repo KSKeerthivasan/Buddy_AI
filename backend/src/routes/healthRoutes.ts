@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { analyzeExecutionHealth } from '../executionCore/health/healthEngine';
 import { scheduleExecutionPlan } from '../executionCore/scheduler/schedulerEngineV2';
 import { getTaskById } from '../repositories/taskRepository';
@@ -6,17 +6,20 @@ import { getTaskById } from '../repositories/taskRepository';
 const router = Router();
 
 // [TEMPORARY] API to generate health report for a specific task
-router.get('/:userId/:taskId', async (req, res) => {
+router.get('/:userId/:taskId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, taskId } = req.params;
     
+    const taskIdStr = taskId as string;
+    const userIdStr = userId as string;
+    
     // 1. Fetch Task
-    const task: any = await getTaskById(taskId);
+    const task: any = await getTaskById(taskIdStr);
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
     
-    if (task.userId !== userId) {
+    if (task.userId !== userIdStr) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
     
@@ -30,8 +33,8 @@ router.get('/:userId/:taskId', async (req, res) => {
     
     // 3. Generate Execution Plan V2 on the fly (for testing purposes)
     const planInput = {
-      userId,
-      taskId,
+      userId: userIdStr,
+      taskId: taskIdStr,
       taskTitle: task.title,
       milestones: task.milestones || [],
       totalEstimatedMinutes: taskInfo.estimatedMinutes,
@@ -42,8 +45,8 @@ router.get('/:userId/:taskId', async (req, res) => {
     
     // 4. Analyze Health
     const healthInput = {
-      userId,
-      taskId,
+      userId: userIdStr,
+      taskId: taskIdStr,
       executionPlan,
       taskInfo
     };
@@ -57,8 +60,7 @@ router.get('/:userId/:taskId', async (req, res) => {
     });
     
   } catch (error: any) {
-    console.error(`[HealthEngine API] Error:`, error);
-    res.status(500).json({ error: 'Failed to generate health report', details: error.message });
+    next(error);
   }
 });
 

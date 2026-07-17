@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router , NextFunction } from 'express';
 import { getUserProfile, updateUserProfile } from '../controllers/profileController';
 
 const router = Router();

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { DecisionCard, type Decision } from '../components/DecisionCard';
 
 const TaskDetail: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [task, setTask] = useState<any>(null);
+  const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,8 +30,16 @@ const TaskDetail: React.FC = () => {
           const foundTask = data.tasks.find((t: any) => t.id === taskId);
           setTask(foundTask || null);
         }
+
+        // Fetch decisions for this task
+        const decisionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}/decisions`);
+        const decisionsData = await decisionsResponse.json();
+        if (decisionsData.success) {
+          setDecisions(decisionsData.decisions.filter((d: any) => d.status === 'PENDING' && d.presentationPriority !== 'SILENT'));
+        }
+
       } catch (error) {
-        console.error('Error fetching task details:', error);
+        console.error('Error fetching task details or decisions:', error);
       } finally {
         setLoading(false);
       }
@@ -37,6 +47,18 @@ const TaskDetail: React.FC = () => {
 
     fetchTask();
   }, [taskId, user, authLoading, navigate]);
+
+  const handleDecisionAction = async (decisionId: string, action: 'accept' | 'reject' | 'modify') => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/decisions/${decisionId}/${action}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setDecisions(prev => prev.filter(d => d.decisionId !== decisionId));
+      }
+    } catch (e) {
+      console.error(`Failed to ${action} decision:`, e);
+    }
+  };
 
   if (loading || authLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Loading task details...</div>;
   if (!task) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Task not found</div>;
@@ -77,6 +99,22 @@ const TaskDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-12">
       <div className="max-w-5xl mx-auto">
+        
+        {decisions.length > 0 && (
+          <div className="mb-8 space-y-6">
+            <h2 className="text-xl font-black text-gray-900 mb-2">Pending Decisions</h2>
+            {decisions.map(decision => (
+              <DecisionCard 
+                key={decision.decisionId} 
+                decision={decision} 
+                onAccept={(id) => handleDecisionAction(id, 'accept')}
+                onReject={(id) => handleDecisionAction(id, 'reject')}
+                onModify={(id) => handleDecisionAction(id, 'modify')}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Header Section */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8 p-8 md:p-10 relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />

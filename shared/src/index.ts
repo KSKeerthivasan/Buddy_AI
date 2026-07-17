@@ -1,3 +1,43 @@
+export type TaskPriority = 'Low' | 'Medium' | 'High';
+export type TaskStatus = 'Active' | 'Completed' | 'completed' | 'pending' | 'analyzed' | 'approved' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED';
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  deadline: string; // ISO String
+  role?: string;
+  status: TaskStatus;
+  createdAt: string; // ISO String
+  analysis?: any; // The full execution core analysis output
+  userId: string;
+  totalEstimatedMinutes?: number;
+  executionPlan?: {
+    sessions: {
+      status: string;
+      durationMinutes?: number;
+    }[];
+  };
+}
+
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+export type CommitmentCategory = 'Education' | 'Work' | 'Health' | 'Personal' | 'Travel' | 'Other';
+
+export interface WeeklyCommitment {
+  id: string;
+  title: string;
+  category: CommitmentCategory;
+  dayOfWeek: DayOfWeek;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+  location?: string;
+  isRecurring: boolean;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+  ownerId: string;
+}
+
 export type Persona = 'Student' | 'Working Professional' | 'Freelancer' | 'Entrepreneur' | 'Other';
 export type PrimaryGoal = 'Placement' | 'Higher Studies' | 'Startup' | 'MBA' | 'Research' | 'Skill Development' | 'Financial Growth' | 'Personal Productivity' | 'Other';
 export type WeekendRoutine = 'Same as Weekdays' | 'Different';

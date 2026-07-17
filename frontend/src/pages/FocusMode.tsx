@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Play, Pause, CheckCircle, Clock, X, StopCircle, RefreshCw, UploadCloud, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CheckCircle, Clock, X, StopCircle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReflectionModal from '../components/ReflectionModal';
+import EvidenceSection from '../components/EvidenceSection';
+import { RecoveryReportView, type RecoveryReport } from '../components/RecoveryReportView';
 
 type Technique = 'Pomodoro' | 'Deep Work' | '52/17' | 'Quick Focus' | 'Continuous Focus';
 type TimerPhase = 'idle' | 'work' | 'break';
@@ -59,14 +61,15 @@ const FocusMode: React.FC = () => {
   // Reflection State
   const [earlyReason, setEarlyReason] = useState<string>('');
   const [reflectionNotes, setReflectionNotes] = useState('');
-  const [referenceLink, setReferenceLink] = useState('');
-  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [referenceLink, _setReferenceLink] = useState('');
 
   // General Reflection State
   const [showReflectionModal, setShowReflectionModal] = useState(false);
   const [reflectionMandatory, setReflectionMandatory] = useState(false);
   const [reflectionSubmitting, setReflectionSubmitting] = useState(false);
+
+  // Recovery State
+  const [recoveryReport, setRecoveryReport] = useState<RecoveryReport | null>(null);
 
   // Persistence prompt
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
@@ -290,7 +293,6 @@ const FocusMode: React.FC = () => {
   };
 
   // Completion logic
-  const canComplete = accumulatedWorkTime >= sessionDurationSeconds;
 
   const sessionDurationMinutes = session?.durationMinutes || 60;
   const minFocusRequired = sessionDurationMinutes <= 60 ? (15 * 60) : (sessionDurationSeconds * 0.25);
@@ -332,36 +334,12 @@ const FocusMode: React.FC = () => {
   const handleEarlyComplete = async () => {
     if (!earlyReason) return;
     
-    let attachmentMetadata = null;
-    
-    if (attachmentFile) {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append('file', attachmentFile);
-      formData.append('taskId', taskId || '');
-      formData.append('sessionId', session?.sessionId || sessionId || '');
-      
-      try {
-        const uploadRes = await fetch('http://localhost:5000/api/uploads', {
-          method: 'POST',
-          body: formData
-        });
-        const uploadData = await uploadRes.json();
-        if (uploadData.success) {
-          attachmentMetadata = uploadData.metadata;
-        }
-      } catch (err) {
-        console.error("Upload failed", err);
-      } finally {
-        setUploading(false);
-      }
-    }
+    if (!earlyReason) return;
 
     performCompletion('early', {
       earlyCompletionReason: earlyReason,
       reflectionNotes,
-      referenceLink,
-      attachment: attachmentMetadata
+      referenceLink
     });
   };
 
@@ -382,6 +360,19 @@ const FocusMode: React.FC = () => {
       await fetch(`http://localhost:5000/api/tasks/${taskId}/sessions/${session?.sessionId || sessionId}/cancel`, {
         method: 'POST'
       });
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/recovery/session/${session?.sessionId || sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ triggerReason: 'SESSION_CANCELLED' })
+        });
+        const data = await res.json();
+        if (data.success) setRecoveryReport(data.report);
+      } catch (err) {
+        console.error('Failed to fetch recovery report', err);
+      }
+
       setReflectionMandatory(true);
       setShowReflectionModal(true);
       setShowFinishEarly(false);
@@ -409,7 +400,9 @@ const FocusMode: React.FC = () => {
     } finally {
       setReflectionSubmitting(false);
       setShowReflectionModal(false);
-      navigate('/dashboard');
+      if (!recoveryReport) {
+        navigate('/dashboard');
+      }
     }
   };
 
@@ -422,6 +415,21 @@ const FocusMode: React.FC = () => {
       <div className="min-h-screen bg-[#f3f6f9] flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500 font-bold">Session not found.</p>
         <button onClick={() => navigate('/dashboard')} className="text-indigo-600 font-bold">Return to Dashboard</button>
+      </div>
+    );
+  }
+
+  if (recoveryReport) {
+    return (
+      <div className="min-h-screen bg-[#fafbfc] py-10 px-4 flex flex-col items-center">
+        <div className="w-full max-w-4xl">
+          <RecoveryReportView report={recoveryReport} />
+          <div className="mt-8 flex justify-center">
+            <button onClick={() => navigate('/dashboard')} className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-black rounded-2xl shadow-lg shadow-indigo-600/20">
+              Return to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -656,15 +664,21 @@ const FocusMode: React.FC = () => {
             </div>
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
               <div 
-                className={`h-full transition-all duration-1000 ${canComplete ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                className={`h-full transition-all duration-1000 ${phase !== 'idle' && session.durationMinutes > 0 && accumulatedWorkTime >= sessionDurationSeconds ? 'bg-emerald-500' : 'bg-indigo-500'}`}
                 style={{ width: `${Math.min(100, (accumulatedWorkTime / sessionDurationSeconds) * 100)}%` }}
               />
             </div>
-            {canComplete && (
+            {(phase !== 'idle' && session.durationMinutes > 0 && accumulatedWorkTime >= sessionDurationSeconds) && (
               <p className="text-xs font-bold text-emerald-600 mt-3 text-center">Required focus time achieved!</p>
             )}
           </div>
 
+          <EvidenceSection taskId={taskId || ''} sessionId={session?.sessionId || sessionId || ''} />
+
+          {(() => {
+            const canComplete = phase !== 'idle' && session.durationMinutes > 0 && accumulatedWorkTime >= sessionDurationSeconds;
+            return (
+              <>
                 <button 
                   onClick={handleFullComplete}
                   disabled={!canComplete || isCompleting || session.isCompleted}
@@ -683,6 +697,9 @@ const FocusMode: React.FC = () => {
                   <CheckCircle size={24} />
                   {isCompleting ? 'Completing...' : session.isCompleted ? 'Completed' : 'Mark Session Complete'}
                 </button>
+              </>
+            );
+          })()}
               </>
             );
           })()}
@@ -812,43 +829,14 @@ const FocusMode: React.FC = () => {
                         onChange={(e) => setReflectionNotes(e.target.value)}
                       />
                     </div>
-                    
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Reference Link (Optional)</label>
-                      <div className="relative">
-                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                        <input 
-                          type="url"
-                          className="w-full bg-gray-50 rounded-xl pl-10 pr-4 py-3 border border-gray-200 outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
-                          placeholder="https://github.com/..."
-                          value={referenceLink}
-                          onChange={(e) => setReferenceLink(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Attachment (Optional)</label>
-                      <div className="relative flex items-center justify-center w-full">
-                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-200 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <UploadCloud className="w-6 h-6 mb-2 text-gray-400" />
-                            <p className="text-xs text-gray-500 font-bold">
-                              {attachmentFile ? attachmentFile.name : 'Click to upload supporting file'}
-                            </p>
-                          </div>
-                          <input type="file" className="hidden" onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)} />
-                        </label>
-                      </div>
-                    </div>
                   </div>
 
                   <button 
                     onClick={handleEarlyComplete}
-                    disabled={!earlyReason || uploading || isCompleting}
+                    disabled={!earlyReason || isCompleting}
                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {uploading ? 'Uploading...' : isCompleting ? 'Completing...' : 'Mark Session Complete'}
+                    {isCompleting ? 'Completing...' : 'Mark Session Complete'}
                   </button>
                 </>
               )}

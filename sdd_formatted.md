@@ -1,0 +1,5329 @@
+<p><strong>Software Design Document (SDD)</strong></p>
+<p><strong>Project Name:</strong>  Buddy-AI</p>
+<p><strong>Version:</strong> 1.0</p>
+<p><strong>Document Type:</strong> Software Design Document (SDD)</p>
+<p><strong>Purpose:</strong> Complete Product Architecture &amp; Implementation Blueprint</p>
+<p><strong>Chapter 1 — Executive Summary</strong></p>
+<p><strong>1.1 Introduction</strong></p>
+<p><strong>Background</strong></p>
+<p>Students, professionals, and entrepreneurs frequently struggle to complete important work before deadlines. Missed assignments, delayed projects, forgotten meetings, unpaid bills, and last-minute preparation are common challenges across different professions.</p>
+<p>Existing productivity applications primarily focus on task management through static reminders, checklists, and calendar scheduling. While these tools help users organize their work, they rarely assist them during execution. Once a plan is created, they assume the user will follow it without considering unexpected events, changing priorities, lack of progress, or evolving circumstances.</p>
+<p>As a result, users often postpone work until the final deadline, leading to increased stress, reduced work quality, and missed commitments.</p>
+<p><strong>1.2 Problem Statement</strong></p>
+<p>The fundamental problem is <strong>not remembering tasks</strong>.</p>
+<p>The fundamental problem is <strong>completing tasks.</strong></p>
+<p>People rarely fail because they forgot a deadline.</p>
+<p>They fail because reality changes.</p>
+<p>Examples include:</p>
+<ul><li>Unexpected assignments </li>
+<li>Meetings extending longer than expected </li>
+<li>Travel </li>
+<li>Family commitments </li>
+<li>Knowledge gaps </li>
+<li>Underestimating work </li>
+<li>Procrastination </li>
+<li>Changing priorities </li>
+</ul>
+<p>Traditional productivity applications rarely adapt to these situations.</p>
+<p><strong>1.3 Proposed Solution</strong></p>
+<p>Buddy-AI is an AI-powered execution management platform that actively collaborates with users throughout the lifecycle of a task.</p>
+<p>Instead of acting as a reminder application, the system functions as an execution companion that continuously observes progress, understands changing situations, negotiates recovery strategies, and dynamically updates execution plans to maximize the probability of successful task completion.</p>
+<p>The system combines deterministic planning algorithms with Google's Gemini models to provide contextual reasoning, conversational recovery, adaptive planning, evidence validation, and personalized learning.</p>
+<p><strong>1.4 Vision</strong></p>
+<p>To build an intelligent execution companion that helps people consistently complete meaningful work before deadlines by combining adaptive planning, contextual reasoning, and continuous collaboration.</p>
+<p><strong>1.5 Mission</strong></p>
+<p>Increase the probability of successful task completion rather than simply increasing reminder frequency.</p>
+<p>Every design decision within the platform must directly contribute to improving execution quality, reducing deadline risk, or helping users recover from unexpected situations.</p>
+<p><strong>1.6 Target Users</strong></p>
+<p>The platform is designed for three primary user groups:</p>
+<p><strong>Students</strong></p>
+<p>Examples include:</p>
+<ul><li>Assignments </li>
+<li>Projects </li>
+<li>Presentations </li>
+<li>Examinations </li>
+<li>Research work </li>
+<li>College events </li>
+</ul>
+<p><strong>Professionals</strong></p>
+<p>Examples include:</p>
+<ul><li>Client projects </li>
+<li>Reports </li>
+<li>Meetings </li>
+<li>Interviews </li>
+<li>Certifications </li>
+<li>Internal deadlines </li>
+</ul>
+<p><strong>Entrepreneurs</strong></p>
+<p>Examples include:</p>
+<ul><li>Product development </li>
+<li>Investor meetings </li>
+<li>Marketing campaigns </li>
+<li>Business planning </li>
+<li>Client deliverables </li>
+<li>Startup milestones </li>
+</ul>
+<p>Although the nature of tasks differs between these groups, the execution process remains fundamentally similar, allowing a unified architecture.</p>
+<p><strong>1.7 Product Philosophy</strong></p>
+<p>The platform is built around one central philosophy:</p>
+<p><strong>The AI does not manage tasks. It manages execution.</strong></p>
+<p>Execution includes:</p>
+<ul><li>Planning </li>
+<li>Monitoring </li>
+<li>Adaptation </li>
+<li>Recovery </li>
+<li>Learning </li>
+</ul>
+<p>The objective is to continuously maximize the likelihood that important work is completed successfully.</p>
+<p><strong>1.8 Core Innovations</strong></p>
+<p>The product introduces several AI-driven capabilities that distinguish it from traditional productivity systems.</p>
+<p><strong>1. Adaptive Milestone Planning</strong></p>
+<p>Large execution tasks are automatically decomposed into manageable milestones that remain editable by the user.</p>
+<p><strong>2. Safety Buffer Planning</strong></p>
+<p>Tasks are intentionally planned for completion before the actual deadline, creating a buffer that can absorb unexpected events without jeopardizing successful completion.</p>
+<p><strong>3. Deadline Collision Detection</strong></p>
+<p>The system detects scheduling conflicts caused by newly added tasks and proactively recommends updated priorities and execution strategies.</p>
+<p><strong>4. Conversational Recovery</strong></p>
+<p>Instead of blindly rescheduling missed work, the AI first understands why execution deviated before recommending recovery strategies.</p>
+<p><strong>5. Evidence-Based Progress Validation</strong></p>
+<p>Users may optionally provide evidence of completed work. Gemini evaluates the evidence together with user reflections to estimate milestone completion confidence.</p>
+<p><strong>6. Continuous Behavioral Learning</strong></p>
+<p>The system gradually learns user-specific execution patterns, allowing future recommendations to become increasingly personalized without requiring extensive manual configuration.</p>
+<p><strong>1.9 Artificial Intelligence Strategy</strong></p>
+<p>Artificial Intelligence is used only where reasoning and understanding are required.</p>
+<p>Deterministic system components handle:</p>
+<ul><li>Risk calculations </li>
+<li>Buffer calculations </li>
+<li>Scheduling rules </li>
+<li>Notifications </li>
+<li>Database operations </li>
+</ul>
+<p>Gemini is responsible for:</p>
+<ul><li>Task understanding </li>
+<li>Milestone generation </li>
+<li>Conversation </li>
+<li>Evidence interpretation </li>
+<li>Recovery reasoning </li>
+<li>Behavioral summarization </li>
+</ul>
+<p>This separation ensures transparency, reliability, and explainability.</p>
+<p><strong>1.10 High-Level Workflow</strong></p>
+<p>The overall lifecycle of an execution task is summarized below:</p>
+<p>Create Task<br />      │<br />      ▼<br />Task Understanding<br />      │<br />      ▼<br />Milestone Planning<br />      │<br />      ▼<br />Safety Buffer Generation<br />      │<br />      ▼<br />Execution<br />      │<br />      ▼<br />Progress Monitoring<br />      │<br />      ▼<br />Deviation Detection<br />      │<br />      ▼<br />Context Conversation<br />      │<br />      ▼<br />Recovery Planning<br />      │<br />      ▼<br />Updated Execution Plan<br />      │<br />      ▼<br />Task Completion<br />      │<br />      ▼<br />Behavioral Learning</p>
+<p><strong>1.11 Design Principles</strong></p>
+<p>The following principles govern every architectural decision within the system:</p>
+<ol><li>The AI collaborates rather than commands. </li>
+<li>Every important AI decision is explainable. </li>
+<li>Users always retain final control. </li>
+<li>The system adapts continuously rather than relying on static plans. </li>
+<li>AI interventions occur only when meaningful. </li>
+<li>Emotional manipulation is never used as a motivational strategy. </li>
+<li>Deterministic algorithms perform calculations; AI performs reasoning. </li>
+<li>Every recommendation clearly communicates its reasoning and expected impact. </li>
+<li>Plans are living entities that evolve as circumstances change. </li>
+<li>The success metric is successful execution rather than task creation. </li>
+</ol><p><strong>1.12 Expected Outcome</strong></p>
+<p>By continuously adapting execution plans instead of repeatedly reminding users, the platform aims to:</p>
+<ul><li>Reduce last-minute work </li>
+<li>Improve task completion consistency </li>
+<li>Reduce deadline collisions </li>
+<li>Improve work quality </li>
+<li>Encourage sustainable execution habits </li>
+<li>Increase trust in AI-assisted productivity systems </li>
+</ul>
+<p><strong>📌 Chapter 1 Status</strong></p>
+<p><strong>Status:</strong> ✅ Finalized (Frozen)</p>
+<p><strong>Chapter 2 — Core Concepts &amp; Terminology</strong></p>
+<p><strong>2.1 Purpose</strong></p>
+<p>This chapter establishes a common vocabulary for the Buddy-AI.</p>
+<p>Throughout this Software Design Document, specific technical terms are used to describe the behavior of the product, its AI capabilities, and its execution workflow. Defining these concepts at the beginning ensures consistency across the entire architecture and eliminates ambiguity during implementation.</p>
+<p>Every subsequent chapter assumes the definitions established here.</p>
+<p><strong>2.2 Task</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Task</strong> is any user-defined objective that must be completed before a specified deadline or event.</p>
+<p>A task represents the highest-level unit of work within the system.</p>
+<p>Examples include:</p>
+<ul><li>AI Assignment </li>
+<li>Build Portfolio Website </li>
+<li>Pay Electricity Bill </li>
+<li>Attend Interview </li>
+<li>Prepare Client Presentation </li>
+</ul>
+<p>A task always owns its associated execution information, including milestones (if applicable), deadlines, progress, and risk.</p>
+<p><strong>Characteristics</strong></p>
+<p>A task:</p>
+<ul><li>has a title </li>
+<li>belongs to one user </li>
+<li>has a deadline or scheduled time </li>
+<li>has a completion state </li>
+<li>may contain milestones </li>
+<li>may contain evidence </li>
+<li>may trigger AI planning </li>
+</ul>
+<p><strong>2.3 Execution Task</strong></p>
+<p><strong>Definition</strong></p>
+<p>An <strong>Execution Task</strong> is a task that requires sustained effort over a period of time and cannot normally be completed through a single action.</p>
+<p>Execution Tasks require planning.</p>
+<p>Examples:</p>
+<ul><li>College Assignment </li>
+<li>Hackathon </li>
+<li>Software Project </li>
+<li>Research Paper </li>
+<li>Presentation </li>
+<li>Startup MVP </li>
+</ul>
+<p><strong>Characteristics</strong></p>
+<p>Execution Tasks support:</p>
+<ul><li>milestone generation </li>
+<li>safety buffers </li>
+<li>progress tracking </li>
+<li>evidence uploads </li>
+<li>recovery planning </li>
+<li>conversational adaptation </li>
+<li>learning </li>
+</ul>
+<p><strong>2.4 Quick Task</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Quick Task</strong> is a task that primarily requires timely execution rather than prolonged effort.</p>
+<p>Examples:</p>
+<ul><li>Pay Bill </li>
+<li>Attend Meeting </li>
+<li>Interview </li>
+<li>Doctor Appointment </li>
+<li>Submit Application Form </li>
+</ul>
+<p><strong>Characteristics</strong></p>
+<p>Quick Tasks:</p>
+<ul><li>do not generate milestones </li>
+<li>do not require execution planning </li>
+<li>rely on contextual reminders </li>
+<li>support recurring rules </li>
+<li>support completion confirmation </li>
+</ul>
+<p><strong>2.5 Recurring Rule</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Recurring Rule</strong> defines a repeating schedule for a Quick Task.</p>
+<p>Rather than repeatedly creating identical tasks, the system automatically generates future instances according to the recurrence rule.</p>
+<p>Examples:</p>
+<ul><li>Monthly Electricity Bill </li>
+<li>Weekly Team Meeting </li>
+<li>Annual License Renewal </li>
+</ul>
+<p><strong>Characteristics</strong></p>
+<p>A recurring rule defines:</p>
+<ul><li>repetition interval </li>
+<li>reminder preferences </li>
+<li>recurrence duration </li>
+<li>next occurrence </li>
+</ul>
+<p><strong>2.6 Milestone</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Milestone</strong> represents a measurable unit of progress within an Execution Task.</p>
+<p>Milestones divide large tasks into manageable execution stages.</p>
+<p>Each milestone represents a meaningful outcome rather than simply elapsed time.</p>
+<p><strong>Example</strong></p>
+<p>Task:</p>
+<p>Build Food Delivery App</p>
+<p>Possible milestones:</p>
+<ul><li>Planning </li>
+<li>UI Design </li>
+<li>Authentication </li>
+<li>Backend Development </li>
+<li>Testing </li>
+<li>Deployment </li>
+</ul>
+<p><strong>Characteristics</strong></p>
+<p>A milestone contains:</p>
+<ul><li>title </li>
+<li>description </li>
+<li>target completion date </li>
+<li>completion state </li>
+<li>completion confidence </li>
+<li>associated evidence </li>
+</ul>
+<p><strong>2.7 Execution Plan</strong></p>
+<p><strong>Definition</strong></p>
+<p>An <strong>Execution Plan</strong> is the complete strategy generated for completing an Execution Task.</p>
+<p>The plan includes:</p>
+<ul><li>milestones </li>
+<li>milestone ordering </li>
+<li>target dates </li>
+<li>completion target </li>
+<li>safety buffer </li>
+<li>recovery possibilities </li>
+</ul>
+<p>The execution plan continuously evolves throughout the lifecycle of the task.</p>
+<p><strong>2.8 Safety Buffer</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Safety Buffer</strong> is intentionally reserved time between the planned completion date and the actual deadline.</p>
+<p>Purpose:</p>
+<p>Allow unexpected events without missing deadlines.</p>
+<p><strong>Example</strong></p>
+<p>Deadline</p>
+<p>July 15</p>
+<p>Planned Completion</p>
+<p>July 12</p>
+<p>Safety Buffer</p>
+<p>3 Days</p>
+<p><strong>Characteristics</strong></p>
+<p>The Safety Buffer:</p>
+<ul><li>is dynamically recalculated </li>
+<li>may shrink </li>
+<li>may grow </li>
+<li>influences risk </li>
+<li>protects task quality </li>
+</ul>
+<p><strong>2.9 Risk Score</strong></p>
+<p><strong>Definition</strong></p>
+<p>The <strong>Risk Score</strong> estimates the probability that the current execution plan may fail to meet the deadline.</p>
+<p>The score is calculated using deterministic algorithms.</p>
+<p>The AI explains the score but does not calculate it.</p>
+<p><strong>Inputs</strong></p>
+<p>Examples:</p>
+<ul><li>remaining milestones </li>
+<li>deadline distance </li>
+<li>missed milestones </li>
+<li>remaining safety buffer </li>
+<li>deadline collisions </li>
+<li>evidence confidence </li>
+</ul>
+<p><strong>Output</strong></p>
+<p>The system exposes:</p>
+<ul><li>numerical score </li>
+<li>qualitative category </li>
+</ul>
+<p>Example</p>
+<p>Risk</p>
+<p>74</p>
+<p>Category</p>
+<p>High</p>
+<p><strong>2.10 Deadline Collision</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Deadline Collision</strong> occurs when newly introduced work makes the current execution plan infeasible without adjustments.</p>
+<p>Example</p>
+<p>Current Tasks</p>
+<p>AI Assignment</p>
+<p>↓</p>
+<p>New Task</p>
+<p>Operating Systems Assignment</p>
+<p>↓</p>
+<p>Both now compete for available execution time.</p>
+<p><strong>Result</strong></p>
+<p>The AI recommends:</p>
+<ul><li>updated priorities </li>
+<li>recovery options </li>
+<li>revised execution strategy </li>
+</ul>
+<p><strong>2.11 Decision Card</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Decision Card</strong> is the primary communication mechanism through which the AI presents important execution decisions.</p>
+<p>Rather than silently changing user plans, every significant AI action is communicated through a structured Decision Card.</p>
+<p><strong>Structure</strong></p>
+<p>Every Decision Card contains:</p>
+<ul><li>Action </li>
+<li>Reason </li>
+<li>Impact </li>
+<li>Recommendation </li>
+<li>User Options </li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Action</p>
+<p>Priority Updated</p>
+<p>Reason</p>
+<p>New assignment creates deadline collision.</p>
+<p>Impact</p>
+<p>Mini Project moved to Saturday.</p>
+<p>Options</p>
+<p>Accept</p>
+<p>Modify</p>
+<p>Keep Existing Plan</p>
+<p><strong>2.12 Evidence</strong></p>
+<p><strong>Definition</strong></p>
+<p><strong>Evidence</strong> is any user-provided artifact that demonstrates progress toward completing a milestone.</p>
+<p>Examples include:</p>
+<ul><li>notebook image </li>
+<li>whiteboard photo </li>
+<li>PDF </li>
+<li>screenshot </li>
+<li>GitHub screenshot </li>
+<li>presentation slide </li>
+<li>document image </li>
+</ul>
+<p>Evidence is optional.</p>
+<p><strong>2.13 Reflection</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Reflection</strong> is the user's explanation describing the progress made during a work session.</p>
+<p>Reflection complements uploaded evidence and provides context that visual information alone cannot capture.</p>
+<p>Example</p>
+<p>"I completed the research section and finalized the architecture."</p>
+<p><strong>2.14 Completion Confidence</strong></p>
+<p><strong>Definition</strong></p>
+<p><strong>Completion Confidence</strong> represents the system's confidence that a milestone has been successfully completed.</p>
+<p>It is derived from:</p>
+<ul><li>evidence </li>
+<li>reflection </li>
+<li>milestone definition </li>
+</ul>
+<p><strong>States</strong></p>
+<p>The system classifies milestones as:</p>
+<p>Completed</p>
+<p>Partial</p>
+<p>Unknown</p>
+<p>Each classification includes a confidence score.</p>
+<p><strong>2.15 Recovery Plan</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Recovery Plan</strong> is an updated execution strategy generated after the original plan becomes suboptimal.</p>
+<p>Recovery planning occurs only after understanding why execution deviated.</p>
+<p>Examples:</p>
+<ul><li>split milestone </li>
+<li>use safety buffer </li>
+<li>extend tomorrow's work </li>
+<li>reorder priorities </li>
+</ul>
+<p><strong>2.16 Purpose Profile</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Purpose Profile</strong> stores the long-term objective voluntarily defined by the user.</p>
+<p>Examples:</p>
+<ul><li>Placement Preparation </li>
+<li>Startup Launch </li>
+<li>Financial Independence </li>
+<li>Higher Studies </li>
+</ul>
+<p>Purpose Profiles provide context for AI recommendations but are never used for emotional manipulation.</p>
+<p><strong>2.17 Availability Profile</strong></p>
+<p><strong>Definition</strong></p>
+<p>An <strong>Availability Profile</strong> represents the user's preferred execution windows and interruption preferences.</p>
+<p>It combines:</p>
+<ul><li>user-defined preferences </li>
+<li>learned behavioral patterns </li>
+<li>temporary unavailable periods </li>
+</ul>
+<p>The Availability Profile guides when the AI should initiate interactions.</p>
+<p><strong>2.18 Behavioral Pattern</strong></p>
+<p><strong>Definition</strong></p>
+<p>A <strong>Behavioral Pattern</strong> is a long-term execution trend learned by the system after repeated observations.</p>
+<p>Examples include:</p>
+<ul><li>prefers evening work </li>
+<li>coding tasks require more time </li>
+<li>frequently delays documentation </li>
+<li>responds well to smaller milestones </li>
+</ul>
+<p>Behavioral patterns are used only to improve future planning.</p>
+<p><strong>2.19 AI Capability</strong></p>
+<p><strong>Definition</strong></p>
+<p>An <strong>AI Capability</strong> is a specialized reasoning function performed by Gemini within the system.</p>
+<p>Capabilities include:</p>
+<ul><li>Task Understanding </li>
+<li>Planning </li>
+<li>Conversation </li>
+<li>Recovery Reasoning </li>
+<li>Evidence Analysis </li>
+<li>Behavioral Learning </li>
+</ul>
+<p>These are logical capabilities orchestrated by the backend, not independent autonomous agents.</p>
+<p><strong>2.20 Execution Lifecycle</strong></p>
+<p><strong>Definition</strong></p>
+<p>The <strong>Execution Lifecycle</strong> describes the complete lifecycle of an Execution Task.</p>
+<p>Task Creation<br />      │<br />Task Understanding<br />      │<br />Execution Planning<br />      │<br />Execution<br />      │<br />Progress Monitoring<br />      │<br />Deviation Detection<br />      │<br />Recovery<br />      │<br />Completion<br />      │<br />Learning</p>
+<p>Every Execution Task follows this lifecycle.</p>
+<p><strong>2.21 System Terminology Summary</strong></p>
+<table><thead><tr><th><p><strong>Term</strong></p>
+</th><th><p><strong>Purpose</strong></p>
+</th></tr></thead><tbody><tr><td><p>Task</p>
+</td><td><p>Highest-level unit of work</p>
+</td></tr><tr><td><p>Execution Task</p>
+</td><td><p>Long-duration work requiring planning</p>
+</td></tr><tr><td><p>Quick Task</p>
+</td><td><p>Single-action task requiring timely completion</p>
+</td></tr><tr><td><p>Recurring Rule</p>
+</td><td><p>Repeating schedule for Quick Tasks</p>
+</td></tr><tr><td><p>Milestone</p>
+</td><td><p>Measurable unit of progress</p>
+</td></tr><tr><td><p>Execution Plan</p>
+</td><td><p>Strategy for completing a task</p>
+</td></tr><tr><td><p>Safety Buffer</p>
+</td><td><p>Reserved time before the deadline</p>
+</td></tr><tr><td><p>Risk Score</p>
+</td><td><p>Probability of missing the deadline</p>
+</td></tr><tr><td><p>Deadline Collision</p>
+</td><td><p>Conflicting workloads requiring replanning</p>
+</td></tr><tr><td><p>Decision Card</p>
+</td><td><p>Explainable AI recommendation interface</p>
+</td></tr><tr><td><p>Evidence</p>
+</td><td><p>User-provided proof of progress</p>
+</td></tr><tr><td><p>Reflection</p>
+</td><td><p>User explanation of completed work</p>
+</td></tr><tr><td><p>Completion Confidence</p>
+</td><td><p>Confidence in milestone completion</p>
+</td></tr><tr><td><p>Recovery Plan</p>
+</td><td><p>Updated execution strategy</p>
+</td></tr><tr><td><p>Purpose Profile</p>
+</td><td><p>User-defined long-term objective</p>
+</td></tr><tr><td><p>Availability Profile</p>
+</td><td><p>Preferred execution and interruption windows</p>
+</td></tr><tr><td><p>Behavioral Pattern</p>
+</td><td><p>Learned execution habit</p>
+</td></tr><tr><td><p>AI Capability</p>
+</td><td><p>Specialized Gemini reasoning function</p>
+</td></tr><tr><td><p>Execution Lifecycle</p>
+</td><td><p>Complete workflow of an execution task</p>
+</td></tr></tbody></table><p><strong>Chapter Summary</strong></p>
+<p>This chapter establishes the foundational vocabulary used throughout the remainder of the Software Design Document. Every technical component, AI capability, workflow, and architectural decision references the terminology defined here to ensure consistency, precision, and a shared understanding between product designers, developers, and future contributors.</p>
+<p><strong>✅ Chapter 2 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 3 — Product Vision &amp; Design Philosophy</strong></p>
+<p><strong>3.1 Purpose</strong></p>
+<p>This chapter defines the long-term vision, design philosophy, and guiding principles of the Buddy-AI.</p>
+<p>While Chapter 1 explains <strong>what the product is</strong>, this chapter explains <strong>why it exists</strong>, <strong>what problems it aims to solve</strong>, and <strong>how every future design decision should be evaluated</strong>.</p>
+<p>The principles established here are architecture-level decisions and remain valid throughout the lifetime of the product.</p>
+<p><strong>3.2 Product Vision</strong></p>
+<p>The Buddy-AI envisions a future where productivity systems evolve beyond passive task management into intelligent execution partners.</p>
+<p>Rather than functioning as digital checklists or reminder applications, future productivity systems should continuously collaborate with users throughout the execution process.</p>
+<p>The platform aims to become an adaptive execution companion capable of understanding changing situations, assisting decision-making, and maximizing the probability of successful task completion while respecting user autonomy.</p>
+<p><strong>3.3 Product Mission</strong></p>
+<p>The mission of the Buddy-AI is:</p>
+<p><strong>Help users consistently complete meaningful work before deadlines through adaptive planning, contextual reasoning, and continuous collaboration.</strong></p>
+<p>The objective is not to increase reminder frequency or maximize task creation.</p>
+<p>Instead, success is measured by improving execution quality and increasing successful task completion.</p>
+<p><strong>3.4 Design Philosophy</strong></p>
+<p>The product is founded on one central belief:</p>
+<p><strong>Execution is dynamic. Plans should be dynamic too.</strong></p>
+<p>Traditional productivity systems assume that once a plan has been created, it remains valid until completion.</p>
+<p>In reality, execution continuously changes because of:</p>
+<ul><li>unexpected commitments </li>
+<li>changing priorities </li>
+<li>new work </li>
+<li>knowledge gaps </li>
+<li>travel </li>
+<li>emergencies </li>
+<li>underestimated effort </li>
+</ul>
+<p>The Buddy-AI treats every execution plan as a living strategy that continuously adapts to changing circumstances.</p>
+<p><strong>3.5 Product Principles</strong></p>
+<p>The following principles govern every feature and architectural decision within the system.</p>
+<p><strong>Principle 1</strong></p>
+<p><strong>AI Collaborates Rather Than Commands</strong></p>
+<p>The AI functions as a collaborative execution companion.</p>
+<p>It provides recommendations, explains trade-offs, and negotiates recovery strategies.</p>
+<p>The final decision always belongs to the user.</p>
+<p><strong>Principle 2</strong></p>
+<p><strong>Every Important AI Decision Must Be Explainable</strong></p>
+<p>The system never performs significant execution changes silently.</p>
+<p>Every recommendation must clearly communicate:</p>
+<ul><li>What changed </li>
+<li>Why it changed </li>
+<li>Expected impact </li>
+<li>Available alternatives </li>
+</ul>
+<p>Decision Cards serve as the primary explanation mechanism.</p>
+<p><strong>Principle 3</strong></p>
+<p><strong>Planning Is Continuous</strong></p>
+<p>Execution planning is never considered complete.</p>
+<p>Whenever meaningful changes occur, the execution plan should evolve accordingly.</p>
+<p>Examples include:</p>
+<ul><li>new tasks </li>
+<li>deadline changes </li>
+<li>missed milestones </li>
+<li>unavailable days </li>
+<li>unexpected commitments </li>
+</ul>
+<p><strong>Principle 4</strong></p>
+<p><strong>Understand Before Acting</strong></p>
+<p>The system should never assume why execution failed.</p>
+<p>Instead, it first seeks to understand the underlying reason through contextual conversation before recommending recovery actions.</p>
+<p><strong>Principle 5</strong></p>
+<p><strong>AI Is Used Only Where Intelligence Is Required</strong></p>
+<p>The platform intentionally separates deterministic logic from AI reasoning.</p>
+<p>Deterministic components perform:</p>
+<ul><li>calculations </li>
+<li>scheduling rules </li>
+<li>risk formulas </li>
+<li>buffer calculations </li>
+</ul>
+<p>Gemini performs:</p>
+<ul><li>understanding </li>
+<li>reasoning </li>
+<li>planning </li>
+<li>interpretation </li>
+<li>conversation </li>
+<li>summarization </li>
+</ul>
+<p>This separation improves transparency and reliability.</p>
+<p><strong>Principle 6</strong></p>
+<p><strong>User Trust Is More Important Than Automation</strong></p>
+<p>The AI should never make irreversible execution decisions without user awareness.</p>
+<p>Users retain the ability to:</p>
+<ul><li>accept recommendations </li>
+<li>modify recommendations </li>
+<li>reject recommendations </li>
+</ul>
+<p>Automation exists to reduce effort, not remove control.</p>
+<p><strong>Principle 7</strong></p>
+<p><strong>Learning Must Be Gradual</strong></p>
+<p>Personalization is earned through observation.</p>
+<p>The system begins with general planning strategies and gradually adapts based on repeated execution behavior.</p>
+<p>The AI never assumes long-term behavioral patterns after a small number of observations.</p>
+<p><strong>Principle 8</strong></p>
+<p><strong>Motivation Must Respect User Autonomy</strong></p>
+<p>The platform does not manipulate users emotionally.</p>
+<p>Instead, it connects daily execution to goals voluntarily defined by the user.</p>
+<p>The AI never invents emotional narratives or applies guilt-based motivation.</p>
+<p><strong>Principle 9</strong></p>
+<p><strong>Minimize User Effort</strong></p>
+<p>The AI should reduce manual work whenever possible.</p>
+<p>Examples include:</p>
+<ul><li>milestone generation </li>
+<li>adaptive planning </li>
+<li>recovery planning </li>
+<li>evidence interpretation </li>
+<li>learning </li>
+</ul>
+<p>However, simplification must never compromise transparency.</p>
+<p><strong>Principle 10</strong></p>
+<p><strong>Every Feature Must Improve Execution</strong></p>
+<p>Every feature introduced into the product must answer one question:</p>
+<p><strong>Does this measurably increase the user's probability of completing the task?</strong></p>
+<p>If the answer is no, the feature should not be included in the product.</p>
+<p>This principle prevents unnecessary feature expansion.</p>
+<p><strong>3.6 Success Criteria</strong></p>
+<p>The Buddy-AI measures success through execution outcomes rather than application usage.</p>
+<p>Examples of meaningful success indicators include:</p>
+<ul><li>Increased on-time task completion </li>
+<li>Earlier task completion relative to deadlines </li>
+<li>Reduced deadline collisions </li>
+<li>Reduced last-minute work </li>
+<li>Higher execution consistency </li>
+<li>Improved user trust in AI recommendations </li>
+</ul>
+<p>Metrics such as notification count or application usage time are not considered primary indicators of product success.</p>
+<p><strong>3.7 Product Boundaries</strong></p>
+<p>To maintain focus, the platform intentionally avoids becoming:</p>
+<ul><li>A generic chatbot </li>
+<li>A life coach </li>
+<li>A therapist </li>
+<li>A social media platform </li>
+<li>A project management suite </li>
+<li>A calendar replacement </li>
+</ul>
+<p>Instead, it remains focused on one responsibility:</p>
+<p><strong>Helping users execute meaningful work successfully.</strong></p>
+<p><strong>3.8 Long-Term Vision</strong></p>
+<p>The long-term vision extends beyond individual task management.</p>
+<p>The Buddy-AI aims to become an intelligent execution layer capable of supporting individuals throughout their academic, professional, and entrepreneurial journeys.</p>
+<p>As the system learns user behavior over time, it should evolve from a planning assistant into a trusted execution partner that continuously adapts while preserving transparency, explainability, and user control.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter establishes the philosophical foundation of the Buddy-AI. It defines the product's mission, long-term vision, and non-negotiable design principles that guide every future architectural and implementation decision. By emphasizing collaboration, explainability, adaptability, and user autonomy, the platform differentiates itself from traditional productivity tools and provides a consistent framework for evaluating future enhancements.</p>
+<p><strong>✅ Chapter 3 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 4 — User Personas</strong></p>
+<p><strong>4.1 Purpose</strong></p>
+<p>The Buddy-AI is designed to support individuals engaged in goal-oriented work across different domains. Although students, professionals, and entrepreneurs perform different types of work, they share a common challenge: successfully executing tasks before deadlines while adapting to changing circumstances.</p>
+<p>This chapter defines the primary user personas supported by the platform, their objectives, execution behaviors, and the ways in which the AI adapts its planning and interaction strategies.</p>
+<p>The purpose of personas is not to classify users by occupation, but to understand their execution requirements.</p>
+<p><strong>4.2 Persona-Based Design Philosophy</strong></p>
+<p>The platform does not create different applications for different users.</p>
+<p>Instead, it provides one unified execution system that adapts its planning and communication based on the user's context.</p>
+<p>Regardless of profession, every user follows the same execution lifecycle:</p>
+<p>Create Task<br />      ↓<br />Understand Task<br />      ↓<br />Generate Plan<br />      ↓<br />Execute<br />      ↓<br />Monitor Progress<br />      ↓<br />Recover if Needed<br />      ↓<br />Complete Task<br />      ↓<br />Learn</p>
+<p>The AI modifies only the planning strategy, milestone generation, recommendations, and communication style based on the selected persona.</p>
+<p><strong>4.3 Primary Personas</strong></p>
+<p>The system currently supports three primary personas.</p>
+<p><strong>Persona 1 — Student</strong></p>
+<p><strong>Overview</strong></p>
+<p>Students primarily work on academic activities that involve fixed deadlines and structured evaluation.</p>
+<p>Their work often consists of:</p>
+<ul><li>Assignments </li>
+<li>Mini Projects </li>
+<li>Major Projects </li>
+<li>Laboratory Work </li>
+<li>Research </li>
+<li>Presentations </li>
+<li>Examinations </li>
+<li>Hackathons </li>
+<li>Certification Courses </li>
+</ul>
+<p><strong>Primary Goals</strong></p>
+<p>Students typically aim to:</p>
+<ul><li>Submit assignments before deadlines. </li>
+<li>Improve learning outcomes. </li>
+<li>Balance academics with extracurricular activities. </li>
+<li>Avoid last-minute work. </li>
+<li>Prepare consistently for examinations. </li>
+</ul>
+<p><strong>Common Challenges</strong></p>
+<p>Students frequently experience:</p>
+<ul><li>Procrastination. </li>
+<li>Underestimating workload. </li>
+<li>Multiple assignment deadlines in the same week. </li>
+<li>Poor prioritization. </li>
+<li>Forgetting submission-related tasks. </li>
+<li>Inconsistent study schedules. </li>
+</ul>
+<p><strong>AI Adaptation</strong></p>
+<p>For students, the AI emphasizes:</p>
+<ul><li>Early execution. </li>
+<li>Safety buffers before submission dates. </li>
+<li>Study milestone generation. </li>
+<li>Deadline collision management. </li>
+<li>Assignment completion reminders. </li>
+<li>Submission readiness checks. </li>
+</ul>
+<p>Example:</p>
+<p>Assignment Due<br /><br />↓<br /><br />Planning<br /><br />↓<br /><br />Research<br /><br />↓<br /><br />Execution<br /><br />↓<br /><br />Revision<br /><br />↓<br /><br />Pack Assignment<br /><br />↓<br /><br />Submission</p>
+<p><strong>Persona 2 — Professional</strong></p>
+<p><strong>Overview</strong></p>
+<p>Professionals primarily execute work associated with organizations, clients, or teams.</p>
+<p>Tasks generally involve:</p>
+<ul><li>Reports </li>
+<li>Client Deliverables </li>
+<li>Internal Projects </li>
+<li>Meetings </li>
+<li>Presentations </li>
+<li>Certifications </li>
+<li>Interviews </li>
+</ul>
+<p><strong>Primary Goals</strong></p>
+<p>Professionals generally seek to:</p>
+<ul><li>Meet project deadlines. </li>
+<li>Deliver consistent work quality. </li>
+<li>Balance multiple responsibilities. </li>
+<li>Reduce work-related stress. </li>
+<li>Improve execution reliability. </li>
+</ul>
+<p><strong>Common Challenges</strong></p>
+<p>Professionals often encounter:</p>
+<ul><li>Meeting overload. </li>
+<li>Context switching. </li>
+<li>Changing client priorities. </li>
+<li>Unexpected urgent tasks. </li>
+<li>Deadline collisions. </li>
+<li>Work-life balance issues. </li>
+</ul>
+<p><strong>AI Adaptation</strong></p>
+<p>For professionals, the AI focuses on:</p>
+<ul><li>Priority optimization. </li>
+<li>Dynamic replanning. </li>
+<li>Meeting-aware scheduling. </li>
+<li>Workload balancing. </li>
+<li>Deadline risk analysis. </li>
+<li>Deliverable tracking. </li>
+</ul>
+<p><strong>Persona 3 — Entrepreneur</strong></p>
+<p><strong>Overview</strong></p>
+<p>Entrepreneurs typically manage long-duration initiatives with flexible timelines and multiple parallel objectives.</p>
+<p>Their work commonly includes:</p>
+<ul><li>Product Development </li>
+<li>Business Planning </li>
+<li>Investor Meetings </li>
+<li>Customer Research </li>
+<li>Marketing Campaigns </li>
+<li>Hiring </li>
+<li>Product Launches </li>
+</ul>
+<p><strong>Primary Goals</strong></p>
+<p>Entrepreneurs generally aim to:</p>
+<ul><li>Maintain execution momentum. </li>
+<li>Balance multiple business initiatives. </li>
+<li>Reduce strategic delays. </li>
+<li>Improve long-term consistency. </li>
+<li>Convert ideas into completed outcomes. </li>
+</ul>
+<p><strong>Common Challenges</strong></p>
+<p>Entrepreneurs frequently experience:</p>
+<ul><li>Constant priority changes. </li>
+<li>Large unstructured projects. </li>
+<li>Ambiguous deadlines. </li>
+<li>Frequent interruptions. </li>
+<li>Decision fatigue. </li>
+<li>Overcommitting. </li>
+</ul>
+<p><strong>AI Adaptation</strong></p>
+<p>The AI assists entrepreneurs through:</p>
+<ul><li>Adaptive milestone generation. </li>
+<li>Priority restructuring. </li>
+<li>Long-term execution planning. </li>
+<li>Strategic workload balancing. </li>
+<li>Flexible recovery planning. </li>
+</ul>
+<p><strong>4.4 Universal User Model</strong></p>
+<p>Although users belong to different personas, the system internally treats every user using a common execution model.</p>
+<p>Each user consists of:</p>
+<p>User<br /> │<br /> ├── Persona<br /> ├── Purpose Profile<br /> ├── Availability Profile<br /> ├── Current Tasks<br /> ├── Behavioral Patterns<br /> ├── Preferences<br /> └── Execution History</p>
+<p>This unified model allows all system components to operate consistently while still providing personalized behavior.</p>
+<p><strong>4.5 Persona Selection</strong></p>
+<p>During onboarding, users select the persona that best represents their primary work style.</p>
+<p>The selected persona influences:</p>
+<ul><li>Initial planning templates. </li>
+<li>Milestone generation. </li>
+<li>Example task suggestions. </li>
+<li>Dashboard layout. </li>
+<li>Default planning strategies. </li>
+</ul>
+<p>The persona can be changed later without affecting historical task data.</p>
+<p><strong>4.6 Multi-Persona Support</strong></p>
+<p>Users are not permanently restricted to a single persona.</p>
+<p>For example:</p>
+<ul><li>A student may simultaneously build a startup. </li>
+<li>A professional may prepare for higher education. </li>
+<li>An entrepreneur may pursue certifications. </li>
+</ul>
+<p>The system allows users to create tasks outside their primary persona.</p>
+<p>Example:</p>
+<p>Primary Persona<br /><br />Student<br /><br />↓<br /><br />Task<br /><br />Startup MVP<br /><br />↓<br /><br />Planner switches to Entrepreneur-style planning</p>
+<p>This ensures that task planning is determined by the nature of the task rather than the user's occupation.</p>
+<p><strong>4.7 Persona Influence on AI</strong></p>
+<p>The persona affects <strong>planning</strong>, not <strong>intelligence</strong>.</p>
+<p>Gemini always performs the same reasoning capabilities.</p>
+<p>However, the prompts include persona-specific context to improve recommendations.</p>
+<p>For example:</p>
+<p>A student assignment may generate milestones such as:</p>
+<ul><li>Understand Topic </li>
+<li>Solve Problems </li>
+<li>Final Review </li>
+<li>Prepare Submission </li>
+</ul>
+<p>Whereas a software project for a professional may generate:</p>
+<ul><li>Requirements Analysis </li>
+<li>Architecture Design </li>
+<li>Implementation </li>
+<li>Testing </li>
+<li>Deployment </li>
+</ul>
+<p>The underlying planning capability remains identical.</p>
+<p><strong>4.8 Design Principles for Personas</strong></p>
+<p>The following principles govern persona handling:</p>
+<ul><li>Personas guide recommendations but never restrict functionality. </li>
+<li>Users can perform any supported task regardless of persona. </li>
+<li>Planning adapts to the task context rather than relying solely on occupation. </li>
+<li>Persona-specific behavior must remain transparent and editable. </li>
+<li>Users retain complete control over generated plans. </li>
+</ul>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter defines the three primary personas supported by the Buddy-AI—Students, Professionals, and Entrepreneurs—and explains how the system adapts its planning strategies to each while maintaining a unified execution architecture. By separating persona from task type, the platform remains flexible enough to support users with diverse responsibilities without fragmenting the product into multiple experiences.</p>
+<p><strong>✅ Chapter 4 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 5 — Functional Requirements</strong></p>
+<p><strong>5.1 Purpose</strong></p>
+<p>This chapter defines the functional capabilities of the Buddy-AI. Functional requirements describe <strong>what the system must do</strong> from the user's perspective, independent of implementation details. These requirements serve as the foundation for the system architecture, AI capabilities, database design, APIs, frontend, and testing strategy.</p>
+<p>Every subsequent design and implementation decision must satisfy the requirements defined in this chapter.</p>
+<p><strong>5.2 Functional Requirement Categories</strong></p>
+<p>The functional requirements are grouped into the following categories:</p>
+<ol><li>User Management </li>
+<li>Task Management </li>
+<li>AI Planning </li>
+<li>Execution Management </li>
+<li>Progress Monitoring </li>
+<li>AI Recovery &amp; Replanning </li>
+<li>Notifications </li>
+<li>Learning &amp; Personalization </li>
+<li>Dashboard &amp; Analytics </li>
+<li>System Administration </li>
+</ol><p><strong>5.3 User Management Requirements</strong></p>
+<p><strong>FR-01 — User Registration</strong></p>
+<p>The system shall allow users to register and authenticate using their Google account.</p>
+<p><strong>FR-02 — User Profile</strong></p>
+<p>The system shall maintain a user profile containing:</p>
+<ul><li>Name </li>
+<li>Email </li>
+<li>Primary Persona </li>
+<li>Purpose Profile </li>
+<li>Preferences </li>
+<li>Availability Profile </li>
+</ul>
+<p><strong>FR-03 — Persona Selection</strong></p>
+<p>The system shall allow users to select and modify their primary persona at any time.</p>
+<p><strong>FR-04 — Purpose Profile</strong></p>
+<p>The system shall allow users to optionally define long-term goals that provide context for AI recommendations.</p>
+<p><strong>5.4 Task Management Requirements</strong></p>
+<p><strong>FR-05 — Task Creation</strong></p>
+<p>The system shall allow users to create new tasks.</p>
+<p>Each task shall contain:</p>
+<ul><li>Title </li>
+<li>Description </li>
+<li>Deadline </li>
+<li>Task Type </li>
+<li>Priority </li>
+<li>Optional Notes </li>
+</ul>
+<p><strong>FR-06 — Task Classification</strong></p>
+<p>The system shall classify every task as either:</p>
+<ul><li>Execution Task </li>
+<li>Quick Task </li>
+</ul>
+<p><strong>FR-07 — Task Modification</strong></p>
+<p>Users shall be able to edit task information at any time.</p>
+<p><strong>FR-08 — Task Deletion</strong></p>
+<p>Users shall be able to archive or delete tasks.</p>
+<p><strong>FR-09 — Recurring Rules</strong></p>
+<p>The system shall allow recurring schedules for supported Quick Tasks.</p>
+<p><strong>5.5 AI Planning Requirements</strong></p>
+<p><strong>FR-10 — Task Understanding</strong></p>
+<p>The AI shall analyze newly created Execution Tasks to understand their context before planning.</p>
+<p><strong>FR-11 — Milestone Generation</strong></p>
+<p>The AI shall generate an initial milestone plan for every Execution Task.</p>
+<p><strong>FR-12 — Editable Planning</strong></p>
+<p>Users shall be able to modify AI-generated milestones.</p>
+<p><strong>FR-13 — Safety Buffer Planning</strong></p>
+<p>The system shall generate execution plans that aim to complete tasks before their actual deadlines.</p>
+<p><strong>FR-14 — Planning Explanation</strong></p>
+<p>The AI shall explain why milestones were generated and how the execution strategy was chosen.</p>
+<p><strong>5.6 Execution Management Requirements</strong></p>
+<p><strong>FR-15 — Execution Tracking</strong></p>
+<p>The system shall track the progress of every active Execution Task.</p>
+<p><strong>FR-16 — Availability Awareness</strong></p>
+<p>The execution plan shall consider user-defined unavailable periods.</p>
+<p><strong>FR-17 — Deadline Collision Detection</strong></p>
+<p>The system shall detect conflicts between multiple active tasks.</p>
+<p><strong>FR-18 — Priority Recommendations</strong></p>
+<p>The AI shall recommend updated priorities when conflicts occur.</p>
+<p><strong>FR-19 — Execution Timeline</strong></p>
+<p>Users shall be able to view the complete execution timeline of every task.</p>
+<p><strong>5.7 Progress Monitoring Requirements</strong></p>
+<p><strong>FR-20 — Progress Updates</strong></p>
+<p>Users shall be able to update milestone progress manually.</p>
+<p><strong>FR-21 — Evidence Upload</strong></p>
+<p>Users may optionally upload evidence supporting milestone completion.</p>
+<p><strong>FR-22 — Reflection Submission</strong></p>
+<p>Users may optionally describe the progress achieved during a work session.</p>
+<p><strong>FR-23 — Completion Confidence</strong></p>
+<p>The AI shall estimate milestone completion confidence using available evidence and user reflection.</p>
+<p><strong>FR-24 — Progress History</strong></p>
+<p>The system shall maintain a history of milestone updates.</p>
+<p><strong>5.8 Recovery Requirements</strong></p>
+<p><strong>FR-25 — Deviation Detection</strong></p>
+<p>The system shall detect deviations from the execution plan.</p>
+<p><strong>FR-26 — Context Conversation</strong></p>
+<p>Before replanning, the AI shall attempt to understand the reason for execution deviation.</p>
+<p><strong>FR-27 — Recovery Planning</strong></p>
+<p>The AI shall generate one or more recovery strategies.</p>
+<p><strong>FR-28 — Decision Cards</strong></p>
+<p>Every important AI recommendation shall be presented through a Decision Card.</p>
+<p><strong>FR-29 — User Approval</strong></p>
+<p>Users shall be able to:</p>
+<ul><li>Accept </li>
+<li>Modify </li>
+<li>Reject </li>
+</ul>
+<p>AI recommendations.</p>
+<p><strong>FR-30 — Dynamic Replanning</strong></p>
+<p>The system shall update execution plans after user approval.</p>
+<p><strong>5.9 Notification Requirements</strong></p>
+<p><strong>FR-31 — Intelligent Notifications</strong></p>
+<p>The system shall send contextual notifications instead of repetitive reminders.</p>
+<p><strong>FR-32 — Event-Based Notifications</strong></p>
+<p>Notifications shall be triggered by meaningful events such as:</p>
+<ul><li>Missed milestones </li>
+<li>Deadline collisions </li>
+<li>Buffer reduction </li>
+<li>Approaching deadlines </li>
+<li>Newly assigned work </li>
+</ul>
+<p><strong>FR-33 — Notification Interaction</strong></p>
+<p>Notifications shall allow users to respond directly without opening lengthy workflows.</p>
+<p><strong>5.10 Learning Requirements</strong></p>
+<p><strong>FR-34 — Behavioral Learning</strong></p>
+<p>The AI shall gradually learn user execution patterns.</p>
+<p><strong>FR-35 — Adaptive Planning</strong></p>
+<p>Future execution plans shall consider previously learned behavioral patterns.</p>
+<p><strong>FR-36 — User Control</strong></p>
+<p>Users shall be able to review and reset learned behavioral preferences.</p>
+<p><strong>5.11 Dashboard Requirements</strong></p>
+<p><strong>FR-37 — Dashboard Overview</strong></p>
+<p>The dashboard shall present:</p>
+<ul><li>Today's Focus </li>
+<li>Active Tasks </li>
+<li>Risk Summary </li>
+<li>Safety Buffers </li>
+<li>Pending Decisions </li>
+<li>Upcoming Deadlines </li>
+</ul>
+<p><strong>FR-38 — Task Dashboard</strong></p>
+<p>Each task shall provide:</p>
+<ul><li>Milestones </li>
+<li>Timeline </li>
+<li>Progress </li>
+<li>Evidence </li>
+<li>AI Conversation </li>
+<li>Decision History </li>
+</ul>
+<p><strong>FR-39 — Decision Center</strong></p>
+<p>Users shall be able to review all pending AI recommendations from a centralized interface.</p>
+<p><strong>5.12 Explainability Requirements</strong></p>
+<p><strong>FR-40 — Explainable AI</strong></p>
+<p>Every significant AI recommendation shall include:</p>
+<ul><li>Reason </li>
+<li>Impact </li>
+<li>Suggested Action </li>
+</ul>
+<p><strong>FR-41 — Decision Transparency</strong></p>
+<p>The system shall never silently modify important execution plans.</p>
+<p><strong>5.13 Reliability Requirements</strong></p>
+<p><strong>FR-42 — Manual Override</strong></p>
+<p>Users shall always be able to manually override AI recommendations.</p>
+<p><strong>FR-43 — Graceful AI Failure</strong></p>
+<p>If AI services are unavailable, deterministic system functions shall continue operating wherever possible.</p>
+<p><strong>FR-44 — Data Persistence</strong></p>
+<p>The system shall preserve all execution history, task information, and user preferences across sessions.</p>
+<p><strong>5.14 Functional Requirements Summary</strong></p>
+<p>The Buddy-AI shall:</p>
+<ul><li>Support user authentication and personalization. </li>
+<li>Manage execution and quick tasks. </li>
+<li>Generate adaptive execution plans. </li>
+<li>Preserve safety buffers before deadlines. </li>
+<li>Detect execution risks and deadline collisions. </li>
+<li>Monitor progress using reflections and optional evidence. </li>
+<li>Initiate contextual conversations before replanning. </li>
+<li>Generate explainable recovery strategies. </li>
+<li>Learn user execution patterns over time. </li>
+<li>Maintain transparency by requiring user approval for important planning changes. </li>
+<li>Provide a unified dashboard for execution management. </li>
+</ul>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter defines the functional contract of the Buddy-AI. These requirements establish the expected behavior of the platform without prescribing implementation details. Every architectural component, AI capability, API, database entity, and user interface developed in later chapters must directly support one or more of these functional requirements, ensuring traceability and consistency throughout the system design.</p>
+<p><strong>✅ Chapter 5 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 6 — Complete User Journey</strong></p>
+<p><strong>6.1 Purpose</strong></p>
+<p>This chapter defines the complete behavioral specification of the Buddy-AI.</p>
+<p>Unlike previous chapters that describe the product's philosophy and functional requirements, this chapter describes how the platform behaves during real-world usage.</p>
+<p>Every interaction between the user, the AI, and the system is documented from the moment a user creates an account until a task is completed and the system learns from the experience.</p>
+<p>The objective of this chapter is to remove ambiguity from implementation by clearly specifying the expected behavior of every major workflow.</p>
+<p>All later chapters—including AI Architecture, Backend Architecture, Database Design, API Design, Frontend Design, and Google AI Studio Integration—are derived directly from the user journeys defined here.</p>
+<p><strong>6.2 Complete Product Lifecycle</strong></p>
+<p>Every user interaction belongs to one continuous execution lifecycle.</p>
+<p>                     User Registration<br />                             │<br />                             ▼<br />                      User Onboarding<br />                             │<br />                             ▼<br />                    Configure Profile<br />                             │<br />                             ▼<br />                     Enter Dashboard<br />                             │<br />                             ▼<br />                     Create New Task<br />                             │<br />                             ▼<br />                 AI Understands Task<br />                             │<br />                             ▼<br />                 AI Generates Plan<br />                             │<br />                             ▼<br />                 User Reviews Plan<br />                             │<br />                             ▼<br />                    Execution Begins<br />                             │<br />          ┌──────────────────┼──────────────────┐<br />          │                  │                  │<br />          ▼                  ▼                  ▼<br />   Progress Update     Miss Milestone     New Task Added<br />          │                  │                  │<br />          ▼                  ▼                  ▼<br /> Evidence &amp; Reflection   AI Conversation   Collision Detection<br />          │                  │                  │<br />          └──────────────┬───┴──────────────────┘<br />                         ▼<br />                  Recovery Planning<br />                         ▼<br />                 Updated Execution Plan<br />                         ▼<br />                Continue Execution<br />                         ▼<br />                  Task Completed<br />                         ▼<br />                 AI Learns Behavior<br />                         ▼<br />                Better Future Planning</p>
+<p>This lifecycle repeats for every Execution Task created by the user.</p>
+<p><strong>6.3 User Onboarding Journey</strong></p>
+<p><strong>Purpose</strong></p>
+<p>The onboarding process establishes enough information for the AI to generate meaningful execution plans while minimizing the amount of information requested from the user.</p>
+<p>The system intentionally avoids lengthy setup forms.</p>
+<p>The AI learns gradually over time rather than relying on extensive manual configuration.</p>
+<p><strong>Functional View</strong></p>
+<p>When a new user opens the application for the first time, they authenticate using their Google account.</p>
+<p>After successful authentication, the user is guided through a lightweight onboarding process.</p>
+<p>The onboarding collects only the information necessary to personalize initial planning.</p>
+<p>The user provides:</p>
+<ul><li>Primary Persona (Student, Professional, Entrepreneur) </li>
+<li>Purpose Profile (Optional) </li>
+<li>Notification Preference </li>
+<li>Typical Availability (Optional) </li>
+</ul>
+<p>The onboarding process intentionally does <strong>not</strong> request excessive task-specific information such as task complexity or estimated hours, as these are inferred later by the AI whenever possible.</p>
+<p>After completing onboarding, the user is redirected to the Dashboard.</p>
+<p><strong>AI View</strong></p>
+<p>During onboarding, Gemini is <strong>not</strong> involved.</p>
+<p>No reasoning is required.</p>
+<p>The onboarding simply stores user preferences.</p>
+<p>Behavioral personalization begins only after sufficient execution history is available.</p>
+<p><strong>System View</strong></p>
+<p>The backend:</p>
+<ul><li>creates the user profile </li>
+<li>initializes behavioral memory </li>
+<li>initializes empty task lists </li>
+<li>stores preferences </li>
+<li>redirects the user to the dashboard </li>
+</ul>
+<p><strong>6.4 Dashboard Journey</strong></p>
+<p><strong>Purpose</strong></p>
+<p>The Dashboard serves as the operational center of the Buddy-AI.</p>
+<p>It answers one primary question:</p>
+<p><strong>"What should I focus on right now?"</strong></p>
+<p>The dashboard is intentionally designed to minimize decision fatigue.</p>
+<p>Rather than presenting long task lists, it highlights actionable execution information.</p>
+<p><strong>Functional View</strong></p>
+<p>The dashboard presents:</p>
+<ul><li>Today's Focus </li>
+<li>Active Execution Tasks </li>
+<li>Quick Tasks </li>
+<li>Pending AI Decisions </li>
+<li>Current Safety Buffers </li>
+<li>Deadline Risk </li>
+<li>Upcoming Commitments </li>
+<li>Recent Activity </li>
+</ul>
+<p>The dashboard continuously updates as execution progresses.</p>
+<p><strong>AI View</strong></p>
+<p>The AI does not generate the dashboard.</p>
+<p>Instead, Gemini contributes contextual recommendations displayed within the dashboard.</p>
+<p>Examples include:</p>
+<ul><li>Suggested priority changes. </li>
+<li>Recovery recommendations. </li>
+<li>Milestone advice. </li>
+<li>Context-aware execution suggestions. </li>
+</ul>
+<p><strong>System View</strong></p>
+<p>The backend aggregates:</p>
+<ul><li>active tasks </li>
+<li>milestones </li>
+<li>risk scores </li>
+<li>decision cards </li>
+<li>notification state </li>
+<li>calendar events (if available) </li>
+</ul>
+<p>The frontend renders the aggregated information.</p>
+<p><strong>6.5 Execution Task Journey</strong></p>
+<p>Execution Tasks form the primary workflow of the platform.</p>
+<p>This journey describes the complete lifecycle of long-duration work.</p>
+<p><strong>Step 1 — Create Task</strong></p>
+<p>The user creates a new Execution Task.</p>
+<p>Example:</p>
+<p>Title<br /><br />Fundamentals of AI Assignment<br /><br />Deadline<br /><br />July 10</p>
+<p>Optional information such as notes or attachments may also be provided.</p>
+<p>The system stores the task.</p>
+<p><strong>Step 2 — AI Task Understanding</strong></p>
+<p>The backend forwards the task information to Gemini.</p>
+<p>Gemini determines:</p>
+<ul><li>task objective </li>
+<li>probable execution strategy </li>
+<li>planning assumptions </li>
+<li>suggested milestone structure </li>
+</ul>
+<p>If the task description lacks sufficient information, Gemini generates a reasonable initial plan rather than interrupting the user with excessive questions.</p>
+<p>The generated plan remains editable.</p>
+<p><strong>Step 3 — Execution Planning</strong></p>
+<p>Using the understood task, the AI generates:</p>
+<ul><li>milestones </li>
+<li>milestone order </li>
+<li>suggested completion dates </li>
+<li>target completion before the deadline </li>
+<li>initial safety buffer </li>
+</ul>
+<p>The user reviews the proposed plan.</p>
+<p>The user may:</p>
+<ul><li>Accept </li>
+<li>Modify </li>
+<li>Regenerate </li>
+</ul>
+<p>Only after approval does the execution plan become active.</p>
+<p><strong>Step 4 — Execution Begins</strong></p>
+<p>The dashboard begins tracking:</p>
+<ul><li>milestone progress </li>
+<li>remaining safety buffer </li>
+<li>deadline risk </li>
+<li>pending decisions </li>
+</ul>
+<p>At this stage the AI remains mostly passive.</p>
+<p>The objective is to allow uninterrupted work rather than excessive interaction.</p>
+<p><strong>Step 5 — Progress Updates</strong></p>
+<p>As work progresses, the user may update milestones.</p>
+<p>Updates may include:</p>
+<ul><li>marking progress </li>
+<li>uploading evidence </li>
+<li>writing a reflection </li>
+</ul>
+<p>The system evaluates progress.</p>
+<p>If confidence is sufficiently high, milestones are updated automatically.</p>
+<p>Otherwise, the AI requests clarification.</p>
+<p><strong>Step 6 — Continuous Monitoring</strong></p>
+<p>Throughout execution the backend continuously evaluates:</p>
+<ul><li>remaining milestones </li>
+<li>remaining buffer </li>
+<li>approaching deadlines </li>
+<li>deadline collisions </li>
+<li>execution deviations </li>
+</ul>
+<p>Most monitoring occurs silently.</p>
+<p>The AI intervenes only when meaningful action is required.</p>
+<p><strong>Step 7 — Completion</strong></p>
+<p>Once all milestones are complete:</p>
+<p>The AI generates:</p>
+<ul><li>execution summary </li>
+<li>lessons learned </li>
+<li>behavioral updates </li>
+</ul>
+<p>The task moves to Completed.</p>
+<p><strong>Step 8 — Learning</strong></p>
+<p>The Learning Engine extracts useful behavioral patterns.</p>
+<p>Examples:</p>
+<ul><li>preferred work time </li>
+<li>slower coding pace </li>
+<li>documentation delays </li>
+<li>consistent execution habits </li>
+</ul>
+<p>These observations influence future planning.</p>
+<p><strong>Chapter Status</strong></p>
+<p>At this point we have documented:</p>
+<ul><li>Overall lifecycle </li>
+<li>Onboarding </li>
+<li>Dashboard </li>
+<li>Execution Task lifecycle </li>
+</ul>
+<p><strong>We intentionally stop here.</strong></p>
+<p>Why?</p>
+<p>Because the remaining journeys deserve dedicated sections:</p>
+<ul><li><strong>Quick Task Journey</strong> </li>
+<li><strong>Recurring Task Journey</strong> </li>
+<li><strong>Deadline Collision Journey</strong> </li>
+<li><strong>Missed Milestone Journey</strong> </li>
+<li><strong>Conversation &amp; Negotiation Journey</strong> </li>
+<li><strong>Evidence &amp; Reflection Journey</strong> </li>
+<li><strong>Learning Journey</strong> </li>
+<li><strong>Exceptional Scenarios</strong> </li>
+</ul>
+<p>Each of these will define critical behavior that directly impacts the AI architecture, backend logic, and UI. Compressing them into the same section would reduce clarity. I recommend treating each as its own major subsection so that, by the end of Chapter 6, we have a complete behavioral specification that can be implemented without ambiguity. This chapter will likely become the longest and most valuable part of the entire SDD.</p>
+<p><strong>Chapter 7 — AI Capability Lifecycle</strong></p>
+<p><strong>7.1 Purpose</strong></p>
+<p>This chapter defines the internal lifecycle of the AI within the Buddy-AI.</p>
+<p>While Chapter 6 describes the product from the user's perspective, this chapter explains how the system orchestrates its AI capabilities to support execution.</p>
+<p>The AI does not operate continuously or autonomously.</p>
+<p>Instead, it is activated only when reasoning, interpretation, or adaptive decision-making is required.</p>
+<p>This architecture minimizes unnecessary AI usage while ensuring that every AI interaction provides meaningful value.</p>
+<p><strong>7.2 AI Design Philosophy</strong></p>
+<p>The Buddy-AI is <strong>not</strong> implemented as a single chatbot.</p>
+<p>Instead, it is composed of multiple specialized AI capabilities orchestrated by the backend.</p>
+<p>Each capability has a clearly defined responsibility and operates only when triggered by specific system events.</p>
+<p>This separation improves:</p>
+<ul><li>explainability </li>
+<li>maintainability </li>
+<li>prompt quality </li>
+<li>scalability </li>
+<li>reliability </li>
+</ul>
+<p><strong>7.3 AI Capability Overview</strong></p>
+<p>The platform consists of seven logical AI capabilities.</p>
+<table><thead><tr><th><p><strong>Capability</strong></p>
+</th><th><p><strong>Purpose</strong></p>
+</th></tr></thead><tbody><tr><td><p>Task Understanding</p>
+</td><td><p>Understand newly created tasks</p>
+</td></tr><tr><td><p>Planner</p>
+</td><td><p>Generate execution milestones</p>
+</td></tr><tr><td><p>Conversation</p>
+</td><td><p>Understand execution deviations</p>
+</td></tr><tr><td><p>Recovery</p>
+</td><td><p>Generate recovery strategies</p>
+</td></tr><tr><td><p>Evidence Analysis</p>
+</td><td><p>Validate progress using evidence</p>
+</td></tr><tr><td><p>Learning</p>
+</td><td><p>Extract behavioral patterns</p>
+</td></tr><tr><td><p>Reflection Analysis</p>
+</td><td><p>Understand user progress reflections</p>
+</td></tr></tbody></table><p>These are <strong>logical capabilities</strong>, not independent autonomous agents.</p>
+<p>All capabilities use the same Gemini model but operate through different prompts and structured outputs.</p>
+<p><strong>7.4 AI Activation Philosophy</strong></p>
+<p>The AI is <strong>event-driven</strong>.</p>
+<p>It is never continuously active.</p>
+<p>A capability is invoked only when a meaningful event occurs.</p>
+<p>Examples of AI triggers include:</p>
+<ul><li>New task creation </li>
+<li>User requests replanning </li>
+<li>Milestone missed </li>
+<li>Evidence uploaded </li>
+<li>Reflection submitted </li>
+<li>New task causing deadline collision </li>
+<li>Task completion </li>
+</ul>
+<p>Routine operations such as displaying dashboards, calculating risk scores, or scheduling notifications do not require AI reasoning.</p>
+<p><strong>7.5 Capability 1 — Task Understanding</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Transform a user-defined task into structured information suitable for execution planning.</p>
+<p><strong>Trigger</strong></p>
+<p>Activated when an Execution Task is created or significantly modified.</p>
+<p><strong>Inputs</strong></p>
+<ul><li>Task title </li>
+<li>Description </li>
+<li>Deadline </li>
+<li>User persona </li>
+<li>Optional notes </li>
+</ul>
+<p><strong>AI Responsibilities</strong></p>
+<p>Gemini identifies:</p>
+<ul><li>task objective </li>
+<li>probable work type </li>
+<li>execution characteristics </li>
+<li>planning assumptions </li>
+</ul>
+<p><strong>Outputs</strong></p>
+<p>Structured JSON containing:</p>
+<ul><li>interpreted task </li>
+<li>planning context </li>
+<li>suggested execution category </li>
+</ul>
+<p>The Planner Capability consumes this output.</p>
+<p><strong>7.6 Capability 2 — Planner</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Generate an execution strategy for completing the task.</p>
+<p><strong>Trigger</strong></p>
+<p>Runs immediately after successful task understanding.</p>
+<p><strong>Inputs</strong></p>
+<ul><li>Task Understanding output </li>
+<li>Deadline </li>
+<li>User profile </li>
+<li>Existing commitments </li>
+</ul>
+<p><strong>Responsibilities</strong></p>
+<p>Generate:</p>
+<ul><li>milestones </li>
+<li>execution order </li>
+<li>suggested completion dates </li>
+<li>target completion before deadline </li>
+<li>safety buffer proposal </li>
+</ul>
+<p><strong>Outputs</strong></p>
+<p>Editable execution plan.</p>
+<p><strong>7.7 Capability 3 — Conversation</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Understand why execution deviated from the original plan.</p>
+<p><strong>Trigger</strong></p>
+<p>Activated after:</p>
+<ul><li>missed milestones </li>
+<li>manual help requests </li>
+<li>blocked execution </li>
+</ul>
+<p><strong>Responsibilities</strong></p>
+<p>Interpret:</p>
+<ul><li>user explanation </li>
+<li>execution context </li>
+<li>probable blocker </li>
+</ul>
+<p>Examples:</p>
+<ul><li>Busy schedule </li>
+<li>Knowledge gap </li>
+<li>Health issue </li>
+<li>New priority </li>
+<li>Motivation loss </li>
+</ul>
+<p>The capability does not generate plans.</p>
+<p>It only understands context.</p>
+<p><strong>7.8 Capability 4 — Recovery</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Generate recovery strategies after understanding the execution problem.</p>
+<p><strong>Trigger</strong></p>
+<p>Runs after Conversation Capability completes.</p>
+<p><strong>Responsibilities</strong></p>
+<p>Generate one or more recovery strategies.</p>
+<p>Examples:</p>
+<ul><li>Split milestone </li>
+<li>Use safety buffer </li>
+<li>Adjust priorities </li>
+<li>Extend tomorrow's work </li>
+<li>Reorder milestones </li>
+</ul>
+<p>The AI never silently updates plans.</p>
+<p>Every recovery strategy is presented through a Decision Card.</p>
+<p><strong>7.9 Capability 5 — Evidence Analysis</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Estimate milestone completion using uploaded evidence.</p>
+<p><strong>Trigger</strong></p>
+<p>Activated whenever the user submits evidence.</p>
+<p><strong>Inputs</strong></p>
+<ul><li>Uploaded image or document </li>
+<li>Reflection </li>
+<li>Milestone definition </li>
+</ul>
+<p><strong>Responsibilities</strong></p>
+<p>Determine:</p>
+<ul><li>Completed </li>
+<li>Partial </li>
+<li>Unknown </li>
+</ul>
+<p>Estimate completion confidence.</p>
+<p>If confidence is insufficient, request clarification.</p>
+<p><strong>7.10 Capability 6 — Reflection Analysis</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Interpret textual progress updates provided by the user.</p>
+<p><strong>Trigger</strong></p>
+<p>Activated whenever a reflection is submitted.</p>
+<p><strong>Responsibilities</strong></p>
+<p>Identify:</p>
+<ul><li>progress achieved </li>
+<li>remaining work </li>
+<li>possible blockers </li>
+<li>inconsistencies </li>
+</ul>
+<p>Reflection Analysis complements Evidence Analysis.</p>
+<p><strong>7.11 Capability 7 — Learning</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Improve future execution planning using completed task history.</p>
+<p><strong>Trigger</strong></p>
+<p>Activated only after task completion.</p>
+<p><strong>Responsibilities</strong></p>
+<p>Extract long-term behavioral patterns such as:</p>
+<ul><li>preferred execution windows </li>
+<li>typical completion speed </li>
+<li>recurring blockers </li>
+<li>response preferences </li>
+</ul>
+<p>Only persistent patterns are stored.</p>
+<p>Temporary observations are discarded.</p>
+<p><strong>7.12 Capability Orchestration</strong></p>
+<p>The backend orchestrates capabilities according to system events.</p>
+<p>Example:</p>
+<p>User Creates Task<br />        │<br />        ▼<br />Task Understanding<br />        │<br />        ▼<br />Planner<br />        │<br />        ▼<br />Dashboard</p>
+<p>Example:</p>
+<p>Missed Milestone<br />        │<br />        ▼<br />Conversation<br />        │<br />        ▼<br />Recovery<br />        │<br />        ▼<br />Decision Card</p>
+<p>Example:</p>
+<p>Evidence Upload<br />        │<br />        ▼<br />Evidence Analysis<br />        │<br />        ▼<br />Confidence<br />        │<br />        ▼<br />Milestone Updated</p>
+<p><strong>7.13 AI Design Constraints</strong></p>
+<p>The AI shall:</p>
+<ul><li>never silently modify execution plans. </li>
+<li>always explain important recommendations. </li>
+<li>use deterministic logic for calculations. </li>
+<li>request clarification when confidence is insufficient. </li>
+<li>preserve user control. </li>
+<li>avoid unnecessary interactions. </li>
+<li>learn gradually from repeated behavior. </li>
+</ul>
+<p><strong>7.14 Relationship with Other Components</strong></p>
+<p>The AI Capability Lifecycle interacts with:</p>
+<ul><li>User Journey (Chapter 6) </li>
+<li>Decision Engine (Chapter 8) </li>
+<li>Google AI Studio Architecture </li>
+<li>Prompt Architecture </li>
+<li>Backend Architecture </li>
+<li>Database Architecture </li>
+</ul>
+<p>This chapter establishes the logical behavior that those chapters implement.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter defines the internal reasoning architecture of the Buddy-AI. Rather than relying on a monolithic chatbot, the system is composed of specialized AI capabilities that are activated only when reasoning is required. By separating understanding, planning, recovery, evidence interpretation, and learning into distinct capabilities, the platform achieves greater explainability, modularity, and maintainability while keeping deterministic logic responsible for calculations and system state.</p>
+<p><strong>✅ Chapter 7 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 8 — Decision Engine</strong></p>
+<p><strong>8.1 Purpose</strong></p>
+<p>The Decision Engine is the central reasoning coordinator of the Buddy-AI.</p>
+<p>Its responsibility is to determine <strong>when intervention is required</strong>, <strong>why intervention is required</strong>, and <strong>what action should be taken</strong>.</p>
+<p>The Decision Engine does not perform natural language reasoning itself. Instead, it combines deterministic system state with AI-generated understanding to produce transparent, explainable, and user-controllable execution decisions.</p>
+<p>Every significant system action—such as replanning, priority changes, recovery suggestions, or milestone updates—is initiated through the Decision Engine.</p>
+<p><strong>8.2 Design Philosophy</strong></p>
+<p>The Decision Engine follows one fundamental principle:</p>
+<p><strong>Observe first. Understand second. Decide third. Act last.</strong></p>
+<p>The system never immediately changes execution plans.</p>
+<p>Instead, every decision passes through a structured reasoning pipeline.</p>
+<p>This prevents unnecessary AI interventions, improves explainability, and preserves user trust.</p>
+<p><strong>8.3 Decision Lifecycle</strong></p>
+<p>Every decision follows the same lifecycle.</p>
+<p>System Event<br />      │<br />      ▼<br />Observe<br />      │<br />      ▼<br />Evaluate<br />      │<br />      ▼<br />Need AI?<br /> ┌──────────────┐<br /> │              │<br />No             Yes<br /> │              │<br /> ▼              ▼<br />Rule Engine   Gemini Capability<br /> │              │<br /> └──────┬───────┘<br />        ▼<br />Generate Recommendation<br />        ▼<br />Decision Card<br />        ▼<br />User Response<br />        ▼<br />Execute Decision<br />        ▼<br />Update System State</p>
+<p><strong>8.4 Decision Sources</strong></p>
+<p>The Decision Engine continuously receives information from multiple sources.</p>
+<p><strong>User Events</strong></p>
+<p>Examples:</p>
+<ul><li>New task </li>
+<li>Task edited </li>
+<li>Milestone updated </li>
+<li>Evidence uploaded </li>
+<li>Reflection submitted </li>
+<li>User requests help </li>
+</ul>
+<p><strong>System Events</strong></p>
+<p>Examples:</p>
+<ul><li>Deadline approaching </li>
+<li>Buffer reduced </li>
+<li>Collision detected </li>
+<li>Notification acknowledged </li>
+<li>Task completed </li>
+</ul>
+<p><strong>AI Events</strong></p>
+<p>Examples:</p>
+<ul><li>Planning complete </li>
+<li>Evidence confidence low </li>
+<li>Blocker identified </li>
+<li>Recovery options generated </li>
+<li>Learning completed </li>
+</ul>
+<p><strong>8.5 Decision Categories</strong></p>
+<p>Every decision belongs to one of five categories.</p>
+<p><strong>Category 1 — Planning Decisions</strong></p>
+<p>Examples:</p>
+<ul><li>Generate milestones </li>
+<li>Update milestones </li>
+<li>Regenerate execution plan </li>
+<li>Recalculate completion target </li>
+</ul>
+<p><strong>Category 2 — Risk Decisions</strong></p>
+<p>Examples:</p>
+<ul><li>Increase risk </li>
+<li>Reduce risk </li>
+<li>Preserve safety buffer </li>
+<li>Detect collision </li>
+</ul>
+<p><strong>Category 3 — Recovery Decisions</strong></p>
+<p>Examples:</p>
+<ul><li>Split milestone </li>
+<li>Delay milestone </li>
+<li>Reorder work </li>
+<li>Increase workload tomorrow </li>
+</ul>
+<p><strong>Category 4 — Learning Decisions</strong></p>
+<p>Examples:</p>
+<ul><li>Store behavior </li>
+<li>Ignore temporary behavior </li>
+<li>Update preferences </li>
+</ul>
+<p><strong>Category 5 — Communication Decisions</strong></p>
+<p>Examples:</p>
+<ul><li>Notify user </li>
+<li>Ask question </li>
+<li>Create Decision Card </li>
+<li>Stay silent </li>
+</ul>
+<p><strong>8.6 Decision Pipeline</strong></p>
+<p>Every event is processed through six stages.</p>
+<p><strong>Stage 1 — Observe</strong></p>
+<p>The backend receives a new event.</p>
+<p>Example:</p>
+<p>User missed milestone.</p>
+<p>No decision yet.</p>
+<p><strong>Stage 2 — Evaluate</strong></p>
+<p>The Rule Engine determines:</p>
+<ul><li>Current risk </li>
+<li>Buffer </li>
+<li>Collision </li>
+<li>Dependencies </li>
+<li>Available information </li>
+</ul>
+<p>Question:</p>
+<p>Can deterministic logic solve this?</p>
+<p>If yes,</p>
+<p>AI is not called.</p>
+<p>Example</p>
+<p>Electricity Bill<br /><br />↓<br /><br />Tomorrow<br /><br />↓<br /><br />Reminder<br /><br />↓<br /><br />Done</p>
+<p>No Gemini required.</p>
+<p><strong>Stage 3 — Understand</strong></p>
+<p>If interpretation is required,</p>
+<p>Gemini is invoked.</p>
+<p>Example.</p>
+<p>User:<br /><br />"I couldn't work because college announced an extra lab session."</p>
+<p>Gemini understands.</p>
+<p>Output:</p>
+<p>{<br />"reason":"Schedule Conflict",<br />"confidence":0.95<br />}</p>
+<p><strong>Stage 4 — Decide</strong></p>
+<p>The Decision Engine combines</p>
+<p>System State</p>
+<p>AI Output</p>
+<p>↓</p>
+<p>Generates</p>
+<p>Recommended Action.</p>
+<p>Example</p>
+<p>Reason<br /><br />Schedule Conflict<br /><br />↓<br /><br />Buffer<br /><br />3 Days<br /><br />↓<br /><br />Decision<br /><br />Use 1 Buffer Day</p>
+<p><strong>Stage 5 — Present</strong></p>
+<p>The recommendation becomes a Decision Card.</p>
+<p>Example.</p>
+<p>Action</p>
+<p>Use Safety Buffer</p>
+<p>Reason</p>
+<p>Unexpected lab session.</p>
+<p>Impact</p>
+<p>Buffer reduced from 3 to 2 days.</p>
+<p>Options</p>
+<p>Accept</p>
+<p>Modify</p>
+<p>Keep Existing Plan</p>
+<p><strong>Stage 6 — Execute</strong></p>
+<p>After user approval,</p>
+<p>the backend updates</p>
+<ul><li>milestones </li>
+<li>risk </li>
+<li>schedule </li>
+<li>dashboard </li>
+</ul>
+<p><strong>8.7 Decision Priority</strong></p>
+<p>When multiple events occur simultaneously, the Decision Engine processes them according to priority.</p>
+<p>Priority order:</p>
+<table><thead><tr><th><p><strong>Level</strong></p>
+</th><th><p><strong>Category</strong></p>
+</th></tr></thead><tbody><tr><td><p>P1</p>
+</td><td><p>Deadline Miss Risk</p>
+</td></tr><tr><td><p>P2</p>
+</td><td><p>Deadline Collision</p>
+</td></tr><tr><td><p>P3</p>
+</td><td><p>Safety Buffer Reduction</p>
+</td></tr><tr><td><p>P4</p>
+</td><td><p>Missed Milestone</p>
+</td></tr><tr><td><p>P5</p>
+</td><td><p>New Task</p>
+</td></tr><tr><td><p>P6</p>
+</td><td><p>Evidence Update</p>
+</td></tr><tr><td><p>P7</p>
+</td><td><p>Reflection</p>
+</td></tr><tr><td><p>P8</p>
+</td><td><p>Learning</p>
+</td></tr></tbody></table><p>This prevents conflicting AI recommendations.</p>
+<p><strong>8.8 Decision Principles</strong></p>
+<p>Every recommendation must satisfy these principles.</p>
+<p><strong>Principle 1</strong></p>
+<p>Do not interrupt unnecessarily.</p>
+<p><strong>Principle 2</strong></p>
+<p>Do not ask questions if enough information already exists.</p>
+<p><strong>Principle 3</strong></p>
+<p>Never silently modify execution plans.</p>
+<p><strong>Principle 4</strong></p>
+<p>Always explain recommendations.</p>
+<p><strong>Principle 5</strong></p>
+<p>Always preserve user control.</p>
+<p><strong>Principle 6</strong></p>
+<p>Prefer simpler recovery strategies before complex replanning.</p>
+<p><strong>Principle 7</strong></p>
+<p>Preserve Safety Buffers whenever possible.</p>
+<p><strong>Principle 8</strong></p>
+<p>Minimize execution disruption.</p>
+<p><strong>8.9 Decision Outcomes</strong></p>
+<p>Every decision produces one of the following outcomes.</p>
+<ul><li>No Action </li>
+<li>Notification </li>
+<li>Question </li>
+<li>Recommendation </li>
+<li>Plan Update </li>
+<li>Learning Update </li>
+</ul>
+<p>No other outcomes are permitted.</p>
+<p><strong>8.10 Decision Card Generation</strong></p>
+<p>Every recommendation is converted into a standardized Decision Card.</p>
+<p>Structure:</p>
+<p>Action<br /><br />Reason<br /><br />Impact<br /><br />Recommendation<br /><br />Options</p>
+<p>Example:</p>
+<p>Action<br /><br />Priority Updated<br /><br />Reason<br /><br />A newly added assignment is due tomorrow.<br /><br />Impact<br /><br />Mini Project moved to Friday.<br /><br />Recommendation<br /><br />Complete Assignment first.<br /><br />Options<br /><br />Accept<br /><br />Modify<br /><br />Keep Existing Plan</p>
+<p><strong>8.11 User Response Handling</strong></p>
+<p>Users may respond by:</p>
+<ul><li>Accepting </li>
+<li>Modifying </li>
+<li>Rejecting </li>
+<li>Discussing with AI </li>
+</ul>
+<p>The Decision Engine updates the execution state accordingly.</p>
+<p>The AI never overrides explicit user decisions.</p>
+<p><strong>8.12 Failure Handling</strong></p>
+<p>If sufficient information is unavailable:</p>
+<p>The Decision Engine prefers clarification over assumption.</p>
+<p>Example.</p>
+<p>Instead of</p>
+<p>Planning incomplete.</p>
+<p>It asks</p>
+<p>What progress did you make today?</p>
+<p>If AI services are unavailable,</p>
+<p>the Rule Engine continues deterministic functionality until AI becomes available again.</p>
+<p><strong>8.13 Design Constraints</strong></p>
+<p>The Decision Engine shall:</p>
+<ul><li>remain explainable </li>
+<li>minimize AI usage </li>
+<li>maximize transparency </li>
+<li>preserve autonomy </li>
+<li>avoid unnecessary conversations </li>
+<li>separate reasoning from calculation </li>
+</ul>
+<p><strong>8.14 Decision Engine Summary</strong></p>
+<p>The Decision Engine is the central orchestration layer responsible for transforming events into intelligent execution decisions.</p>
+<p>It does not replace the planner, risk engine, or Gemini capabilities.</p>
+<p>Instead, it coordinates them.</p>
+<p>By separating observation, evaluation, understanding, decision-making, presentation, and execution into independent stages, the platform achieves predictable, explainable, and maintainable behavior.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter defines the reasoning framework that governs every meaningful action within the Buddy-AI. Rather than relying on reactive reminders or opaque AI responses, the Decision Engine evaluates system events, invokes AI only when interpretation is required, and produces transparent recommendations that users can understand, modify, or reject. This architecture ensures that the product remains collaborative, explainable, and trustworthy while continuously supporting successful task execution.</p>
+<p><strong>✅ Chapter 8 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 9 — System State Model</strong></p>
+<p><strong>9.1 Purpose</strong></p>
+<p>The System State Model defines the complete set of dynamic information maintained by the Buddy-AI during execution.</p>
+<p>Rather than allowing each component to independently maintain information, the platform follows a centralized state model that provides a consistent view of the user's execution environment.</p>
+<p>Every decision made by the Decision Engine, Focus Engine, Risk Engine, Notification Engine, and AI capabilities is derived from this state.</p>
+<p>The purpose of this chapter is to establish <strong>a single source of truth</strong> for the entire platform.</p>
+<p><strong>9.2 Design Philosophy</strong></p>
+<p>The platform distinguishes between <strong>persistent information</strong> and <strong>dynamic state</strong>.</p>
+<p>Persistent information changes infrequently and represents long-term user or task information.</p>
+<p>Dynamic state changes continuously as users interact with the platform.</p>
+<p>Only dynamic state participates in execution decisions.</p>
+<p>This separation improves performance, maintainability, and predictability.</p>
+<p><strong>9.3 System State Hierarchy</strong></p>
+<p>The platform organizes information into hierarchical layers.</p>
+<p>Buddy-AI<br />│<br />├── User Profile (Persistent)<br />│<br />├── User State (Dynamic)<br />│<br />├── Global Execution State<br />│<br />├── Task States<br />│      ├── Task A<br />│      ├── Task B<br />│      └── Task N<br />│<br />├── Decision State<br />│<br />├── Notification State<br />│<br />└── Learning State</p>
+<p>The Decision Engine never directly queries the database. Instead, it evaluates the current System State.</p>
+<p><strong>9.4 User Profile (Persistent)</strong></p>
+<p>The User Profile contains long-term information that rarely changes.</p>
+<p><strong>Purpose</strong></p>
+<p>Provide stable personalization without influencing day-to-day execution directly.</p>
+<p><strong>Fields</strong></p>
+<ul><li>User ID </li>
+<li>Name </li>
+<li>Email </li>
+<li>Primary Persona </li>
+<li>Purpose Profile </li>
+<li>Notification Preferences </li>
+<li>Preferred Language </li>
+<li>Time Zone </li>
+</ul>
+<p>These values are updated only when explicitly modified by the user.</p>
+<p><strong>9.5 User State (Dynamic)</strong></p>
+<p>The User State represents the user's current execution context.</p>
+<p>Unlike the User Profile, this information changes regularly.</p>
+<p><strong>Purpose</strong></p>
+<p>Provide the Decision Engine with the user's current working situation.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Active Task Count </li>
+<li>Pending Decision Count </li>
+<li>Current Focus Task </li>
+<li>Today's Planned Work </li>
+<li>Availability Confidence </li>
+<li>Current Workload Level </li>
+<li>Last Meaningful Interaction </li>
+<li>Current Execution Mode </li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Current Focus<br />Fundamentals of AI Assignment<br /><br />Today's Planned Work<br />Milestone 2<br /><br />Pending Decisions<br />1<br /><br />Availability Confidence<br />High</p>
+<p><strong>9.6 Global Execution State</strong></p>
+<p>The Global Execution State summarizes the execution status across all tasks.</p>
+<p><strong>Purpose</strong></p>
+<p>Allow the platform to reason about the user's overall workload rather than isolated tasks.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Active Tasks </li>
+<li>Upcoming Deadlines </li>
+<li>Overdue Tasks </li>
+<li>Upcoming Events </li>
+<li>Total Risk Score </li>
+<li>Total Safety Buffer </li>
+<li>Current Priority Queue </li>
+</ul>
+<p>This state enables features such as deadline collision detection and dashboard summaries.</p>
+<p><strong>9.7 Task State</strong></p>
+<p>Each Execution Task maintains its own independent state.</p>
+<p>The platform does <strong>not</strong> combine all tasks into one execution state.</p>
+<p><strong>Purpose</strong></p>
+<p>Track task-specific execution independently while allowing global reasoning.</p>
+<p><strong>Task State Fields</strong></p>
+<p><strong>Task Information</strong></p>
+<ul><li>Task ID </li>
+<li>Title </li>
+<li>Description </li>
+<li>Task Type </li>
+<li>Deadline </li>
+<li>Priority </li>
+</ul>
+<p><strong>Planning State</strong></p>
+<ul><li>Milestones </li>
+<li>Soft Dependencies </li>
+<li>Target Completion Date </li>
+<li>Safety Buffer </li>
+<li>Planned Schedule </li>
+</ul>
+<p><strong>Execution State</strong></p>
+<ul><li>Current Milestone </li>
+<li>Progress </li>
+<li>Completion Percentage </li>
+<li>Current Status </li>
+</ul>
+<p>Possible statuses include:</p>
+<ul><li>Planned </li>
+<li>In Progress </li>
+<li>Blocked </li>
+<li>Waiting </li>
+<li>Completed </li>
+<li>Archived </li>
+</ul>
+<p><strong>Risk State</strong></p>
+<ul><li>Current Risk Score </li>
+<li>Risk Trend </li>
+<li>Collision Status </li>
+<li>Buffer Remaining </li>
+</ul>
+<p><strong>Evidence State</strong></p>
+<ul><li>Uploaded Evidence </li>
+<li>Reflection History </li>
+<li>Completion Confidence </li>
+</ul>
+<p><strong>Decision State</strong></p>
+<ul><li>Pending Recommendation </li>
+<li>Accepted Decisions </li>
+<li>Rejected Decisions </li>
+<li>Decision History </li>
+</ul>
+<p><strong>Learning State (Task)</strong></p>
+<ul><li>Estimated Difficulty </li>
+<li>Actual Completion Pattern </li>
+<li>Lessons Learned </li>
+</ul>
+<p><strong>9.8 Decision State</strong></p>
+<p>The platform tracks every important recommendation generated by the AI.</p>
+<p><strong>Purpose</strong></p>
+<p>Prevent repetitive recommendations and maintain transparency.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Decision ID </li>
+<li>Recommendation </li>
+<li>Reason </li>
+<li>Generated Time </li>
+<li>Status </li>
+<li>User Response </li>
+</ul>
+<p>Possible statuses:</p>
+<ul><li>Pending </li>
+<li>Accepted </li>
+<li>Modified </li>
+<li>Rejected </li>
+<li>Expired </li>
+</ul>
+<p>The Decision Engine consults this state before generating new recommendations.</p>
+<p><strong>9.9 Notification State</strong></p>
+<p>The Notification State prevents excessive or redundant interruptions.</p>
+<p><strong>Purpose</strong></p>
+<p>Manage communication without overwhelming the user.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Last Notification </li>
+<li>Notification History </li>
+<li>Ignored Notifications </li>
+<li>Silent Hours </li>
+<li>Preferred Interaction Windows </li>
+</ul>
+<p>This state helps determine whether a notification should be sent immediately or postponed.</p>
+<p><strong>9.10 Learning State</strong></p>
+<p>The Learning State stores long-term behavioral observations.</p>
+<p><strong>Purpose</strong></p>
+<p>Improve future planning while avoiding assumptions based on limited evidence.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Preferred Execution Windows </li>
+<li>Average Milestone Completion Rate </li>
+<li>Frequent Blockers </li>
+<li>Preferred Planning Style </li>
+<li>Response Preferences </li>
+<li>Historical Completion Trends </li>
+</ul>
+<p>Only stable behavioral patterns are stored.</p>
+<p>Temporary behaviors are discarded.</p>
+<p><strong>9.11 Availability Model</strong></p>
+<p>The platform does not attempt to determine the user's exact real-time availability.</p>
+<p>Instead, it maintains an <strong>Availability Confidence Model</strong>.</p>
+<p><strong>Purpose</strong></p>
+<p>Estimate whether the current moment is suitable for interaction.</p>
+<p><strong>Inputs</strong></p>
+<ul><li>Preferred execution windows </li>
+<li>User-defined unavailable events </li>
+<li>Recent interaction history </li>
+<li>Learned execution behavior </li>
+</ul>
+<p><strong>Output</strong></p>
+<p>One of three confidence levels:</p>
+<ul><li>High </li>
+<li>Medium </li>
+<li>Low </li>
+</ul>
+<p>This confidence influences notification timing and conversational interventions.</p>
+<p><strong>9.12 Focus State</strong></p>
+<p>The Focus State represents the single most important work item at the current moment.</p>
+<p><strong>Purpose</strong></p>
+<p>Reduce decision fatigue by directing the user's attention to the highest-impact action.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Current Focus Task </li>
+<li>Current Focus Milestone </li>
+<li>Reason for Selection </li>
+<li>Estimated Work Duration </li>
+<li>Expected Benefit </li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Today's Focus<br /><br />Task:<br />Fundamentals of AI Assignment<br /><br />Milestone:<br />Solve DFA Problems<br /><br />Estimated Duration:<br />45 minutes<br /><br />Reason:<br />Completing this milestone today preserves a 3-day safety buffer and prevents a deadline collision.</p>
+<p>The Focus Engine updates this state whenever significant changes occur.</p>
+<p><strong>9.13 State Transition Principles</strong></p>
+<p>The System State changes only in response to meaningful events.</p>
+<p>Examples include:</p>
+<ul><li>Task creation </li>
+<li>Milestone completion </li>
+<li>Evidence submission </li>
+<li>Reflection submission </li>
+<li>New task creation </li>
+<li>Deadline updates </li>
+<li>User responses to Decision Cards </li>
+</ul>
+<p>Routine page refreshes or dashboard views do not modify the state.</p>
+<p><strong>9.14 State Ownership</strong></p>
+<p>Each component is responsible for maintaining only its designated portion of the System State.</p>
+<table><thead><tr><th><p><strong>Component</strong></p>
+</th><th><p><strong>Owned State</strong></p>
+</th></tr></thead><tbody><tr><td><p>Planner</p>
+</td><td><p>Planning State</p>
+</td></tr><tr><td><p>Risk Engine</p>
+</td><td><p>Risk State</p>
+</td></tr><tr><td><p>Focus Engine</p>
+</td><td><p>Focus State</p>
+</td></tr><tr><td><p>Notification Engine</p>
+</td><td><p>Notification State</p>
+</td></tr><tr><td><p>Learning Engine</p>
+</td><td><p>Learning State</p>
+</td></tr><tr><td><p>Decision Engine</p>
+</td><td><p>Decision State</p>
+</td></tr><tr><td><p>User Actions</p>
+</td><td><p>Execution State</p>
+</td></tr></tbody></table><p>This clear ownership prevents conflicting updates and simplifies debugging.</p>
+<p><strong>9.15 State Consistency</strong></p>
+<p>The platform follows these consistency principles:</p>
+<ol><li>Every state change must be traceable to an event. </li>
+<li>State updates must be deterministic where possible. </li>
+<li>AI recommendations may suggest state changes but cannot directly modify protected state without user approval. </li>
+<li>Historical state transitions should remain auditable. </li>
+<li>Components must read shared state but only modify the portions they own. </li>
+</ol><p><strong>Chapter Summary</strong></p>
+<p>The System State Model serves as the central source of truth for the Buddy-AI. By separating persistent information from dynamic execution state and assigning clear ownership to each subsystem, the platform achieves predictable behavior, transparent decision-making, and scalable architecture. Every intelligent recommendation, notification, risk calculation, and planning decision originates from the current System State, ensuring consistency across the entire application.</p>
+<p><strong>✅ Chapter 9 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 10 — Focus Engine</strong></p>
+<p><strong>10.1 Purpose</strong></p>
+<p>The Focus Engine is responsible for identifying the single most valuable action the user should perform at the current moment.</p>
+<p>Rather than overwhelming users with all pending work, the Focus Engine continuously analyzes the current System State and presents one prioritized recommendation that maximizes the probability of successful task completion.</p>
+<p>Its objective is to reduce decision fatigue while preserving user control.</p>
+<p>The Focus Engine does <strong>not</strong> create plans or calculate risks.</p>
+<p>Instead, it determines <strong>what deserves attention now</strong>.</p>
+<p><strong>10.2 Design Philosophy</strong></p>
+<p>The Focus Engine is based on one principle:</p>
+<p><strong>The hardest part of productivity is often deciding what to do next.</strong></p>
+<p>The engine removes this burden.</p>
+<p>Instead of displaying every task equally, it continuously identifies the action with the highest expected execution value.</p>
+<p><strong>10.3 Responsibilities</strong></p>
+<p>The Focus Engine shall:</p>
+<ul><li>Select the current focus task. </li>
+<li>Select the current focus milestone. </li>
+<li>Explain why it was selected. </li>
+<li>Estimate the effort required. </li>
+<li>Update focus when circumstances change. </li>
+<li>Avoid unnecessary focus changes. </li>
+<li>Reduce cognitive overload. </li>
+</ul>
+<p>The Focus Engine shall <strong>not</strong>:</p>
+<ul><li>modify execution plans, </li>
+<li>calculate risk, </li>
+<li>generate milestones, </li>
+<li>override user decisions. </li>
+</ul>
+<p><strong>10.4 Inputs</strong></p>
+<p>The Focus Engine evaluates information from the System State.</p>
+<p><strong>User State</strong></p>
+<ul><li>Current persona </li>
+<li>Availability confidence </li>
+<li>Current workload </li>
+<li>Purpose profile </li>
+</ul>
+<p><strong>Global Execution State</strong></p>
+<ul><li>Active tasks </li>
+<li>Upcoming deadlines </li>
+<li>Pending decisions </li>
+<li>Upcoming events </li>
+</ul>
+<p><strong>Task State</strong></p>
+<ul><li>Current milestone </li>
+<li>Progress </li>
+<li>Safety buffer </li>
+<li>Dependencies </li>
+<li>Priority </li>
+<li>Deadline </li>
+<li>Status </li>
+</ul>
+<p><strong>Risk State</strong></p>
+<ul><li>Current risk </li>
+<li>Risk trend </li>
+</ul>
+<p><strong>Decision State</strong></p>
+<ul><li>Pending recommendations </li>
+<li>Accepted recommendations </li>
+<li>Rejected recommendations </li>
+</ul>
+<p><strong>Learning State</strong></p>
+<ul><li>Preferred work duration </li>
+<li>Preferred execution window </li>
+<li>Historical completion patterns </li>
+</ul>
+<p><strong>10.5 Focus Selection Principles</strong></p>
+<p>The engine evaluates every active task using multiple criteria.</p>
+<p>The objective is <strong>not</strong> to maximize urgency.</p>
+<p>The objective is to maximize successful execution.</p>
+<p>Evaluation considers:</p>
+<ul><li>Remaining safety buffer </li>
+<li>Deadline proximity </li>
+<li>Current risk </li>
+<li>Dependency blocking </li>
+<li>Estimated effort </li>
+<li>User availability </li>
+<li>Pending decisions </li>
+<li>Existing workload </li>
+</ul>
+<p>No single factor determines focus.</p>
+<p><strong>10.6 Focus Priority Hierarchy</strong></p>
+<p>When multiple tasks compete for attention, the engine evaluates them in the following order.</p>
+<p><strong>Level 1 — Critical Deadlines</strong></p>
+<p>Tasks that are at immediate risk of failure.</p>
+<p><strong>Level 2 — Dependency Blockers</strong></p>
+<p>Tasks whose completion enables progress on other milestones.</p>
+<p><strong>Level 3 — Safety Buffer Preservation</strong></p>
+<p>Tasks that protect planned completion before the deadline.</p>
+<p><strong>Level 4 — High Impact Progress</strong></p>
+<p>Tasks where a short amount of work produces significant execution progress.</p>
+<p><strong>Level 5 — Routine Progress</strong></p>
+<p>Tasks that simply continue the execution plan.</p>
+<p><strong>Level 6 — Low Priority Work</strong></p>
+<p>Tasks that can safely wait.</p>
+<p><strong>10.7 Focus Score</strong></p>
+<p>Internally, each active task receives a <strong>Focus Score</strong>.</p>
+<p>The Focus Score is a deterministic value derived from multiple execution signals.</p>
+<p>The score is <strong>not shown</strong> to the user.</p>
+<p>The score is recalculated whenever significant events occur.</p>
+<p>Factors influencing the score include:</p>
+<ul><li>Remaining buffer </li>
+<li>Deadline distance </li>
+<li>Current risk </li>
+<li>Dependency importance </li>
+<li>Priority </li>
+<li>Current progress </li>
+<li>Estimated effort </li>
+<li>User availability confidence </li>
+</ul>
+<p>The task with the highest Focus Score becomes the primary recommendation.</p>
+<p><strong>10.8 Focus Recommendation</strong></p>
+<p>The engine produces a structured recommendation.</p>
+<p>Every recommendation contains:</p>
+<ul><li>Task </li>
+<li>Milestone </li>
+<li>Estimated effort </li>
+<li>Reason </li>
+<li>Expected benefit </li>
+</ul>
+<p>Example:</p>
+<p>Today's Focus<br /><br />Task<br />Fundamentals of AI Assignment<br /><br />Milestone<br />Solve DFA Questions<br /><br />Estimated Time<br />45 Minutes<br /><br />Reason<br />Completing this milestone today preserves your 3-day safety buffer and prevents a deadline collision with tomorrow's Operating Systems assignment.<br /><br />Expected Benefit<br />Assignment remains on schedule.</p>
+<p><strong>10.9 Focus Stability</strong></p>
+<p>The Focus Engine avoids frequent recommendation changes.</p>
+<p>Once a task becomes the current focus, it remains the recommended focus unless a meaningful event occurs.</p>
+<p>Meaningful events include:</p>
+<ul><li>New high-priority task. </li>
+<li>Deadline collision. </li>
+<li>Milestone completion. </li>
+<li>Risk increase. </li>
+<li>Manual user override. </li>
+<li>Updated availability. </li>
+</ul>
+<p>This prevents the dashboard from constantly shifting priorities.</p>
+<p><strong>10.10 User Override</strong></p>
+<p>Users always retain control over their current focus.</p>
+<p>They may:</p>
+<ul><li>Accept the recommendation. </li>
+<li>Select another task. </li>
+<li>Delay the recommendation. </li>
+<li>Ignore the recommendation. </li>
+</ul>
+<p>The system records these actions to improve future recommendations.</p>
+<p>The Focus Engine never forces users to follow its suggestions.</p>
+<p><strong>10.11 Interaction with the Decision Engine</strong></p>
+<p>The Focus Engine and Decision Engine have separate responsibilities.</p>
+<p><strong>Decision Engine</strong></p>
+<p>Answers:</p>
+<p><strong>Should the system intervene?</strong></p>
+<p><strong>Focus Engine</strong></p>
+<p>Answers:</p>
+<p><strong>What should the user work on next?</strong></p>
+<p>Example:</p>
+<p>Decision Engine<br /><br />↓<br /><br />Deadline Collision Detected<br /><br />↓<br /><br />Focus Engine<br /><br />↓<br /><br />Recommend Operating Systems Assignment<br /><br />↓<br /><br />Decision Card<br /><br />↓<br /><br />Dashboard</p>
+<p><strong>10.12 Interaction with the Planner</strong></p>
+<p>The Planner creates milestones.</p>
+<p>The Focus Engine selects among those milestones.</p>
+<p>It never changes the plan.</p>
+<p>Example:</p>
+<p>Planner<br /><br />↓<br /><br />Planning<br /><br />↓<br /><br />Research<br /><br />↓<br /><br />Implementation<br /><br />↓<br /><br />Testing<br /><br />↓<br /><br />Focus Engine<br /><br />↓<br /><br />Today's Focus<br /><br />Research</p>
+<p><strong>10.13 Interaction with Notifications</strong></p>
+<p>Notifications use the current focus recommendation.</p>
+<p>Example:</p>
+<p>Instead of:</p>
+<p>Reminder: Assignment due in 5 days.</p>
+<p>The system sends:</p>
+<p>Today's recommended work is <strong>Research (45 minutes)</strong>. Completing it today keeps your project 3 days ahead of schedule.</p>
+<p>This makes notifications actionable rather than informational.</p>
+<p><strong>10.14 Interaction with Learning</strong></p>
+<p>The Learning Engine continuously improves focus recommendations.</p>
+<p>Example:</p>
+<p>The system observes that the user consistently completes coding tasks in the evening.</p>
+<p>Future focus recommendations favor evening coding sessions when possible.</p>
+<p>Learning influences recommendations but never overrides explicit user preferences.</p>
+<p><strong>10.15 Edge Cases</strong></p>
+<p><strong>No Active Tasks</strong></p>
+<p>The dashboard encourages the user to create a new task or review completed work.</p>
+<p><strong>Multiple Tasks with Similar Focus Scores</strong></p>
+<p>The engine prefers:</p>
+<ol><li>Earlier deadline. </li>
+<li>Higher user-defined priority. </li>
+<li>Smaller estimated effort (to encourage momentum). </li>
+</ol><p><strong>User Repeatedly Ignores Focus</strong></p>
+<p>The engine does not repeatedly surface the same recommendation.</p>
+<p>Instead, the Decision Engine initiates a conversation to understand the reason before generating new recommendations.</p>
+<p><strong>Focus Task Becomes Impossible</strong></p>
+<p>Example:</p>
+<p>The current milestone depends on information the user does not yet have.</p>
+<p>The engine requests replanning instead of continuing to recommend blocked work.</p>
+<p><strong>10.16 Design Constraints</strong></p>
+<p>The Focus Engine shall:</p>
+<ul><li>recommend only one primary focus task at a time. </li>
+<li>avoid frequent recommendation changes. </li>
+<li>remain deterministic and explainable. </li>
+<li>always justify recommendations. </li>
+<li>preserve user autonomy. </li>
+<li>minimize cognitive overload. </li>
+</ul>
+<p><strong>10.17 Focus Engine Summary</strong></p>
+<p>The Focus Engine transforms a complex execution environment into a single, actionable recommendation.</p>
+<p>Rather than asking users to decide among dozens of competing tasks, it continuously evaluates the current execution state and highlights the action most likely to maximize successful task completion.</p>
+<p>By separating focus selection from planning and risk analysis, the architecture remains modular, explainable, and user-centric.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>The Focus Engine serves as the execution compass of the Buddy-AI. It does not create plans or calculate risk; instead, it determines the most valuable next action based on the current System State. Through deterministic scoring, stable recommendations, and transparent reasoning, the engine reduces decision fatigue while keeping users in control of their execution journey.</p>
+<p><strong>✅ Chapter 10 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 11 — Risk Engine</strong></p>
+<p><strong>11.1 Purpose</strong></p>
+<p>The Risk Engine continuously evaluates the probability that an active Execution Task may fail to achieve its intended outcome within the planned execution window.</p>
+<p>Unlike traditional productivity applications that monitor only approaching deadlines, the Risk Engine continuously analyzes execution progress, schedule feasibility, and changing circumstances to detect potential failure before deadlines are threatened.</p>
+<p>Its objective is not merely to identify risk, but to create sufficient opportunity for proactive recovery.</p>
+<p><strong>11.2 Design Philosophy</strong></p>
+<p>The Risk Engine is founded on one principle:</p>
+<p><strong>Deadlines rarely fail suddenly. They fail gradually.</strong></p>
+<p>Most failures are preceded by warning signals such as:</p>
+<ul><li>missed milestones </li>
+<li>shrinking safety buffers </li>
+<li>increasing workload </li>
+<li>conflicting commitments </li>
+<li>repeated execution delays </li>
+</ul>
+<p>The Risk Engine continuously monitors these signals to identify execution problems early enough for meaningful intervention.</p>
+<p><strong>11.3 Responsibilities</strong></p>
+<p>The Risk Engine shall:</p>
+<ul><li>Continuously evaluate execution risk. </li>
+<li>Detect increasing execution risk. </li>
+<li>Explain contributing factors. </li>
+<li>Trigger the Decision Engine when intervention is necessary. </li>
+<li>Support the Focus Engine with execution priorities. </li>
+<li>Update risk after every meaningful event. </li>
+</ul>
+<p>The Risk Engine shall <strong>not</strong>:</p>
+<ul><li>Generate execution plans. </li>
+<li>Reprioritize tasks. </li>
+<li>Modify schedules. </li>
+<li>Notify users directly. </li>
+</ul>
+<p><strong>11.4 Risk Dimensions</strong></p>
+<p>Execution risk is modeled as multiple independent dimensions rather than a single value.</p>
+<p>Each dimension measures a different aspect of execution health.</p>
+<p><strong>A. Schedule Risk</strong></p>
+<p>Question answered:</p>
+<p>Is there still enough time remaining to complete the work?</p>
+<p>Factors:</p>
+<ul><li>Remaining milestones </li>
+<li>Remaining days </li>
+<li>Planned completion date </li>
+<li>Buffer remaining </li>
+</ul>
+<p><strong>B. Progress Risk</strong></p>
+<p>Question answered:</p>
+<p>Is the user progressing as expected?</p>
+<p>Factors:</p>
+<ul><li>Milestones completed </li>
+<li>Delayed milestones </li>
+<li>Consecutive missed sessions </li>
+<li>Current execution velocity </li>
+</ul>
+<p><strong>C. Collision Risk</strong></p>
+<p>Question answered:</p>
+<p>Are multiple tasks competing for the same execution time?</p>
+<p>Factors:</p>
+<ul><li>New tasks </li>
+<li>Overlapping deadlines </li>
+<li>Manual events </li>
+<li>Planned workload </li>
+</ul>
+<p><strong>D. Dependency Risk</strong></p>
+<p>Question answered:</p>
+<p>Is another unfinished milestone blocking future work?</p>
+<p>Example:</p>
+<p>Planning</p>
+<p>↓</p>
+<p>Implementation</p>
+<p>↓</p>
+<p>Testing</p>
+<p>Planning incomplete</p>
+<p>↓</p>
+<p>Implementation blocked</p>
+<p>↓</p>
+<p>Risk increases.</p>
+<p><strong>E. Confidence Risk</strong></p>
+<p>Question answered:</p>
+<p>How confident is the system that progress is real?</p>
+<p>Factors:</p>
+<ul><li>Evidence </li>
+<li>Reflection </li>
+<li>User confirmations </li>
+<li>Missing updates </li>
+</ul>
+<p>Low confidence does <strong>not</strong> mean dishonesty.</p>
+<p>It simply means the system lacks sufficient information.</p>
+<p><strong>F. Availability Risk</strong></p>
+<p>Question answered:</p>
+<p>Does the remaining available execution time appear sufficient?</p>
+<p>Factors:</p>
+<ul><li>User-defined unavailable periods </li>
+<li>Preferred execution windows </li>
+<li>Remaining schedule </li>
+</ul>
+<p><strong>11.5 Overall Risk Score</strong></p>
+<p>The engine combines all dimensions into a single Overall Risk Score.</p>
+<p>Schedule Risk<br />      │<br />Progress Risk<br />      │<br />Collision Risk<br />      │<br />Dependency Risk<br />      │<br />Confidence Risk<br />      │<br />Availability Risk<br />      │<br />      ▼<br />Overall Risk</p>
+<p>The Overall Risk Score ranges from <strong>0 to 100</strong>.</p>
+<p><strong>Risk Levels</strong></p>
+<table><thead><tr><th><p><strong>Score</strong></p>
+</th><th><p><strong>Level</strong></p>
+</th><th><p><strong>Meaning</strong></p>
+</th></tr></thead><tbody><tr><td><p>0–20</p>
+</td><td><p>Very Low</p>
+</td><td><p>Execution progressing normally</p>
+</td></tr><tr><td><p>21–40</p>
+</td><td><p>Low</p>
+</td><td><p>Minor deviations detected</p>
+</td></tr><tr><td><p>41–60</p>
+</td><td><p>Moderate</p>
+</td><td><p>Recovery may soon be required</p>
+</td></tr><tr><td><p>61–80</p>
+</td><td><p>High</p>
+</td><td><p>Immediate attention recommended</p>
+</td></tr><tr><td><p>81–100</p>
+</td><td><p>Critical</p>
+</td><td><p>Deadline failure likely without intervention</p>
+</td></tr></tbody></table><p>The numeric score is used internally, while users primarily see the level and explanation.</p>
+<p><strong>11.6 Risk Calculation Principles</strong></p>
+<p>The engine follows these principles:</p>
+<ul><li>Risk changes gradually unless a major event occurs. </li>
+<li>Multiple moderate issues may outweigh one severe issue. </li>
+<li>Risk should decrease when meaningful progress is made. </li>
+<li>Temporary setbacks should not permanently inflate risk. </li>
+</ul>
+<p><strong>11.7 Risk Triggers</strong></p>
+<p>The Risk Engine recalculates risk after events such as:</p>
+<ul><li>Task creation </li>
+<li>Milestone completion </li>
+<li>Missed milestone </li>
+<li>Evidence upload </li>
+<li>Reflection submission </li>
+<li>New task creation </li>
+<li>Deadline modification </li>
+<li>Availability changes </li>
+<li>Decision acceptance </li>
+</ul>
+<p>Routine page refreshes do not trigger recalculation.</p>
+<p><strong>11.8 Risk Explanation</strong></p>
+<p>Every increase in risk must include a human-readable explanation.</p>
+<p>Example:</p>
+<p><strong>Risk Level:</strong> High</p>
+<p><strong>Reason:</strong></p>
+<ul><li>One milestone was missed. </li>
+<li>Safety buffer reduced from 3 days to 1 day. </li>
+<li>A new assignment is due before the current task finishes. </li>
+</ul>
+<p><strong>Recommendation:</strong></p>
+<p>Review the recovery plan.</p>
+<p>This explanation is generated by combining deterministic data with AI-generated summaries.</p>
+<p><strong>11.9 Interaction with Other Components</strong></p>
+<p><strong>Decision Engine</strong></p>
+<p>The Risk Engine informs the Decision Engine when thresholds are crossed.</p>
+<p>Example:</p>
+<p>Risk<br /><br />Moderate<br /><br />↓<br /><br />High<br /><br />↓<br /><br />Decision Engine<br /><br />↓<br /><br />Should intervention occur?</p>
+<p><strong>Focus Engine</strong></p>
+<p>Higher-risk tasks receive greater consideration when selecting today's focus.</p>
+<p>Risk is an input, not the only deciding factor.</p>
+<p><strong>Notification Engine</strong></p>
+<p>The Notification Engine determines whether the user should be informed.</p>
+<p>The Risk Engine never sends notifications directly.</p>
+<p><strong>Planner</strong></p>
+<p>The Planner may regenerate milestones after approved recovery.</p>
+<p>Risk itself does not modify plans.</p>
+<p><strong>11.10 Risk History</strong></p>
+<p>Risk is not only evaluated in the present.</p>
+<p>The system maintains historical trends.</p>
+<p>Example:</p>
+<p>Monday<br /><br />20<br /><br />↓<br /><br />Tuesday<br /><br />28<br /><br />↓<br /><br />Wednesday<br /><br />47<br /><br />↓<br /><br />Thursday<br /><br />65</p>
+<p>Trend information helps the Decision Engine determine whether intervention should be proactive.</p>
+<p><strong>11.11 Edge Cases</strong></p>
+<p><strong>New User</strong></p>
+<p>Historical learning is unavailable.</p>
+<p>Risk relies only on:</p>
+<ul><li>Schedule </li>
+<li>Buffer </li>
+<li>Progress </li>
+</ul>
+<p><strong>No Progress Updates</strong></p>
+<p>The system increases <strong>Confidence Risk</strong>, not Progress Risk.</p>
+<p>The user may have worked offline.</p>
+<p>The AI requests clarification before making assumptions.</p>
+<p><strong>Manual Plan Changes</strong></p>
+<p>Risk is recalculated immediately using the updated execution plan.</p>
+<p><strong>User Ignores Recommendations</strong></p>
+<p>Risk continues to reflect execution reality.</p>
+<p>The system records the decision but respects user autonomy.</p>
+<p><strong>11.12 Design Constraints</strong></p>
+<p>The Risk Engine shall:</p>
+<ul><li>remain deterministic. </li>
+<li>avoid subjective judgments. </li>
+<li>explain every significant increase. </li>
+<li>never modify execution plans. </li>
+<li>never assume user intent. </li>
+<li>update consistently after meaningful events. </li>
+</ul>
+<p><strong>11.13 Risk Engine Summary</strong></p>
+<p>The Risk Engine provides continuous situational awareness by evaluating multiple dimensions of execution health. Rather than relying solely on approaching deadlines, it detects emerging execution problems through schedule analysis, progress monitoring, dependency tracking, confidence estimation, and workload evaluation. By separating risk assessment from planning and intervention, the architecture remains transparent, modular, and explainable.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>The Risk Engine is responsible for identifying <strong>how close a task is to failure and why</strong>. It transforms raw execution data into actionable risk assessments that guide the Decision Engine, Focus Engine, and Notification Engine. Through multidimensional analysis and explainable reasoning, it enables the Buddy-AI to intervene early enough for users to recover successfully rather than react after deadlines have already been missed.</p>
+<p><strong>✅ Chapter 11 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 12 — Notification Engine</strong></p>
+<p>Now we move to what I think is the <strong>hardest UX problem</strong> in the product.</p>
+<p>Every productivity app already sends notifications.</p>
+<p>Most users ignore them.</p>
+<p>Our Notification Engine cannot be a reminder engine.</p>
+<p>It must become an <strong>Interaction Engine</strong>.</p>
+<p>Its philosophy is:</p>
+<p><strong>Don't notify because time has passed. Notify because the user can make a meaningful decision.</strong></p>
+<p>Instead of:</p>
+<p>🔔 <em>"Assignment due in 5 days."</em></p>
+<p>It should say:</p>
+<p><strong>Today's Focus:</strong> Complete "Research" (40 min). Doing this today keeps your 3-day safety buffer intact.</p>
+<p>Or:</p>
+<p><strong>Plan Update Needed:</strong> You missed yesterday's milestone because of an unexpected event. I can redistribute the remaining work without reducing quality. Review the updated plan?</p>
+<p>Or for a quick task:</p>
+<p><strong>Electricity Bill Due Today</strong></p>
+<p>[✅ Paid] [⏰ Remind in 2 Hours] [📅 Remind Tonight]</p>
+<p>Notice that every notification offers an <strong>action</strong>, not just information.</p>
+<p><strong>Notification Design Principles</strong></p>
+<p>The Notification Engine shall:</p>
+<ul><li>Notify only when user action can change the outcome. </li>
+<li>Avoid repeated notifications with identical content. </li>
+<li>Respect preferred interaction windows and silent hours. </li>
+<li>Use the current Focus recommendation when possible. </li>
+<li>Convert important recommendations into interactive notifications. </li>
+<li>Escalate gradually rather than becoming repetitive. </li>
+</ul>
+<p><strong>Notification Types</strong></p>
+<p><strong>1. Execution Notifications</strong></p>
+<p>For milestone work.</p>
+<p>Example:</p>
+<p>Today's recommended work:<br />Complete "Brainstorm Architecture" (45 min).</p>
+<p>Actions:</p>
+<ul><li>Start Now </li>
+<li>Do Later Today </li>
+<li>Reschedule </li>
+</ul>
+<p><strong>2. Decision Notifications</strong></p>
+<p>Generated by the Decision Engine.</p>
+<p>Example:</p>
+<p>A new assignment creates a deadline collision.</p>
+<p>Actions:</p>
+<ul><li>Review Plan </li>
+<li>Keep Current Plan </li>
+</ul>
+<p><strong>3. Quick Task Notifications</strong></p>
+<p>Example:</p>
+<p>Electricity bill is due today.</p>
+<p>Actions:</p>
+<ul><li>Paid </li>
+<li>Remind Later </li>
+<li>Skip This Time </li>
+</ul>
+<p>No proof required.</p>
+<p><strong>4. Recovery Notifications</strong></p>
+<p>Example:</p>
+<p>You missed yesterday's planned work.<br />I have prepared a recovery schedule that still preserves one safety day.</p>
+<p>Actions:</p>
+<ul><li>Review </li>
+<li>Modify </li>
+<li>Ignore </li>
+</ul>
+<p><strong>5. Recurring Notifications</strong></p>
+<p>Example:</p>
+<p>Monthly electricity bill is expected this week.</p>
+<p>Actions:</p>
+<ul><li>Mark Paid </li>
+<li>Snooze </li>
+<li>Change Recurrence </li>
+</ul>
+<p><strong>6. Positive Reinforcement</strong></p>
+<p>Not every notification should signal a problem.</p>
+<p>Example:</p>
+<p>Great job! Completing today's milestone preserved your full safety buffer.</p>
+<p>This reinforces behavior without gamification.</p>
+<p><strong>Escalation Strategy</strong></p>
+<p>The engine should not send the same notification repeatedly.</p>
+<p>Example:</p>
+<p><strong>Level 1</strong></p>
+<p>Gentle suggestion.</p>
+<p>↓</p>
+<p>Ignored.</p>
+<p><strong>Level 2</strong></p>
+<p>Explain the consequence.</p>
+<p>↓</p>
+<p>Ignored.</p>
+<p><strong>Level 3</strong></p>
+<p>Ask whether the schedule should be updated.</p>
+<p>↓</p>
+<p>Ignored.</p>
+<p>No further notifications until a meaningful event occurs.</p>
+<p>This avoids notification fatigue.</p>
+<p><strong>Integration</strong></p>
+<p>Execution Scheduler<br />        │<br />        ▼<br />Risk Engine<br />        │<br />        ▼<br />Decision Engine<br />        │<br />        ▼<br />Notification Engine<br />        │<br />        ▼<br />Mobile / PWA Notification</p>
+<p>The Notification Engine is the <strong>voice</strong> of the Execution Core. It never creates decisions or plans of its own; it translates system decisions into timely, actionable interactions that maximize the user's chance of completing work without becoming intrusive.</p>
+<p><strong>Chapter 13 — Learning Engine</strong></p>
+<p><strong>13.1 Purpose</strong></p>
+<p>The Learning Engine enables the Buddy-AI to gradually improve its planning, scheduling, and recommendations by observing long-term user behavior.</p>
+<p>Unlike traditional machine learning systems that attempt to optimize every interaction, the Learning Engine adopts a conservative approach. It learns only from repeated, consistent patterns and never assumes permanent preferences from isolated events.</p>
+<p>Its purpose is to make future execution plans increasingly personalized while preserving transparency and user control.</p>
+<p><strong>13.2 Design Philosophy</strong></p>
+<p>The Learning Engine follows one principle:</p>
+<p><strong>Observe repeatedly before learning permanently.</strong></p>
+<p>A single late night does not mean the user prefers working at night.</p>
+<p>A single rejected recommendation does not mean the recommendation strategy is wrong.</p>
+<p>The engine only promotes observations into learned behavior after repeated confirmation.</p>
+<p><strong>13.3 Responsibilities</strong></p>
+<p>The Learning Engine shall:</p>
+<ul><li>Observe execution behavior. </li>
+<li>Identify stable behavioral patterns. </li>
+<li>Improve future planning. </li>
+<li>Improve scheduling recommendations. </li>
+<li>Improve notification timing. </li>
+<li>Learn preferred interaction styles. </li>
+<li>Forget obsolete patterns. </li>
+</ul>
+<p>The Learning Engine shall <strong>not</strong>:</p>
+<ul><li>Modify current task execution. </li>
+<li>Override user choices. </li>
+<li>Infer sensitive personal information. </li>
+<li>Permanently learn from isolated events. </li>
+</ul>
+<p><strong>13.4 Learning Lifecycle</strong></p>
+<p>Every learning event follows the same lifecycle.</p>
+<p>Observe<br />    │<br />    ▼<br />Store Observation<br />    │<br />    ▼<br />Pattern Detection<br />    │<br />    ▼<br />Confidence Evaluation<br />    │<br />    ▼<br />Promote to Learned Pattern<br />    │<br />    ▼<br />Apply to Future Tasks</p>
+<p>Learning is gradual and reversible.</p>
+<p><strong>13.5 Learning Categories</strong></p>
+<p>The engine learns in five major categories.</p>
+<p><strong>A. Execution Preferences</strong></p>
+<p>Examples:</p>
+<ul><li>Preferred work duration. </li>
+<li>Preferred work sessions. </li>
+<li>Preferred execution windows. </li>
+</ul>
+<p>Example:</p>
+<p>The user consistently completes coding work between <strong>7 PM and 9 PM</strong>.</p>
+<p>Future schedules prefer this window.</p>
+<p><strong>B. Planning Preferences</strong></p>
+<p>Examples:</p>
+<p>The user regularly modifies AI-generated plans by:</p>
+<ul><li>combining milestones, </li>
+<li>splitting milestones, </li>
+<li>reducing milestone count. </li>
+</ul>
+<p>Future plans reflect these preferences.</p>
+<p><strong>C. Notification Preferences</strong></p>
+<p>Examples:</p>
+<p>The user frequently responds to notifications sent around <strong>6 PM</strong> but ignores those sent during the afternoon.</p>
+<p>The Notification Engine gradually shifts toward more effective interaction windows.</p>
+<p><strong>D. Recovery Preferences</strong></p>
+<p>Example:</p>
+<p>When behind schedule, the user usually prefers:</p>
+<ul><li>extending work over multiple days, </li>
+</ul>
+<p>instead of</p>
+<ul><li>increasing tomorrow's workload. </li>
+</ul>
+<p>Future recovery recommendations prioritize this strategy.</p>
+<p><strong>E. Decision Preferences</strong></p>
+<p>Examples:</p>
+<p>The user often accepts:</p>
+<ul><li>priority updates. </li>
+</ul>
+<p>The user usually rejects:</p>
+<ul><li>aggressive schedule compression. </li>
+</ul>
+<p>The Decision Engine uses these tendencies to rank future recommendations.</p>
+<p><strong>13.6 Observation Model</strong></p>
+<p>The Learning Engine does not directly store conclusions.</p>
+<p>It first stores observations.</p>
+<p>Example:</p>
+<p>Task<br /><br />AI Assignment<br /><br />Observation<br /><br />Started 40 minutes later than scheduled.<br /><br />Outcome<br /><br />Completed Successfully.</p>
+<p>Another:</p>
+<p>Task<br /><br />Project<br /><br />Observation<br /><br />Rejected compressed schedule.<br /><br />Outcome<br /><br />Preferred milestone split.</p>
+<p>Only after repeated observations does learning occur.</p>
+<p><strong>13.7 Confidence Model</strong></p>
+<p>Every learned behavior has an associated confidence score.</p>
+<p>Example:</p>
+<table><thead><tr><th><p><strong>Confidence</strong></p>
+</th><th><p><strong>Interpretation</strong></p>
+</th></tr></thead><tbody><tr><td><p>Low</p>
+</td><td><p>Insufficient observations</p>
+</td></tr><tr><td><p>Medium</p>
+</td><td><p>Emerging pattern</p>
+</td></tr><tr><td><p>High</p>
+</td><td><p>Stable behavior</p>
+</td></tr></tbody></table><p>Only medium and high confidence patterns influence future recommendations.</p>
+<p><strong>13.8 Forgetting Mechanism</strong></p>
+<p>Learning is not permanent.</p>
+<p>Behavior changes.</p>
+<p>Example:</p>
+<p>The user previously preferred:</p>
+<p>Night Work</p>
+<p>Over several months:</p>
+<p>Morning Work</p>
+<p>The older pattern gradually loses confidence and is replaced.</p>
+<p>This prevents stale personalization.</p>
+<p><strong>13.9 Interaction with Other Components</strong></p>
+<p><strong>Planner</strong></p>
+<p>Uses:</p>
+<ul><li>preferred milestone structures, </li>
+<li>preferred planning styles. </li>
+</ul>
+<p><strong>Execution Scheduler</strong></p>
+<p>Uses:</p>
+<ul><li>preferred work windows, </li>
+<li>average execution duration. </li>
+</ul>
+<p><strong>Notification Engine</strong></p>
+<p>Uses:</p>
+<ul><li>successful interaction times, </li>
+<li>ignored notification history. </li>
+</ul>
+<p><strong>Focus Engine</strong></p>
+<p>Uses:</p>
+<ul><li>preferred session lengths, </li>
+<li>execution habits. </li>
+</ul>
+<p><strong>Decision Engine</strong></p>
+<p>Uses:</p>
+<ul><li>historical acceptance of recommendations. </li>
+</ul>
+<p><strong>13.10 Cold Start Strategy</strong></p>
+<p>A new user has no behavioral history.</p>
+<p>During this stage:</p>
+<ul><li>General planning templates are used. </li>
+<li>Standard scheduling assumptions are applied. </li>
+<li>Notification timing relies on user-defined preferences. </li>
+</ul>
+<p>The Learning Engine begins collecting observations immediately but does not personalize until sufficient evidence exists.</p>
+<p><strong>13.11 User Transparency</strong></p>
+<p>Users should be able to review learned behaviors.</p>
+<p>Example:</p>
+<p>Learned Behaviors<br /><br />✓ Prefers evening coding sessions.<br /><br />✓ Usually accepts milestone splitting.<br /><br />✓ Responds best to notifications after work hours.</p>
+<p>Users may:</p>
+<ul><li>Keep </li>
+<li>Modify </li>
+<li>Reset </li>
+</ul>
+<p>any learned behavior.</p>
+<p>This reinforces trust and prevents hidden personalization.</p>
+<p><strong>13.12 Privacy Principles</strong></p>
+<p>The Learning Engine shall:</p>
+<ul><li>Learn only execution-related behavior. </li>
+<li>Never infer sensitive personal attributes. </li>
+<li>Never share learned behavior externally. </li>
+<li>Never use learning for advertising or profiling. </li>
+<li>Store only information relevant to improving task execution. </li>
+</ul>
+<p><strong>13.13 Learning Engine Summary</strong></p>
+<p>The Learning Engine transforms repeated execution observations into stable behavioral knowledge that improves future planning without compromising transparency or user autonomy. By requiring repeated confirmation before learning and allowing obsolete patterns to fade over time, the system balances personalization with reliability and avoids making incorrect long-term assumptions.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>The Learning Engine is responsible for the long-term evolution of the Buddy-AI. Rather than adapting aggressively after every interaction, it builds trust through gradual observation, confidence-based learning, and user-controlled personalization. Its outputs improve planning, scheduling, notifications, focus recommendations, and recovery strategies while ensuring that current task execution remains predictable and explainable.</p>
+<p><strong>✅ Chapter 13 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 14 — Overall System Architecture</strong></p>
+<p><strong>14.1 Purpose</strong></p>
+<p>This chapter defines the high-level architecture of the Buddy-AI. It explains how the frontend, backend, AI services, execution logic, database, authentication, and notification services interact to deliver a cohesive productivity platform.</p>
+<p>The architecture follows a modular design in which each subsystem has a single responsibility. This separation improves scalability, maintainability, explainability, and future extensibility.</p>
+<p><strong>14.2 Architectural Principles</strong></p>
+<p>The system is designed around the following principles:</p>
+<ul><li><strong>Modularity</strong> – Every component has one well-defined responsibility. </li>
+<li><strong>Separation of Concerns</strong> – UI, business logic, AI reasoning, and persistence remain independent. </li>
+<li><strong>AI as a Service</strong> – Gemini performs reasoning only when required; deterministic logic remains in the backend. </li>
+<li><strong>Explainability</strong> – Every AI recommendation must be traceable. </li>
+<li><strong>Event-Driven Processing</strong> – Meaningful user or system events trigger execution workflows. </li>
+<li><strong>User Control</strong> – AI recommendations require user approval before major execution changes. </li>
+</ul>
+<p><strong>14.3 High-Level Architecture</strong></p>
+<p>                     ┌─────────────────────────────┐<br />                     │        React PWA            │<br />                     │ (Desktop + Mobile Browser)  │<br />                     └─────────────┬───────────────┘<br />                                   │ HTTPS<br />                                   ▼<br />                     ┌─────────────────────────────┐<br />                     │      Backend API Layer      │<br />                     │ (Authentication + Business  │<br />                     │          Logic)             │<br />                     └─────────────┬───────────────┘<br />                                   │<br />                 ┌─────────────────┼─────────────────┐<br />                 ▼                 ▼                 ▼<br />        Execution Core      Gemini Service      Database Layer<br />                 │                 │                 │<br />                 ▼                 ▼                 ▼<br />        Planner            Task Understanding     Firestore<br />        Scheduler          Conversation           User Data<br />        Risk Engine        Recovery               Tasks<br />        Focus Engine       Evidence Analysis      Decisions<br />        Decision Engine    Learning Support       History<br />        Notification Eng.<br />        Learning Engine</p>
+<p><strong>14.4 Major Components</strong></p>
+<p>The system consists of six primary layers.</p>
+<p><strong>1. Frontend Layer</strong></p>
+<p>Responsible for:</p>
+<ul><li>User Interface </li>
+<li>Dashboard </li>
+<li>Task Management </li>
+<li>Decision Cards </li>
+<li>Notifications </li>
+<li>Evidence Upload </li>
+<li>Settings </li>
+</ul>
+<p>Technology (planned):</p>
+<ul><li>React </li>
+<li>TypeScript </li>
+<li>Tailwind CSS </li>
+<li>Progressive Web App (PWA) </li>
+</ul>
+<p><strong>2. Backend Layer</strong></p>
+<p>Responsible for:</p>
+<ul><li>API endpoints </li>
+<li>Authentication </li>
+<li>Business logic </li>
+<li>Event orchestration </li>
+<li>State management </li>
+<li>Execution Core coordination </li>
+</ul>
+<p>The backend never contains AI reasoning itself. It orchestrates AI capabilities and deterministic engines.</p>
+<p><strong>3. Execution Core</strong></p>
+<p>The Execution Core is the heart of the platform.</p>
+<p>Modules include:</p>
+<ul><li>Planner </li>
+<li>Execution Scheduler </li>
+<li>Risk Engine </li>
+<li>Focus Engine </li>
+<li>Decision Engine </li>
+<li>Notification Engine </li>
+<li>Learning Engine </li>
+</ul>
+<p>These modules implement deterministic execution logic.</p>
+<p><strong>4. AI Layer</strong></p>
+<p>The AI layer is powered by <strong>Google Gemini</strong>.</p>
+<p>Gemini is invoked only for reasoning tasks such as:</p>
+<ul><li>Task understanding </li>
+<li>Milestone generation </li>
+<li>Recovery reasoning </li>
+<li>Reflection analysis </li>
+<li>Evidence interpretation </li>
+<li>Behavioral summarization </li>
+</ul>
+<p>The AI never performs scheduling calculations or state management.</p>
+<p><strong>5. Database Layer</strong></p>
+<p>Responsible for storing:</p>
+<ul><li>User profiles </li>
+<li>Tasks </li>
+<li>Milestones </li>
+<li>Decisions </li>
+<li>Execution history </li>
+<li>Learned preferences </li>
+<li>Evidence metadata </li>
+</ul>
+<p>The database serves as persistent storage and does not contain business logic.</p>
+<p><strong>6. Notification Layer</strong></p>
+<p>Responsible for delivering:</p>
+<ul><li>Push notifications (PWA) </li>
+<li>In-app notifications </li>
+<li>Interactive Decision Cards </li>
+</ul>
+<p>It communicates with the Notification Engine to ensure messages are timely and actionable.</p>
+<p><strong>14.5 Event-Driven Architecture</strong></p>
+<p>The system operates through events.</p>
+<p>Examples include:</p>
+<ul><li>User creates a task. </li>
+<li>User uploads evidence. </li>
+<li>Milestone is completed. </li>
+<li>Deadline changes. </li>
+<li>New task added. </li>
+<li>Manual event added. </li>
+<li>User accepts a Decision Card. </li>
+</ul>
+<p>Each event is processed by the Backend, which invokes the appropriate Execution Core modules and AI capabilities.</p>
+<p><strong>14.6 Data Flow Example</strong></p>
+<p><strong>Example: User Creates an Execution Task</strong></p>
+<p>User<br />   │<br />   ▼<br />Frontend<br />   │<br />   ▼<br />Backend API<br />   │<br />   ▼<br />Task Understanding (Gemini)<br />   │<br />   ▼<br />Planner<br />   │<br />   ▼<br />Execution Scheduler<br />   │<br />   ▼<br />Risk Engine<br />   │<br />   ▼<br />Focus Engine<br />   │<br />   ▼<br />Database<br />   │<br />   ▼<br />Frontend Dashboard</p>
+<p><strong>Example: Missed Milestone</strong></p>
+<p>Missed Milestone<br />        │<br />        ▼<br />Decision Engine<br />        │<br />        ▼<br />Conversation (Gemini)<br />        │<br />        ▼<br />Recovery (Gemini)<br />        │<br />        ▼<br />Execution Scheduler<br />        │<br />        ▼<br />Risk Engine<br />        │<br />        ▼<br />Decision Card<br />        │<br />        ▼<br />User</p>
+<p><strong>14.7 Communication Principles</strong></p>
+<ul><li>The Frontend communicates only with the Backend. </li>
+<li>The Backend communicates with Gemini and the Database. </li>
+<li>Execution Core modules communicate internally through the Backend. </li>
+<li>Gemini never communicates directly with the Frontend or Database. </li>
+<li>The Database never contains business logic. </li>
+</ul>
+<p>This layered approach simplifies maintenance and testing.</p>
+<p><strong>14.8 Scalability Considerations</strong></p>
+<p>The architecture is designed to support future enhancements without major redesign.</p>
+<p>Examples:</p>
+<ul><li>Additional AI capabilities can be added without modifying the frontend. </li>
+<li>New execution engines can be integrated into the Execution Core. </li>
+<li>Alternative LLM providers can replace Gemini with minimal backend changes. </li>
+<li>Notification channels (email, SMS, messaging apps) can be added independently. </li>
+</ul>
+<p><strong>14.9 Error Handling Strategy</strong></p>
+<p>The system is resilient to failures.</p>
+<p>Examples:</p>
+<ul><li>If Gemini is temporarily unavailable, deterministic features (task management, scheduling, reminders) continue to function. </li>
+<li>Failed AI requests are logged and may be retried. </li>
+<li>User data is never lost because AI processing fails. </li>
+</ul>
+<p><strong>14.10 Security Overview</strong></p>
+<p>The architecture follows basic security principles:</p>
+<ul><li>Authentication through Google OAuth. </li>
+<li>HTTPS for all communication. </li>
+<li>User isolation at the database level. </li>
+<li>Server-side validation of all API requests. </li>
+<li>Secure handling of uploaded evidence. </li>
+</ul>
+<p>Detailed security mechanisms will be described in a dedicated chapter.</p>
+<p><strong>14.11 Technology Stack (Proposed)</strong></p>
+<table><thead><tr><th><p><strong>Layer</strong></p>
+</th><th><p><strong>Technology</strong></p>
+</th></tr></thead><tbody><tr><td><p>Frontend</p>
+</td><td><p>React + TypeScript + Tailwind CSS</p>
+</td></tr><tr><td><p>PWA</p>
+</td><td><p>Service Workers + Web App Manifest</p>
+</td></tr><tr><td><p>Backend</p>
+</td><td><p>Node.js + Express (or Fastify)</p>
+</td></tr><tr><td><p>AI</p>
+</td><td><p>Google Gemini (Google AI Studio / Gemini API)</p>
+</td></tr><tr><td><p>Database</p>
+</td><td><p>Firebase Firestore</p>
+</td></tr><tr><td><p>Authentication</p>
+</td><td><p>Firebase Authentication (Google Sign-In)</p>
+</td></tr><tr><td><p>Storage</p>
+</td><td><p>Firebase Cloud Storage (Evidence Uploads)</p>
+</td></tr><tr><td><p>Hosting</p>
+</td><td><p>Firebase Hosting (or Vercel for frontend)</p>
+</td></tr></tbody></table><p><strong>Note:</strong> This is the current proposed stack. It may be refined after the dedicated Google AI Studio architecture chapter.</p>
+<p><strong>14.12 Architecture Summary</strong></p>
+<p>The Buddy-AI follows a modular, event-driven architecture that clearly separates user interaction, deterministic execution logic, AI reasoning, and persistent storage. The Execution Core coordinates the product's behavior, while Gemini provides specialized reasoning capabilities only when interpretation or planning is required. This architecture emphasizes explainability, maintainability, and scalability while ensuring that every component has a clearly defined responsibility.</p>
+<p><strong>✅ Chapter 14 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 15 — Google AI Studio &amp; Gemini Architecture</strong></p>
+<p><strong>15.1 Purpose</strong></p>
+<p>This chapter defines how Google Gemini is integrated into the Buddy-AI using Google AI Studio.</p>
+<p>The objective is to design a modular AI architecture in which Gemini performs only reasoning tasks while deterministic components remain responsible for calculations, scheduling, risk evaluation, and system state management.</p>
+<p>This separation ensures predictable behavior, efficient token usage, explainability, and maintainability.</p>
+<p><strong>15.2 Why Google AI Studio</strong></p>
+<p>Google AI Studio is selected because it provides:</p>
+<ul><li>Access to Gemini models through a simple API. </li>
+<li>Native support for structured JSON outputs. </li>
+<li>Fast prototyping suitable for hackathons. </li>
+<li>Multimodal reasoning (text + image). </li>
+<li>Good performance for conversational planning tasks. </li>
+<li>Easy migration to production through the Gemini API. </li>
+</ul>
+<p>The platform aligns well with the project's need for reasoning, planning, evidence analysis, and conversational recovery.</p>
+<p><strong>15.3 AI Architecture Philosophy</strong></p>
+<p>The Buddy-AI follows a <strong>Capability-Based AI Architecture</strong>.</p>
+<p>Instead of deploying multiple autonomous agents, the backend orchestrates a single Gemini model through specialized prompts.</p>
+<p>Each prompt corresponds to one logical capability.</p>
+<p>This approach provides:</p>
+<ul><li>Consistent reasoning. </li>
+<li>Lower operational complexity. </li>
+<li>Easier prompt management. </li>
+<li>Reduced API costs. </li>
+<li>Simpler debugging. </li>
+</ul>
+<p><strong>15.4 AI Capabilities</strong></p>
+<p>Gemini provides the following capabilities:</p>
+<p><strong>1. Task Understanding</strong></p>
+<p>Purpose:</p>
+<p>Interpret newly created tasks.</p>
+<p>Example input:</p>
+<p>Fundamentals of AI Assignment<br />Due in 10 days</p>
+<p>Output:</p>
+<p>{<br />  "task_type":"theory_assignment",<br />  "planning_style":"research_then_write",<br />  "confidence":0.91<br />}</p>
+<p><strong>2. Milestone Planning</strong></p>
+<p>Purpose:</p>
+<p>Generate editable milestones.</p>
+<p>Input:</p>
+<ul><li>Task </li>
+<li>Deadline </li>
+<li>Persona </li>
+</ul>
+<p>Output:</p>
+<p>{<br /> "milestones":[...]<br />}</p>
+<p><strong>3. Recovery Planning</strong></p>
+<p>Purpose:</p>
+<p>Generate recovery strategies after deviations.</p>
+<p>Input:</p>
+<ul><li>Current schedule </li>
+<li>Missed milestone </li>
+<li>Reason </li>
+<li>Buffer </li>
+</ul>
+<p>Output:</p>
+<p>Multiple recovery options.</p>
+<p><strong>4. Conversation</strong></p>
+<p>Purpose:</p>
+<p>Understand execution problems.</p>
+<p>Example</p>
+<p>User:</p>
+<p>I couldn't work because college announced an extra lab session.</p>
+<p>Output:</p>
+<p>{<br /> "reason":"Schedule Conflict",<br /> "confidence":0.95<br />}</p>
+<p><strong>5. Reflection Analysis</strong></p>
+<p>Purpose:</p>
+<p>Interpret textual work updates.</p>
+<p>Example:</p>
+<p>I completed the DFA questions but haven't started writing the report.</p>
+<p>Output:</p>
+<p>Structured progress summary.</p>
+<p><strong>6. Evidence Analysis</strong></p>
+<p>Purpose:</p>
+<p>Interpret uploaded screenshots or images.</p>
+<p>Example:</p>
+<p>Notebook photo.</p>
+<p>GitHub screenshot.</p>
+<p>Presentation slide.</p>
+<p>Output:</p>
+<p>Estimated completion confidence.</p>
+<p><strong>7. Learning Summary</strong></p>
+<p>Purpose:</p>
+<p>Extract long-term behavioral observations after task completion.</p>
+<p>Output:</p>
+<p>{<br /> "patterns":[...]<br />}</p>
+<p><strong>15.5 AI Invocation Model</strong></p>
+<p>Gemini is <strong>never continuously active</strong>.</p>
+<p>It is invoked only by meaningful events.</p>
+<p>Examples include:</p>
+<ul><li>New task created. </li>
+<li>User requests help. </li>
+<li>Evidence uploaded. </li>
+<li>Reflection submitted. </li>
+<li>Recovery requested. </li>
+<li>Task completed. </li>
+</ul>
+<p>Routine operations such as dashboard loading or risk calculation do not invoke Gemini.</p>
+<p><strong>15.6 Backend Orchestration</strong></p>
+<p>Gemini is never called directly from the frontend.</p>
+<p>The flow is:</p>
+<p>Frontend<br /><br />↓<br /><br />Backend<br /><br />↓<br /><br />Execution Core<br /><br />↓<br /><br />Gemini<br /><br />↓<br /><br />Execution Core<br /><br />↓<br /><br />Frontend</p>
+<p>This ensures:</p>
+<ul><li>Security. </li>
+<li>Centralized prompt management. </li>
+<li>Easier logging. </li>
+<li>Better rate limiting. </li>
+</ul>
+<p><strong>15.7 Prompt Isolation</strong></p>
+<p>Each capability uses its own dedicated prompt.</p>
+<p>Example:</p>
+<p>prompts/<br /><br />task_understanding.md<br /><br />planner.md<br /><br />conversation.md<br /><br />recovery.md<br /><br />reflection.md<br /><br />vision.md<br /><br />learning.md</p>
+<p>No prompt mixes multiple responsibilities.</p>
+<p>This keeps prompts small, focused, and easier to maintain.</p>
+<p><strong>15.8 Context Management</strong></p>
+<p>Gemini should receive <strong>only the minimum context required</strong>.</p>
+<p>For example:</p>
+<p><strong>Planner</strong></p>
+<p>Receives:</p>
+<ul><li>Task </li>
+<li>Deadline </li>
+<li>Persona </li>
+<li>Availability Profile </li>
+</ul>
+<p>It does <strong>not</strong> receive:</p>
+<ul><li>Entire execution history. </li>
+<li>All previous conversations. </li>
+</ul>
+<p>This minimizes token usage and improves response consistency.</p>
+<p><strong>15.9 Structured Outputs</strong></p>
+<p>Every Gemini response must follow a predefined JSON schema.</p>
+<p>Example:</p>
+<p>{<br /> "status":"success",<br /> "confidence":0.89,<br /> "recommendation":{},<br /> "reasoning":{}<br />}</p>
+<p>The backend validates the response before using it.</p>
+<p>Free-form responses are not accepted.</p>
+<p><strong>15.10 Error Handling</strong></p>
+<p>If Gemini:</p>
+<ul><li>returns invalid JSON, </li>
+<li>exceeds timeout, </li>
+<li>produces incomplete responses, </li>
+</ul>
+<p>the backend:</p>
+<ul><li>retries when appropriate, </li>
+<li>logs the failure, </li>
+<li>falls back to deterministic behavior where possible, </li>
+<li>informs the user only if necessary. </li>
+</ul>
+<p><strong>15.11 Token Optimization</strong></p>
+<p>To reduce latency and API usage:</p>
+<ul><li>Send only relevant context. </li>
+<li>Avoid entire conversation histories. </li>
+<li>Reuse deterministic calculations instead of asking Gemini. </li>
+<li>Cache stable outputs such as task understanding where appropriate. </li>
+</ul>
+<p><strong>15.12 Explainability</strong></p>
+<p>Every AI-generated recommendation must include:</p>
+<ul><li>Recommendation. </li>
+<li>Reason. </li>
+<li>Confidence. </li>
+</ul>
+<p>This information is transformed into a Decision Card.</p>
+<p>Users should always understand <strong>why</strong> the AI is recommending a particular action.</p>
+<p><strong>15.13 Security Considerations</strong></p>
+<p>The backend must:</p>
+<ul><li>sanitize user input, </li>
+<li>validate uploaded evidence, </li>
+<li>prevent prompt injection where practical, </li>
+<li>avoid exposing system prompts to the frontend. </li>
+</ul>
+<p>System prompts remain server-side.</p>
+<p><strong>15.14 Limitations</strong></p>
+<p>Gemini is <strong>not</strong> responsible for:</p>
+<ul><li>Scheduling. </li>
+<li>Risk calculation. </li>
+<li>Focus selection. </li>
+<li>Notifications. </li>
+<li>State management. </li>
+<li>Authentication. </li>
+<li>Database operations. </li>
+</ul>
+<p>Those remain deterministic backend responsibilities.</p>
+<p><strong>15.15 AI Request Lifecycle</strong></p>
+<p>User Action<br />      │<br />      ▼<br />Backend Validation<br />      │<br />      ▼<br />Execution Core<br />      │<br />      ▼<br />Select AI Capability<br />      │<br />      ▼<br />Load Prompt<br />      │<br />      ▼<br />Prepare Context<br />      │<br />      ▼<br />Gemini API<br />      │<br />      ▼<br />Validate JSON<br />      │<br />      ▼<br />Execution Core<br />      │<br />      ▼<br />Decision Engine<br />      │<br />      ▼<br />Frontend</p>
+<p><strong>15.16 Future Extensibility</strong></p>
+<p>The architecture allows:</p>
+<ul><li>Replacing Gemini with another LLM. </li>
+<li>Adding new AI capabilities without changing existing ones. </li>
+<li>Updating prompts independently. </li>
+<li>Supporting multiple models for specialized tasks in future versions. </li>
+</ul>
+<p>The backend remains the orchestration layer regardless of the underlying model.</p>
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter defines the AI architecture of the Buddy-AI. Gemini is integrated as a modular reasoning service rather than a monolithic chatbot. The backend orchestrates specialized capabilities, supplies minimal context, validates structured JSON responses, and combines AI reasoning with deterministic execution logic. This architecture maximizes explainability, maintainability, and efficiency while remaining well suited to rapid development using Google AI Studio.</p>
+<p><strong>✅ Chapter 15 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 16 — Backend Architecture</strong></p>
+<p><strong>16.1 Purpose</strong></p>
+<p>This chapter defines the backend architecture of the Buddy-AI.</p>
+<p>The backend serves as the orchestration layer between the frontend, the Execution Core, Google Gemini, Firebase services, and persistent storage.</p>
+<p>Unlike traditional CRUD backends, this backend is <strong>event-driven</strong>. It reacts to meaningful events, coordinates deterministic execution logic, invokes Gemini only when reasoning is required, and maintains the overall system state.</p>
+<p><strong>16.2 Why a Hybrid Architecture?</strong></p>
+<p>Three options were evaluated:</p>
+<p><strong>Option 1 – Firebase Cloud Functions</strong></p>
+<p><strong>Pros</strong></p>
+<ul><li>Easy Firebase integration </li>
+<li>Serverless </li>
+<li>Minimal infrastructure </li>
+</ul>
+<p><strong>Cons</strong></p>
+<ul><li>Harder to organize a growing codebase </li>
+<li>Business logic scattered across many functions </li>
+<li>Difficult to debug complex execution flows </li>
+<li>Not ideal for an orchestrated AI system </li>
+</ul>
+<p><strong>Option 2 – Traditional Express Server</strong></p>
+<p><strong>Pros</strong></p>
+<ul><li>Familiar </li>
+<li>Full control </li>
+<li>Easy modularization </li>
+</ul>
+<p><strong>Cons</strong></p>
+<ul><li>Additional hosting </li>
+<li>Manual scaling </li>
+<li>Less integrated with Firebase </li>
+</ul>
+<p><strong>Option 3 – Hybrid (Selected)</strong></p>
+<p>React PWA<br />        │<br />        ▼<br />Node.js + Express API<br />        │<br />        ▼<br />Execution Core<br />        │<br /> ┌──────┴────────┐<br /> ▼               ▼<br />Gemini API   Firebase</p>
+<p>This provides:</p>
+<ul><li>Clean architecture </li>
+<li>Easy debugging </li>
+<li>Modular code </li>
+<li>Firebase integration </li>
+<li>Production scalability </li>
+</ul>
+<p><strong>16.3 High-Level Backend Architecture</strong></p>
+<p>                    React PWA<br />                        │<br />                        ▼<br />                Express REST API<br />                        │<br />        ┌───────────────┼───────────────┐<br />        ▼               ▼               ▼<br /> Authentication   Execution Core    Firebase Services<br />        │               │               │<br />        │               │               ├── Firestore<br />        │               │               ├── Storage<br />        │               │               └── Auth<br />        │               │<br />        │               ▼<br />        │        Gemini Orchestrator<br />        │               │<br />        ▼               ▼<br />     Response        Gemini API</p>
+<p><strong>16.4 Backend Responsibilities</strong></p>
+<p>The backend is responsible for:</p>
+<ul><li>User authentication </li>
+<li>API routing </li>
+<li>Event processing </li>
+<li>Execution Core orchestration </li>
+<li>Gemini orchestration </li>
+<li>Database operations </li>
+<li>State synchronization </li>
+<li>Security validation </li>
+<li>File uploads </li>
+<li>Notification triggers </li>
+</ul>
+<p>It is <strong>not</strong> responsible for AI reasoning or UI rendering.</p>
+<p><strong>16.5 Internal Backend Modules</strong></p>
+<p>backend/<br /><br />├── routes/<br />├── controllers/<br />├── services/<br />├── execution_core/<br />├── gemini/<br />├── database/<br />├── middleware/<br />├── models/<br />├── utils/<br />└── config/</p>
+<p><strong>Routes</strong></p>
+<p>Only receive HTTP requests.</p>
+<p>Example:</p>
+<p>POST /tasks<br /><br />↓<br /><br />TaskController</p>
+<p><strong>Controllers</strong></p>
+<p>Validate requests.</p>
+<p>Call services.</p>
+<p>Return responses.</p>
+<p>No business logic.</p>
+<p><strong>Services</strong></p>
+<p>Coordinate multiple modules.</p>
+<p>Example:</p>
+<p>TaskService<br /><br />↓<br /><br />Execution Core<br /><br />↓<br /><br />Database<br /><br />↓<br /><br />Response</p>
+<p><strong>Execution Core</strong></p>
+<p>Contains:</p>
+<p>Planner<br /><br />Scheduler<br /><br />Risk<br /><br />Focus<br /><br />Decision<br /><br />Notification<br /><br />Learning</p>
+<p>Exactly as designed.</p>
+<p><strong>Gemini Module</strong></p>
+<p>Contains every Gemini capability.</p>
+<p>Task Understanding<br /><br />Planner<br /><br />Conversation<br /><br />Recovery<br /><br />Evidence<br /><br />Reflection<br /><br />Learning</p>
+<p>Only this module knows how to call Gemini.</p>
+<p><strong>Database Layer</strong></p>
+<p>Responsible for:</p>
+<ul><li>Firestore </li>
+<li>Storage </li>
+<li>Transactions </li>
+</ul>
+<p>No business logic.</p>
+<p><strong>16.6 Event Processing</strong></p>
+<p>The backend processes events instead of pages.</p>
+<p>Example:</p>
+<p>Create Task<br /><br />↓<br /><br />Validate<br /><br />↓<br /><br />Store<br /><br />↓<br /><br />Task Understanding<br /><br />↓<br /><br />Planner<br /><br />↓<br /><br />Scheduler<br /><br />↓<br /><br />Risk<br /><br />↓<br /><br />Focus<br /><br />↓<br /><br />Save<br /><br />↓<br /><br />Return Dashboard</p>
+<p>Example:</p>
+<p>Miss Milestone<br /><br />↓<br /><br />Update State<br /><br />↓<br /><br />Risk<br /><br />↓<br /><br />Decision Engine<br /><br />↓<br /><br />Conversation<br /><br />↓<br /><br />Recovery<br /><br />↓<br /><br />Decision Card</p>
+<p><strong>16.7 API Philosophy</strong></p>
+<p>Every endpoint should represent a business action.</p>
+<p>Good:</p>
+<p>POST /tasks<br /><br />POST /tasks/{id}/progress<br /><br />POST /tasks/{id}/recover<br /><br />POST /decisions/{id}/accept</p>
+<p>Avoid APIs like:</p>
+<p>POST /updateMilestone3</p>
+<p>The API should express intent, not implementation.</p>
+<p><strong>16.8 State Management</strong></p>
+<p>The backend owns the authoritative System State.</p>
+<p>The frontend caches data only for display.</p>
+<p>Every modification passes through the backend.</p>
+<p><strong>16.9 Gemini Integration Layer</strong></p>
+<p>The backend never exposes Gemini directly.</p>
+<p>Instead:</p>
+<p>Controller<br /><br />↓<br /><br />Gemini Service<br /><br />↓<br /><br />Capability<br /><br />↓<br /><br />Prompt<br /><br />↓<br /><br />Gemini<br /><br />↓<br /><br />JSON<br /><br />↓<br /><br />Validation<br /><br />↓<br /><br />Execution Core</p>
+<p>This ensures:</p>
+<ul><li>Prompt isolation </li>
+<li>Response validation </li>
+<li>Easier model replacement </li>
+<li>Better logging </li>
+</ul>
+<p><strong>16.10 Firebase Integration</strong></p>
+<p>Firebase services are used as infrastructure.</p>
+<p><strong>Firebase Authentication</strong></p>
+<p>Google Sign-In.</p>
+<p><strong>Firestore</strong></p>
+<p>Stores:</p>
+<ul><li>Users </li>
+<li>Tasks </li>
+<li>Milestones </li>
+<li>Decisions </li>
+<li>Learning </li>
+<li>Events </li>
+</ul>
+<p><strong>Firebase Storage</strong></p>
+<p>Stores:</p>
+<ul><li>Images </li>
+<li>PDFs </li>
+<li>Screenshots </li>
+<li>Evidence </li>
+</ul>
+<p>The backend stores only file references in Firestore.</p>
+<p><strong>16.11 Security</strong></p>
+<p>Every request passes through:</p>
+<p>Authentication<br /><br />↓<br /><br />Authorization<br /><br />↓<br /><br />Validation<br /><br />↓<br /><br />Business Logic<br /><br />↓<br /><br />Database</p>
+<p>Rules:</p>
+<ul><li>Never trust frontend input. </li>
+<li>Validate ownership of every task. </li>
+<li>Sanitize uploaded text. </li>
+<li>Verify uploaded file types. </li>
+</ul>
+<p><strong>16.12 Error Handling</strong></p>
+<p>The backend follows a graceful degradation strategy.</p>
+<p>Example:</p>
+<p>Gemini unavailable.</p>
+<p>↓</p>
+<p>Continue deterministic features.</p>
+<p>↓</p>
+<p>Queue AI task for retry if appropriate.</p>
+<p>↓</p>
+<p>Notify user only if AI reasoning is required.</p>
+<p>The application should remain usable even when AI services fail temporarily.</p>
+<p><strong>16.13 Logging</strong></p>
+<p>Every important event is logged.</p>
+<p>Examples:</p>
+<ul><li>Task created </li>
+<li>Plan generated </li>
+<li>Recovery requested </li>
+<li>Gemini failed </li>
+<li>Decision accepted </li>
+</ul>
+<p>Logs assist debugging and future analytics.</p>
+<p><strong>16.14 Backend Design Principles</strong></p>
+<ul><li>Thin controllers. </li>
+<li>Modular services. </li>
+<li>Single responsibility. </li>
+<li>Event-driven orchestration. </li>
+<li>AI isolated behind one service. </li>
+<li>Stateless API design. </li>
+<li>Database independent of business logic. </li>
+</ul>
+<p><strong>16.15 Backend Summary</strong></p>
+<p>The backend acts as the orchestration layer of the Buddy-AI. It coordinates deterministic execution logic, invokes Gemini capabilities when reasoning is required, manages the System State, and interfaces with Firebase services. By separating routing, orchestration, AI integration, and persistence into distinct modules, the architecture remains maintainable, scalable, and suitable for both hackathon delivery and future product growth.</p>
+<p><strong>✅ Chapter 16 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>17.2 Database Design Philosophy</strong></p>
+<p>The database follows five core principles.</p>
+<p><strong>Principle 1</strong></p>
+<p>One responsibility per collection.</p>
+<p><strong>Principle 2</strong></p>
+<p>Store data.</p>
+<p>Never store business logic.</p>
+<p><strong>Principle 3</strong></p>
+<p>Execution State is dynamic.</p>
+<p>User Profile is persistent.</p>
+<p><strong>Principle 4</strong></p>
+<p>Avoid duplication whenever possible.</p>
+<p><strong>Principle 5</strong></p>
+<p>Optimize for application workflows instead of SQL-style normalization.</p>
+<p><strong>17.3 Database Overview</strong></p>
+<p>Firestore<br /><br />├── users<br />├── execution_tasks<br />├── milestones<br />├── decisions<br />├── events<br />├── learned_patterns<br />├── notifications<br />├── evidence<br />├── execution_logs<br />└── settings</p>
+<p>Each collection has a clearly defined purpose.</p>
+<p><strong>17.4 Users Collection</strong></p>
+<p>Stores long-term profile information.</p>
+<p>users/<br /><br />userId<br /><br />├── name<br />├── email<br />├── persona<br />├── purpose<br />├── timezone<br />├── language<br />├── notificationPreference<br />├── createdAt<br />└── updatedAt</p>
+<p>This collection rarely changes.</p>
+<p><strong>17.5 Execution Tasks Collection</strong></p>
+<p>Stores every long-duration task.</p>
+<p>execution_tasks/<br /><br />taskId<br /><br />├── ownerId<br />├── title<br />├── description<br />├── taskType<br />├── priority<br />├── deadline<br />├── targetCompletionDate<br />├── status<br />├── plannerVersion<br />├── schedulerVersion<br />├── currentRisk<br />├── safetyBuffer<br />├── focusScore<br />├── createdAt<br />└── updatedAt</p>
+<p>Each task has one owner.</p>
+<p><strong>17.6 Milestones Collection</strong></p>
+<p>Each milestone belongs to exactly one task.</p>
+<p>milestones/<br /><br />milestoneId<br /><br />├── taskId<br />├── title<br />├── description<br />├── order<br />├── plannedDate<br />├── estimatedDuration<br />├── dependencyIds<br />├── status<br />├── progress<br />├── createdAt<br />└── updatedAt</p>
+<p>Using a separate collection allows milestones to scale independently.</p>
+<p><strong>17.7 Decisions Collection</strong></p>
+<p>Stores every Decision Card generated by the system.</p>
+<p>decisions/<br /><br />decisionId<br /><br />├── taskId<br />├── decisionType<br />├── reason<br />├── recommendation<br />├── impact<br />├── status<br />├── userResponse<br />├── generatedAt<br />└── resolvedAt</p>
+<p>This provides a complete audit trail.</p>
+<p><strong>17.8 Events Collection</strong></p>
+<p>Stores user-defined unavailable periods.</p>
+<p>Examples:</p>
+<ul><li>Wedding </li>
+<li>Conference </li>
+<li>Vacation </li>
+<li>College Fest </li>
+<li>Hospital Visit </li>
+</ul>
+<p>events/<br /><br />eventId<br /><br />├── ownerId<br />├── title<br />├── startDate<br />├── endDate<br />├── recurrence<br />├── eventType<br />└── affectsScheduling</p>
+<p>These events are consumed by the Execution Scheduler.</p>
+<p><strong>17.9 Evidence Collection</strong></p>
+<p>Stores metadata about uploaded evidence.</p>
+<p>evidence/<br /><br />evidenceId<br /><br />├── taskId<br />├── milestoneId<br />├── storagePath<br />├── fileType<br />├── uploadedAt<br />├── aiConfidence<br />└── reflectionId</p>
+<p>The actual file is stored in Firebase Storage.</p>
+<p><strong>17.10 Learned Patterns Collection</strong></p>
+<p>Stores stable behavioral patterns.</p>
+<p>learned_patterns/<br /><br />patternId<br /><br />├── ownerId<br />├── category<br />├── value<br />├── confidence<br />├── observations<br />├── lastObserved<br />└── active</p>
+<p>Example:</p>
+<p>Preferred Work Window<br /><br />Evening<br /><br />Confidence<br /><br />0.87</p>
+<p><strong>17.11 Notifications Collection</strong></p>
+<p>Tracks notification history.</p>
+<p>notifications/<br /><br />notificationId<br /><br />├── ownerId<br />├── type<br />├── content<br />├── sentAt<br />├── opened<br />├── dismissed<br />└── actionTaken</p>
+<p>This data supports the Learning Engine.</p>
+<p><strong>17.12 Execution Logs Collection</strong></p>
+<p>Stores important execution events.</p>
+<p>Examples:</p>
+<ul><li>Plan Generated </li>
+<li>Milestone Completed </li>
+<li>Schedule Updated </li>
+<li>Risk Increased </li>
+</ul>
+<p>execution_logs/<br /><br />logId<br /><br />├── taskId<br />├── event<br />├── source<br />├── timestamp<br />└── metadata</p>
+<p>Useful for debugging and analytics.</p>
+<p><strong>17.13 Settings Collection</strong></p>
+<p>Stores user-configurable preferences.</p>
+<p>settings/<br /><br />userId<br /><br />├── theme<br />├── notificationWindows<br />├── language<br />├── reminderStyle<br />├── privacyOptions<br />└── experimentalFeatures</p>
+<p>Separated from the User Profile because settings change more frequently.</p>
+<p><strong>17.14 Relationships</strong></p>
+<p>User<br /> │<br /> ├── Tasks<br /> │      │<br /> │      ├── Milestones<br /> │      ├── Decisions<br /> │      ├── Evidence<br /> │      └── Logs<br /> │<br /> ├── Events<br /> │<br /> ├── Learned Patterns<br /> │<br /> ├── Notifications<br /> │<br /> └── Settings</p>
+<p>Although Firestore is NoSQL, these logical relationships guide the application design.</p>
+<p><strong>17.15 Firestore Security Principles</strong></p>
+<ul><li>Users can only access their own documents. </li>
+<li>Task ownership is verified server-side. </li>
+<li>Uploaded evidence is validated before storage. </li>
+<li>Sensitive AI prompts are never stored in client-accessible documents. </li>
+<li>Decision history is immutable once resolved. </li>
+</ul>
+<p><strong>17.16 Indexing Strategy</strong></p>
+<p>Indexes should be created for common queries, including:</p>
+<ul><li>Tasks by owner and status. </li>
+<li>Tasks ordered by deadline. </li>
+<li>Milestones by task and planned date. </li>
+<li>Decisions by task and status. </li>
+<li>Notifications by user and timestamp. </li>
+<li>Events by owner and date range. </li>
+</ul>
+<p>This ensures efficient dashboard loading and scheduling.</p>
+<p><strong>17.17 Data Lifecycle</strong></p>
+<p>Different collections have different retention policies.</p>
+<table><thead><tr><th><p><strong>Collection</strong></p>
+</th><th><p><strong>Retention</strong></p>
+</th></tr></thead><tbody><tr><td><p>Users</p>
+</td><td><p>Permanent until account deletion</p>
+</td></tr><tr><td><p>Tasks</p>
+</td><td><p>Permanent (archived after completion)</p>
+</td></tr><tr><td><p>Milestones</p>
+</td><td><p>Permanent with parent task</p>
+</td></tr><tr><td><p>Decisions</p>
+</td><td><p>Permanent for auditability</p>
+</td></tr><tr><td><p>Evidence</p>
+</td><td><p>User-controlled deletion</p>
+</td></tr><tr><td><p>Notifications</p>
+</td><td><p>Auto-cleanup after configurable period</p>
+</td></tr><tr><td><p>Execution Logs</p>
+</td><td><p>Long-term analytics retention</p>
+</td></tr><tr><td><p>Learned Patterns</p>
+</td><td><p>Updated or replaced over time</p>
+</td></tr></tbody></table><p><strong>17.18 Database Summary</strong></p>
+<p>The database architecture separates stable user information, dynamic execution data, behavioral learning, and operational history into dedicated collections. This design supports the modular architecture established in previous chapters while enabling efficient querying, secure data access, and future scalability. By aligning the database structure with the Execution Core, the platform maintains a single, consistent source of persistent truth.</p>
+<p><strong>✅ Chapter 17 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 18 — API Architecture</strong></p>
+<p><strong>18.1 Purpose</strong></p>
+<p>This chapter defines the REST API architecture of the Buddy-AI.</p>
+<p>The APIs provide the communication interface between the React Progressive Web Application (PWA) and the backend. Rather than exposing database operations directly, the APIs represent meaningful business actions such as task creation, progress submission, recovery requests, and decision handling.</p>
+<p>This approach keeps the frontend independent of backend implementation details and aligns with the event-driven architecture of the Execution Core.</p>
+<p><strong>18.2 API Design Principles</strong></p>
+<p>The API follows these principles:</p>
+<ul><li>APIs represent business actions rather than database tables. </li>
+<li>Every request is authenticated. </li>
+<li>Responses are predictable and versionable. </li>
+<li>AI interactions occur only through backend APIs. </li>
+<li>Clients never communicate directly with Gemini or Firestore. </li>
+<li>Validation occurs server-side. </li>
+</ul>
+<p><strong>18.3 Authentication</strong></p>
+<p>Every protected request requires Firebase Authentication.</p>
+<p>Flow:</p>
+<p>User<br />   │<br />Google Sign-In<br />   │<br />Firebase Authentication<br />   │<br />JWT Token<br />   │<br />React PWA<br />   │<br />Authorization Header<br />   │<br />Backend API</p>
+<p>The backend validates every token before processing the request.</p>
+<p><strong>18.4 API Categories</strong></p>
+<p>The APIs are grouped into the following modules:</p>
+<p>Authentication<br /><br />User<br /><br />Execution Tasks<br /><br />Milestones<br /><br />Decisions<br /><br />Events<br /><br />Evidence<br /><br />Dashboard<br /><br />Learning<br /><br />Notifications</p>
+<p><strong>18.5 Authentication APIs</strong></p>
+<p><strong>Login</strong></p>
+<p>POST /auth/login</p>
+<p>Purpose</p>
+<p>Authenticate the user using Firebase.</p>
+<p><strong>Logout</strong></p>
+<p>POST /auth/logout</p>
+<p>Purpose</p>
+<p>Terminate the session.</p>
+<p><strong>Current User</strong></p>
+<p>GET /auth/me</p>
+<p>Purpose</p>
+<p>Return the authenticated user's profile.</p>
+<p><strong>18.6 User APIs</strong></p>
+<p><strong>Update Profile</strong></p>
+<p>PATCH /users/profile</p>
+<p>Purpose</p>
+<p>Update persona, purpose profile, notification preferences, and availability settings.</p>
+<p><strong>Get Settings</strong></p>
+<p>GET /users/settings</p>
+<p><strong>Update Settings</strong></p>
+<p>PATCH /users/settings</p>
+<p><strong>18.7 Execution Task APIs</strong></p>
+<p><strong>Create Task</strong></p>
+<p>POST /tasks</p>
+<p>Triggers:</p>
+<ul><li>Task Understanding </li>
+<li>Planner </li>
+<li>Execution Scheduler </li>
+<li>Risk Engine </li>
+<li>Focus Engine </li>
+</ul>
+<p>Response:</p>
+<p>Task Created<br /><br />↓<br /><br />Execution Plan<br /><br />↓<br /><br />Dashboard Updated</p>
+<p><strong>Get Task</strong></p>
+<p>GET /tasks/{taskId}</p>
+<p>Returns the complete execution state of a task.</p>
+<p><strong>Update Task</strong></p>
+<p>PATCH /tasks/{taskId}</p>
+<p>Used for deadline or description changes.</p>
+<p>The backend determines whether replanning is required.</p>
+<p><strong>Archive Task</strong></p>
+<p>POST /tasks/{taskId}/archive</p>
+<p><strong>18.8 Milestone APIs</strong></p>
+<p><strong>Submit Progress</strong></p>
+<p>POST /tasks/{taskId}/milestones/{milestoneId}/progress</p>
+<p>Purpose</p>
+<p>Update execution progress.</p>
+<p>Payload may include:</p>
+<ul><li>Progress percentage </li>
+<li>Reflection </li>
+<li>Evidence reference </li>
+</ul>
+<p><strong>Complete Milestone</strong></p>
+<p>POST /tasks/{taskId}/milestones/{milestoneId}/complete</p>
+<p>Triggers:</p>
+<ul><li>Scheduler update </li>
+<li>Risk update </li>
+<li>Focus update </li>
+</ul>
+<p><strong>18.9 Decision APIs</strong></p>
+<p><strong>Get Pending Decisions</strong></p>
+<p>GET /decisions</p>
+<p><strong>Accept Decision</strong></p>
+<p>POST /decisions/{decisionId}/accept</p>
+<p>Triggers execution of the approved recommendation.</p>
+<p><strong>Reject Decision</strong></p>
+<p>POST /decisions/{decisionId}/reject</p>
+<p><strong>Modify Decision</strong></p>
+<p>POST /decisions/{decisionId}/modify</p>
+<p>Allows users to adjust AI recommendations before approval.</p>
+<p><strong>18.10 Recovery APIs</strong></p>
+<p><strong>Request Recovery</strong></p>
+<p>POST /tasks/{taskId}/recover</p>
+<p>Triggers:</p>
+<ul><li>Conversation </li>
+<li>Recovery Planning </li>
+<li>Decision Generation </li>
+</ul>
+<p><strong>Continue Conversation</strong></p>
+<p>POST /tasks/{taskId}/conversation</p>
+<p>Allows the user to explain blockers or respond to AI questions.</p>
+<p><strong>18.11 Event APIs</strong></p>
+<p><strong>Add Event</strong></p>
+<p>POST /events</p>
+<p>Examples:</p>
+<ul><li>Vacation </li>
+<li>Wedding </li>
+<li>Medical Appointment </li>
+<li>College Event </li>
+</ul>
+<p>The Execution Scheduler updates future plans if necessary.</p>
+<p><strong>Update Event</strong></p>
+<p>PATCH /events/{eventId}</p>
+<p><strong>Delete Event</strong></p>
+<p>DELETE /events/{eventId}</p>
+<p><strong>18.12 Evidence APIs</strong></p>
+<p><strong>Upload Evidence</strong></p>
+<p>POST /evidence</p>
+<p>Uploads screenshots, images, PDFs, or other supporting files.</p>
+<p>Triggers:</p>
+<ul><li>Storage upload </li>
+<li>Evidence Analysis </li>
+<li>Confidence update </li>
+</ul>
+<p><strong>View Evidence</strong></p>
+<p>GET /evidence/{evidenceId}</p>
+<p><strong>18.13 Dashboard APIs</strong></p>
+<p><strong>Dashboard Overview</strong></p>
+<p>GET /dashboard</p>
+<p>Returns:</p>
+<ul><li>Today's Focus </li>
+<li>Active Tasks </li>
+<li>Pending Decisions </li>
+<li>Risk Summary </li>
+<li>Upcoming Events </li>
+<li>Notifications </li>
+</ul>
+<p><strong>Refresh Dashboard</strong></p>
+<p>POST /dashboard/refresh</p>
+<p>Recalculates dashboard state without rerunning AI capabilities unless required.</p>
+<p><strong>18.14 Notification APIs</strong></p>
+<p><strong>Mark Notification Read</strong></p>
+<p>POST /notifications/{notificationId}/read</p>
+<p><strong>Notification Action</strong></p>
+<p>POST /notifications/{notificationId}/action</p>
+<p>Allows actions such as:</p>
+<ul><li>Paid </li>
+<li>Remind Later </li>
+<li>Start Now </li>
+<li>Review Plan </li>
+</ul>
+<p><strong>18.15 Learning APIs</strong></p>
+<p><strong>View Learned Patterns</strong></p>
+<p>GET /learning</p>
+<p><strong>Reset Learning</strong></p>
+<p>POST /learning/reset</p>
+<p>Allows users to clear learned preferences.</p>
+<p><strong>18.16 Standard Response Format</strong></p>
+<p>Every API returns a consistent structure.</p>
+<p>Example:</p>
+<p>{<br />  "success": true,<br />  "message": "Task created successfully.",<br />  "data": { },<br />  "errors": null<br />}</p>
+<p>For failures:</p>
+<p>{<br />  "success": false,<br />  "message": "Validation failed.",<br />  "data": null,<br />  "errors": [<br />    {<br />      "field": "deadline",<br />      "message": "Deadline cannot be in the past."<br />    }<br />  ]<br />}</p>
+<p><strong>18.17 Error Handling</strong></p>
+<p>The API uses standard HTTP status codes.</p>
+<table><thead><tr><th><p><strong>Code</strong></p>
+</th><th><p><strong>Meaning</strong></p>
+</th></tr></thead><tbody><tr><td><p>200</p>
+</td><td><p>Success</p>
+</td></tr><tr><td><p>201</p>
+</td><td><p>Resource created</p>
+</td></tr><tr><td><p>400</p>
+</td><td><p>Validation error</p>
+</td></tr><tr><td><p>401</p>
+</td><td><p>Unauthorized</p>
+</td></tr><tr><td><p>403</p>
+</td><td><p>Forbidden</p>
+</td></tr><tr><td><p>404</p>
+</td><td><p>Resource not found</p>
+</td></tr><tr><td><p>409</p>
+</td><td><p>Conflict</p>
+</td></tr><tr><td><p>500</p>
+</td><td><p>Internal server error</p>
+</td></tr></tbody></table><p>AI-related failures return descriptive messages while allowing deterministic functionality to continue where possible.</p>
+<p><strong>18.18 API Versioning</strong></p>
+<p>All endpoints should be versioned.</p>
+<p>Example:</p>
+<p>/api/v1/tasks</p>
+<p>This supports future changes without breaking existing clients.</p>
+<p><strong>18.19 API Summary</strong></p>
+<p>The API architecture exposes business-oriented endpoints that mirror the workflows of the Buddy-AI. By treating APIs as representations of user actions rather than database operations, the design aligns with the event-driven Execution Core and keeps the frontend, backend, and AI capabilities cleanly separated.</p>
+<p><strong>✅ Chapter 18 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 19 — Frontend Architecture</strong></p>
+<p><strong>19.1 Purpose</strong></p>
+<p>This chapter defines the frontend architecture of the Buddy-AI.</p>
+<p>The frontend is responsible for presenting execution information, collecting user input, displaying AI recommendations, and providing an intuitive, distraction-free experience across desktop and mobile devices.</p>
+<p>The frontend <strong>does not contain business logic</strong>. Its responsibility is limited to user interaction, visualization, and communication with the backend through well-defined APIs.</p>
+<p>The application is implemented as a <strong>Progressive Web Application (PWA)</strong> to provide a native-like experience on both desktop and mobile platforms without requiring separate Android or iOS applications.</p>
+<p><strong>19.2 Frontend Design Philosophy</strong></p>
+<p>The frontend follows five core principles.</p>
+<p><strong>Principle 1 — One Primary Action</strong></p>
+<p>At any moment, the interface should clearly communicate the single most important action the user should take.</p>
+<p><strong>Principle 2 — Reduce Cognitive Load</strong></p>
+<p>The application should avoid overwhelming users with large task lists, excessive statistics, or unnecessary configuration.</p>
+<p>Instead, information is progressively disclosed as needed.</p>
+<p><strong>Principle 3 — AI Is a Guide, Not the Interface</strong></p>
+<p>Users interact primarily with tasks, schedules, and decisions.</p>
+<p>The AI supports these workflows but should not dominate the interface through a persistent chatbot.</p>
+<p><strong>Principle 4 — Mobile-First Execution</strong></p>
+<p>Although judges will evaluate the application in a desktop browser, the product is designed around real-world mobile usage.</p>
+<p>The PWA ensures the same functionality is available on both platforms.</p>
+<p><strong>Principle 5 — Explain Every Recommendation</strong></p>
+<p>Whenever the AI recommends a plan, priority, or recovery strategy, the interface must explain:</p>
+<ul><li>What changed. </li>
+<li>Why it changed. </li>
+<li>What impact it has. </li>
+<li>What options the user has. </li>
+</ul>
+<p><strong>19.3 Frontend Technology Stack</strong></p>
+<table><thead><tr><th><p><strong>Layer</strong></p>
+</th><th><p><strong>Technology</strong></p>
+</th></tr></thead><tbody><tr><td><p>Framework</p>
+</td><td><p>React</p>
+</td></tr><tr><td><p>Language</p>
+</td><td><p>TypeScript</p>
+</td></tr><tr><td><p>Styling</p>
+</td><td><p>Tailwind CSS</p>
+</td></tr><tr><td><p>Routing</p>
+</td><td><p>React Router</p>
+</td></tr><tr><td><p>State Management</p>
+</td><td><p>React Query + Context API</p>
+</td></tr><tr><td><p>Forms</p>
+</td><td><p>React Hook Form</p>
+</td></tr><tr><td><p>Icons</p>
+</td><td><p>Lucide React</p>
+</td></tr><tr><td><p>Charts</p>
+</td><td><p>Recharts</p>
+</td></tr><tr><td><p>Notifications</p>
+</td><td><p>Browser Notifications (PWA)</p>
+</td></tr><tr><td><p>PWA</p>
+</td><td><p>Service Worker + Manifest</p>
+</td></tr></tbody></table><p><strong>19.4 Application Structure</strong></p>
+<p>src/<br />│<br />├── app/<br />├── pages/<br />├── layouts/<br />├── components/<br />├── features/<br />├── services/<br />├── hooks/<br />├── contexts/<br />├── types/<br />├── utils/<br />├── assets/<br />└── routes/</p>
+<p>Each folder has a single responsibility.</p>
+<p><strong>19.5 Routing Structure</strong></p>
+<p>The application follows feature-based routing.</p>
+<p>/<br /><br />├── login<br /><br />├── onboarding<br /><br />├── dashboard<br /><br />├── tasks<br /><br />│      ├── task-details<br /><br />│      ├── planner<br /><br />│      └── progress<br /><br />├── decisions<br /><br />├── events<br /><br />├── notifications<br /><br />├── learning<br /><br />├── settings</p>
+<p>Each page represents a complete workflow rather than a database entity.</p>
+<p><strong>19.6 State Management</strong></p>
+<p>The frontend maintains only <strong>presentation state</strong>.</p>
+<p>Examples:</p>
+<ul><li>Current page </li>
+<li>Dialog visibility </li>
+<li>Selected task </li>
+<li>Form state </li>
+<li>Theme </li>
+</ul>
+<p>Business state such as risk, focus, and schedules is always retrieved from the backend.</p>
+<p>This prevents inconsistencies and keeps the backend as the single source of truth.</p>
+<p><strong>19.7 Screen Architecture</strong></p>
+<p>Each screen follows a consistent structure.</p>
+<p>Page<br />│<br />├── Header<br />│<br />├── Main Content<br />│<br />├── Context Panel<br />│<br />└── Action Panel</p>
+<p>This consistency reduces the learning curve for users.</p>
+<p><strong>19.8 Component Hierarchy</strong></p>
+<p>The frontend is built using reusable components.</p>
+<p><strong>Atomic Components</strong></p>
+<p>Examples:</p>
+<ul><li>Button </li>
+<li>Input </li>
+<li>Card </li>
+<li>Badge </li>
+<li>Avatar </li>
+</ul>
+<p><strong>Composite Components</strong></p>
+<p>Examples:</p>
+<ul><li>Task Card </li>
+<li>Milestone Card </li>
+<li>Decision Card </li>
+<li>Notification Card </li>
+<li>Event Card </li>
+</ul>
+<p><strong>Feature Components</strong></p>
+<p>Examples:</p>
+<ul><li>Planner Timeline </li>
+<li>Dashboard Summary </li>
+<li>Progress Tracker </li>
+<li>Evidence Viewer </li>
+<li>Conversation Panel </li>
+</ul>
+<p><strong>19.9 Communication Flow</strong></p>
+<p>User Interaction<br /><br />↓<br /><br />React Component<br /><br />↓<br /><br />Service Layer<br /><br />↓<br /><br />REST API<br /><br />↓<br /><br />Backend<br /><br />↓<br /><br />Updated Data<br /><br />↓<br /><br />React Query Cache<br /><br />↓<br /><br />UI Refresh</p>
+<p>The frontend never communicates directly with Firestore or Gemini.</p>
+<p><strong>19.10 Error Handling</strong></p>
+<p>The frontend should gracefully handle:</p>
+<ul><li>Network failures </li>
+<li>Authentication expiration </li>
+<li>AI processing delays </li>
+<li>Validation errors </li>
+<li>File upload failures </li>
+</ul>
+<p>Errors should provide clear recovery actions rather than technical messages.</p>
+<p>Example:</p>
+<p>Instead of:</p>
+<p>HTTP 500</p>
+<p>Display:</p>
+<p>"The AI is temporarily unavailable. You can continue managing your tasks, and AI features will become available once the service recovers."</p>
+<p><strong>19.11 Responsive Design</strong></p>
+<p>The interface must adapt seamlessly across devices.</p>
+<p><strong>Desktop</strong></p>
+<ul><li>Multi-column dashboard </li>
+<li>Side navigation </li>
+<li>Expanded task details </li>
+</ul>
+<p><strong>Tablet</strong></p>
+<ul><li>Collapsible navigation </li>
+<li>Two-column layout where appropriate </li>
+</ul>
+<p><strong>Mobile</strong></p>
+<ul><li>Bottom navigation </li>
+<li>Single-column layout </li>
+<li>Large touch targets </li>
+<li>Simplified task views </li>
+</ul>
+<p>The functionality remains identical across all devices.</p>
+<p><strong>19.12 Accessibility</strong></p>
+<p>The frontend should follow accessibility best practices.</p>
+<p>Examples:</p>
+<ul><li>Keyboard navigation </li>
+<li>Screen reader compatibility </li>
+<li>High contrast support </li>
+<li>Meaningful button labels </li>
+<li>Visible focus indicators </li>
+</ul>
+<p><strong>19.13 Performance</strong></p>
+<p>To ensure responsiveness:</p>
+<ul><li>Lazy-load routes. </li>
+<li>Cache dashboard data using React Query. </li>
+<li>Optimize image uploads. </li>
+<li>Minimize unnecessary re-renders. </li>
+<li>Use optimistic UI updates where appropriate. </li>
+</ul>
+<p><strong>19.14 Security Considerations</strong></p>
+<p>The frontend shall:</p>
+<ul><li>Never store authentication secrets. </li>
+<li>Never expose Gemini API keys. </li>
+<li>Validate user input before submission. </li>
+<li>Use HTTPS exclusively. </li>
+<li>Handle authentication tokens securely. </li>
+</ul>
+<p><strong>19.15 Frontend Summary</strong></p>
+<p>The frontend architecture provides a responsive, mobile-first interface that emphasizes clarity, minimal cognitive load, and actionable guidance. By separating presentation from business logic and relying on backend-driven state, the application remains maintainable, secure, and consistent across desktop and mobile platforms.</p>
+<p><strong>✅ Chapter 19 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 20 — UI/UX Specification</strong></p>
+<p><strong>20.1 Purpose</strong></p>
+<p>This chapter defines the complete user interface specification of the Buddy-AI. It describes every screen, layout, interaction, navigation pattern, and user workflow required to implement the application.</p>
+<p>Unlike previous chapters that define system behavior and architecture, this chapter focuses on <strong>how users experience the product</strong>. It serves as the primary reference for frontend implementation and future UI/UX design work.</p>
+<p>The design philosophy emphasizes clarity, minimal cognitive load, actionable guidance, and consistency across desktop and mobile platforms.</p>
+<p><strong>20.2 Design Principles</strong></p>
+<p>The interface follows these principles:</p>
+<ul><li>Show one primary action at a time. </li>
+<li>Make AI recommendations explainable. </li>
+<li>Keep frequently used actions within one or two interactions. </li>
+<li>Reduce visual clutter. </li>
+<li>Ensure every screen answers: <strong>"What should I do next?"</strong> </li>
+<li>Maintain consistent navigation and component behavior. </li>
+</ul>
+<p><strong>20.3 Navigation Structure</strong></p>
+<p>The application is organized into eight primary sections.</p>
+<p>Dashboard<br /><br />Tasks<br /><br />Decision Center<br /><br />Events<br /><br />Quick Tasks<br /><br />Learning<br /><br />Notifications<br /><br />Settings</p>
+<p>Desktop uses a left sidebar.</p>
+<p>Mobile uses a bottom navigation bar.</p>
+<p><strong>20.4 Screen Inventory</strong></p>
+<p>The MVP and future product are built around these screens.</p>
+<table><thead><tr><th><p><strong>Screen</strong></p>
+</th><th><p><strong>Purpose</strong></p>
+</th></tr></thead><tbody><tr><td><p>Login</p>
+</td><td><p>Authentication</p>
+</td></tr><tr><td><p>Onboarding</p>
+</td><td><p>Initial setup</p>
+</td></tr><tr><td><p>Dashboard</p>
+</td><td><p>Daily execution</p>
+</td></tr><tr><td><p>Create Task</p>
+</td><td><p>Add execution task</p>
+</td></tr><tr><td><p>Task Details</p>
+</td><td><p>Manage a task</p>
+</td></tr><tr><td><p>Decision Center</p>
+</td><td><p>Review AI recommendations</p>
+</td></tr><tr><td><p>Event Manager</p>
+</td><td><p>Manage unavailable periods</p>
+</td></tr><tr><td><p>Quick Tasks</p>
+</td><td><p>Bills, interviews, reminders</p>
+</td></tr><tr><td><p>Notifications</p>
+</td><td><p>Notification history</p>
+</td></tr><tr><td><p>Learning Center</p>
+</td><td><p>Learned behavior</p>
+</td></tr><tr><td><p>Settings</p>
+</td><td><p>Preferences</p>
+</td></tr></tbody></table><p><strong>20.5 Login Screen</strong></p>
+<p><strong>Goal</strong></p>
+<p>Authenticate the user.</p>
+<p><strong>Components</strong></p>
+<ul><li>Google Sign-In button </li>
+<li>Product logo </li>
+<li>Short value proposition </li>
+</ul>
+<p>No additional options are shown.</p>
+<p><strong>20.6 Onboarding Screen</strong></p>
+<p>Collects only essential information.</p>
+<p>Sections:</p>
+<ul><li>Persona </li>
+<li>Long-term Goal (optional) </li>
+<li>Preferred execution windows </li>
+<li>Notification preferences </li>
+</ul>
+<p>The process should complete in under two minutes.</p>
+<p><strong>20.7 Dashboard (Most Important Screen)</strong></p>
+<p>The dashboard is the home screen and answers one question:</p>
+<p><strong>"What should I do right now?"</strong></p>
+<p><strong>Layout</strong></p>
+<p>-------------------------------------------------<br />Header<br />-------------------------------------------------<br /><br />Today's Focus<br /><br />-------------------------------------------------<br /><br />Active Tasks<br /><br />-------------------------------------------------<br /><br />Pending Decisions<br /><br />-------------------------------------------------<br /><br />Quick Tasks<br /><br />-------------------------------------------------<br /><br />Upcoming Events<br /><br />-------------------------------------------------<br /><br />Risk Summary<br /><br />-------------------------------------------------</p>
+<p><strong>Components</strong></p>
+<p><strong>Today's Focus Card</strong></p>
+<p>Displays:</p>
+<ul><li>Task </li>
+<li>Milestone </li>
+<li>Estimated time </li>
+<li>Reason </li>
+<li>Primary action ("Start") </li>
+</ul>
+<p>This is the most prominent element.</p>
+<p><strong>Active Task Cards</strong></p>
+<p>Each card shows:</p>
+<ul><li>Title </li>
+<li>Deadline </li>
+<li>Progress </li>
+<li>Safety buffer </li>
+<li>Risk level </li>
+</ul>
+<p>Clicking opens the Task Details screen.</p>
+<p><strong>Pending Decision Card</strong></p>
+<p>Displays AI recommendations awaiting user action.</p>
+<p>Example:</p>
+<p>Update schedule due to newly added assignment.</p>
+<p>Actions:</p>
+<ul><li>Accept </li>
+<li>Modify </li>
+<li>Reject </li>
+</ul>
+<p><strong>Quick Tasks</strong></p>
+<p>Examples:</p>
+<ul><li>Electricity bill </li>
+<li>Interview </li>
+<li>Meeting </li>
+</ul>
+<p>Actions appear directly on the card:</p>
+<ul><li>Done </li>
+<li>Remind Later </li>
+</ul>
+<p><strong>Risk Summary</strong></p>
+<p>Shows a concise overview:</p>
+<ul><li>Low </li>
+<li>Moderate </li>
+<li>High </li>
+</ul>
+<p>with explanations rather than raw scores.</p>
+<p><strong>20.8 Create Task Screen</strong></p>
+<p><strong>Purpose</strong></p>
+<p>Create an execution task.</p>
+<p><strong>Fields</strong></p>
+<ul><li>Title </li>
+<li>Description (optional) </li>
+<li>Deadline </li>
+<li>Priority (AI may recommend changes later) </li>
+<li>Attachments (optional) </li>
+</ul>
+<p>After submission, the user sees:</p>
+<ol><li>AI-generated milestones. </li>
+<li>Suggested schedule. </li>
+<li>Safety buffer. </li>
+<li>Opportunity to edit before activation. </li>
+</ol><p><strong>20.9 Task Details Screen</strong></p>
+<p>This is the workspace for long-running tasks.</p>
+<p><strong>Sections</strong></p>
+<p>Task Header<br /><br />↓<br /><br />Milestones<br /><br />↓<br /><br />Timeline<br /><br />↓<br /><br />Progress<br /><br />↓<br /><br />Evidence<br /><br />↓<br /><br />AI Conversation<br /><br />↓<br /><br />Decision History</p>
+<p><strong>Milestones</strong></p>
+<p>Shows:</p>
+<ul><li>Status </li>
+<li>Planned date </li>
+<li>Estimated duration </li>
+<li>Completion </li>
+</ul>
+<p>Users can:</p>
+<ul><li>Mark progress </li>
+<li>Complete </li>
+<li>Edit </li>
+</ul>
+<p><strong>Timeline</strong></p>
+<p>Visual representation of:</p>
+<ul><li>Planned work </li>
+<li>Completed work </li>
+<li>Safety buffer </li>
+</ul>
+<p><strong>Evidence Panel</strong></p>
+<p>Upload:</p>
+<ul><li>Image </li>
+<li>PDF </li>
+<li>Screenshot </li>
+</ul>
+<p>Optional reflection text.</p>
+<p><strong>AI Conversation</strong></p>
+<p>Only appears when needed.</p>
+<p>Example:</p>
+<p>I noticed yesterday's milestone wasn't completed.</p>
+<p>What happened?</p>
+<p>The chatbot is contextual—not globally available.</p>
+<p><strong>20.10 Decision Center</strong></p>
+<p>Displays every pending Decision Card.</p>
+<p>Each card contains:</p>
+<ul><li>Action </li>
+<li>Reason </li>
+<li>Impact </li>
+<li>Recommendation </li>
+<li>Accept </li>
+<li>Modify </li>
+<li>Reject </li>
+</ul>
+<p>This keeps important AI interactions in one place.</p>
+<p><strong>20.11 Event Manager</strong></p>
+<p>Allows users to add unavailable periods.</p>
+<p>Examples:</p>
+<ul><li>Vacation </li>
+<li>Wedding </li>
+<li>Medical appointment </li>
+<li>College fest </li>
+</ul>
+<p>The scheduler automatically considers these events.</p>
+<p><strong>20.12 Quick Tasks</strong></p>
+<p>Dedicated page for recurring and short-duration tasks.</p>
+<p>Categories may include:</p>
+<ul><li>Bills </li>
+<li>Meetings </li>
+<li>Interviews </li>
+<li>Appointments </li>
+<li>Personal reminders </li>
+</ul>
+<p>Users can configure recurrence and preferred reminder intervals.</p>
+<p><strong>20.13 Learning Center</strong></p>
+<p>Shows learned behaviors transparently.</p>
+<p>Example:</p>
+<ul><li>Prefers evening study sessions. </li>
+<li>Usually accepts milestone splitting. </li>
+<li>Responds best to notifications after work hours. </li>
+</ul>
+<p>Users can edit or reset learned patterns.</p>
+<p><strong>20.14 Notifications</strong></p>
+<p>Displays notification history.</p>
+<p>Notifications remain actionable.</p>
+<p>Example:</p>
+<p>Today's Focus:</p>
+<p>Complete Research (45 min)</p>
+<p>Buttons:</p>
+<ul><li>Start Now </li>
+<li>Later Today </li>
+</ul>
+<p><strong>20.15 Settings</strong></p>
+<p>Contains:</p>
+<ul><li>Theme </li>
+<li>Notification preferences </li>
+<li>Availability preferences </li>
+<li>Privacy controls </li>
+<li>Account </li>
+<li>AI preferences </li>
+</ul>
+<p><strong>20.16 Reusable Components</strong></p>
+<p>The UI is built from reusable components.</p>
+<p>Core components include:</p>
+<ul><li>Task Card </li>
+<li>Focus Card </li>
+<li>Decision Card </li>
+<li>Risk Badge </li>
+<li>Progress Timeline </li>
+<li>Milestone Card </li>
+<li>Notification Card </li>
+<li>Event Card </li>
+<li>Quick Task Card </li>
+<li>AI Explanation Panel </li>
+</ul>
+<p><strong>20.17 Interaction Patterns</strong></p>
+<p>The application follows consistent interaction patterns.</p>
+<p>Examples:</p>
+<ul><li>Every AI recommendation uses a Decision Card. </li>
+<li>Every destructive action requires confirmation. </li>
+<li>Every update provides immediate feedback. </li>
+<li>Long-running AI operations display progress indicators. </li>
+</ul>
+<p><strong>20.18 Mobile Adaptation</strong></p>
+<p>The mobile interface preserves all functionality.</p>
+<p>Adjustments include:</p>
+<ul><li>Bottom navigation. </li>
+<li>Stacked cards. </li>
+<li>Full-screen dialogs. </li>
+<li>Larger touch targets. </li>
+<li>Swipe actions for quick tasks. </li>
+</ul>
+<p>No features are removed.</p>
+<p><strong>20.19 Desktop Adaptation</strong></p>
+<p>Desktop uses:</p>
+<ul><li>Sidebar navigation. </li>
+<li>Multi-column dashboard. </li>
+<li>Wider timelines. </li>
+<li>Persistent context panels. </li>
+</ul>
+<p>This improves productivity without changing workflows.</p>
+<p><strong>20.20 Empty States</strong></p>
+<p>Each screen defines meaningful empty states.</p>
+<p>Examples:</p>
+<p>No tasks:</p>
+<p>"Create your first execution task."</p>
+<p>No decisions:</p>
+<p>"No recommendations require your attention."</p>
+<p>No events:</p>
+<p>"Add important events to improve scheduling."</p>
+<p>These states guide users instead of presenting blank pages.</p>
+<p><strong>20.21 Loading States</strong></p>
+<p>AI-generated content displays:</p>
+<ul><li>Skeleton placeholders. </li>
+<li>Progress indicators. </li>
+<li>Clear status messages. </li>
+</ul>
+<p>Users always understand what the system is doing.</p>
+<p><strong>20.22 Error States</strong></p>
+<p>Errors provide recovery options.</p>
+<p>Example:</p>
+<p>Instead of:</p>
+<p>AI failed.</p>
+<p>Display:</p>
+<p>"The planner is temporarily unavailable. You can still create the task, and planning will resume when the AI is available."</p>
+<p><strong>20.23 UI Summary</strong></p>
+<p>The interface is designed around execution rather than task management. Every screen encourages meaningful action while minimizing unnecessary interaction. AI remains visible but supportive, guiding users through transparent recommendations rather than dominating the experience.</p>
+<p><strong>✅ Chapter 20 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 21 — Prompt Architecture</strong></p>
+<p><strong>21.1 Purpose</strong></p>
+<p>This chapter defines the prompt architecture used by the Buddy-AI. Rather than relying on a single monolithic system prompt, the application organizes AI reasoning into modular, reusable prompts aligned with specific capabilities.</p>
+<p>Each prompt has a single responsibility, receives only the required context, returns structured JSON, and is orchestrated by the backend. This approach improves consistency, reduces token usage, simplifies debugging, and enables future prompt evolution without affecting unrelated capabilities.</p>
+<p><strong>21.2 Prompt Design Philosophy</strong></p>
+<p>The prompt system follows six principles:</p>
+<ol><li><strong>One capability, one prompt.</strong> </li>
+<li><strong>Only required context is provided.</strong> </li>
+<li><strong>Always return structured JSON.</strong> </li>
+<li><strong>Deterministic backend performs calculations.</strong> </li>
+<li><strong>Gemini performs reasoning, not state management.</strong> </li>
+<li><strong>Prompts never modify system state directly.</strong> </li>
+</ol><p><strong>21.3 Prompt Hierarchy</strong></p>
+<p>Gemini Prompt Library<br />│<br />├── Task Understanding<br />├── Milestone Planner<br />├── Recovery Planner<br />├── Conversation<br />├── Reflection Analysis<br />├── Evidence Analysis<br />├── Learning Summary<br />└── Explanation Generator</p>
+<p>Each prompt corresponds to a single AI capability.</p>
+<p><strong>21.4 Prompt Lifecycle</strong></p>
+<p>Every AI request follows the same lifecycle.</p>
+<p>User Action<br />      │<br />      ▼<br />Backend validates request<br />      │<br />      ▼<br />Select Prompt<br />      │<br />      ▼<br />Prepare Context<br />      │<br />      ▼<br />Invoke Gemini<br />      │<br />      ▼<br />Validate JSON<br />      │<br />      ▼<br />Execution Core<br />      │<br />      ▼<br />Persist State<br />      │<br />      ▼<br />Return UI Response</p>
+<p>The prompt is <strong>never called directly from the frontend</strong>.</p>
+<p><strong>21.5 Prompt Templates</strong></p>
+<p>Every prompt follows the same internal structure.</p>
+<p>1. Role<br />2. Objective<br />3. Context<br />4. Constraints<br />5. Required JSON Schema<br />6. Validation Rules</p>
+<p>Example:</p>
+<p>Role:<br />You are an AI planning assistant.<br /><br />Objective:<br />Create editable milestones.<br /><br />Context:<br />Task<br />Deadline<br />Persona<br /><br />Constraints:<br />Do not schedule dates.<br />Do not calculate buffers.<br />Do not assign priorities.<br /><br />Return:<br />JSON only.</p>
+<p>Keeping the format consistent makes prompt maintenance much easier.</p>
+<p><strong>21.6 Prompt Responsibilities</strong></p>
+<p><strong>Task Understanding Prompt</strong></p>
+<p><strong>Input</strong></p>
+<ul><li>Title </li>
+<li>Description </li>
+<li>Deadline </li>
+<li>Persona </li>
+</ul>
+<p><strong>Output</strong></p>
+<ul><li>Task type </li>
+<li>Complexity estimate </li>
+<li>Planning strategy </li>
+<li>Confidence </li>
+</ul>
+<p><strong>Milestone Planner Prompt</strong></p>
+<p><strong>Input</strong></p>
+<ul><li>Task details </li>
+<li>Task type </li>
+<li>Deadline </li>
+<li>Persona </li>
+</ul>
+<p><strong>Output</strong></p>
+<ul><li>Ordered milestones </li>
+<li>Estimated effort per milestone </li>
+<li>Dependencies </li>
+</ul>
+<p>The prompt does <strong>not</strong> assign dates.</p>
+<p><strong>Recovery Planner Prompt</strong></p>
+<p><strong>Input</strong></p>
+<ul><li>Current milestones </li>
+<li>Missed milestone </li>
+<li>User explanation </li>
+<li>Remaining buffer </li>
+</ul>
+<p><strong>Output</strong></p>
+<ul><li>Recovery options </li>
+<li>Pros and cons </li>
+<li>Suggested approach </li>
+</ul>
+<p>The scheduler later determines dates.</p>
+<p><strong>Conversation Prompt</strong></p>
+<p>Purpose:</p>
+<p>Understand blockers.</p>
+<p>Example:</p>
+<p>"I couldn't study because my college announced an extra lab."</p>
+<p>Output:</p>
+<p>{<br />  "reason": "Unexpected Schedule Conflict",<br />  "requires_replanning": true,<br />  "confidence": 0.94<br />}</p>
+<p><strong>Reflection Prompt</strong></p>
+<p>Purpose:</p>
+<p>Interpret progress updates.</p>
+<p>Input:</p>
+<ul><li>Reflection </li>
+<li>Current milestone </li>
+</ul>
+<p>Output:</p>
+<ul><li>Completion estimate </li>
+<li>Outstanding work </li>
+<li>Confidence </li>
+</ul>
+<p><strong>Evidence Prompt</strong></p>
+<p>Purpose:</p>
+<p>Interpret uploaded screenshots.</p>
+<p>Possible evidence:</p>
+<ul><li>Notebook page </li>
+<li>GitHub commit screenshot </li>
+<li>Google Docs page </li>
+<li>ChatGPT research screenshot </li>
+<li>Slides </li>
+</ul>
+<p>Output:</p>
+<p>{<br />  "estimated_progress": 45,<br />  "confidence": 0.82,<br />  "observations": []<br />}</p>
+<p>The backend combines this with user reflections rather than treating it as proof.</p>
+<p><strong>Learning Prompt</strong></p>
+<p>Runs only after meaningful completion.</p>
+<p>Purpose:</p>
+<p>Extract stable behavioral observations.</p>
+<p>Example:</p>
+<p>{<br />  "patterns": [<br />    {<br />      "category": "Execution Window",<br />      "value": "Evening",<br />      "confidence": 0.87<br />    }<br />  ]<br />}</p>
+<p><strong>Explanation Prompt</strong></p>
+<p>Purpose:</p>
+<p>Convert deterministic backend decisions into natural language.</p>
+<p>Example:</p>
+<p>Backend says:</p>
+<p>Risk increased.<br /><br />Reason:<br />Buffer reduced.</p>
+<p>Gemini produces:</p>
+<p>"Your safety buffer has reduced from three days to one day because of the newly added assignment. Updating the schedule today will preserve your planned completion."</p>
+<p>This keeps explanations human-friendly while the backend remains deterministic.</p>
+<p><strong>21.7 Context Management</strong></p>
+<p>Each prompt receives only the context it needs.</p>
+<table><thead><tr><th><p><strong>Prompt</strong></p>
+</th><th><p><strong>Context</strong></p>
+</th></tr></thead><tbody><tr><td><p>Task Understanding</p>
+</td><td><p>Task details</p>
+</td></tr><tr><td><p>Planner</p>
+</td><td><p>Task + Persona</p>
+</td></tr><tr><td><p>Recovery</p>
+</td><td><p>Current plan + blocker</p>
+</td></tr><tr><td><p>Conversation</p>
+</td><td><p>Recent messages</p>
+</td></tr><tr><td><p>Reflection</p>
+</td><td><p>Reflection + milestone</p>
+</td></tr><tr><td><p>Evidence</p>
+</td><td><p>Uploaded file metadata + image</p>
+</td></tr><tr><td><p>Learning</p>
+</td><td><p>Historical observations</p>
+</td></tr><tr><td><p>Explanation</p>
+</td><td><p>Deterministic backend output</p>
+</td></tr></tbody></table><p>Large conversation histories are intentionally avoided.</p>
+<p><strong>21.8 JSON Contract</strong></p>
+<p>Every prompt must return valid JSON.</p>
+<p>Common fields include:</p>
+<p>{<br />  "status": "success",<br />  "confidence": 0.91,<br />  "result": {},<br />  "warnings": []<br />}</p>
+<p>The backend validates this before continuing.</p>
+<p><strong>21.9 Prompt Versioning</strong></p>
+<p>Each prompt has an explicit version.</p>
+<p>Example:</p>
+<p>planner_v1.md<br />planner_v2.md<br /><br />conversation_v1.md</p>
+<p>This allows improvements without breaking production behavior.</p>
+<p><strong>21.10 Prompt Testing</strong></p>
+<p>Every prompt should be tested with:</p>
+<ul><li>Normal inputs </li>
+<li>Minimal inputs </li>
+<li>Ambiguous tasks </li>
+<li>Conflicting information </li>
+<li>Invalid responses </li>
+<li>Empty descriptions </li>
+</ul>
+<p>The goal is to ensure predictable outputs across a variety of scenarios.</p>
+<p><strong>21.11 Prompt Security</strong></p>
+<p>Prompts should:</p>
+<ul><li>Avoid revealing internal implementation. </li>
+<li>Ignore attempts to override system instructions. </li>
+<li>Never expose hidden prompts. </li>
+<li>Reject requests outside their assigned capability. </li>
+<li>Never generate state-changing actions directly. </li>
+</ul>
+<p><strong>21.12 Prompt Summary</strong></p>
+<p>The prompt architecture treats Gemini as a collection of focused reasoning capabilities rather than a general-purpose chatbot. By enforcing single-responsibility prompts, structured JSON outputs, minimal context, and backend orchestration, the system remains explainable, maintainable, and resilient as the product evolves.</p>
+<p><strong>✅ Chapter 21 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 22 — Project Folder Structure</strong></p>
+<p><strong>22.1 Purpose</strong></p>
+<p>This chapter defines the physical organization of the Buddy-AI source code. The project structure reflects the architectural principles established in previous chapters by separating presentation, business orchestration, execution logic, AI capabilities, and infrastructure concerns into clearly defined modules.</p>
+<p>The structure is designed to support rapid hackathon development while remaining scalable enough for future production growth.</p>
+<p><strong>22.2 Repository Structure</strong></p>
+<p>The project uses a monorepo.</p>
+<p>grade-companion/<br /><br />├── frontend/<br />├── backend/<br />├── docs/<br />├── prompts/<br />├── shared/<br />├── scripts/<br />├── .env.example<br />├── README.md<br />└── package.json</p>
+<p><strong>22.3 Frontend Structure</strong></p>
+<p>frontend/<br /><br />├── public/<br />│<br />├── src/<br />│<br />│   ├── app/<br />│   │<br />│   ├── assets/<br />│   │<br />│   ├── pages/<br />│   │<br />│   │      Dashboard/<br />│   │      Login/<br />│   │      Onboarding/<br />│   │      Task/<br />│   │      Decisions/<br />│   │      Events/<br />│   │      QuickTasks/<br />│   │      Learning/<br />│   │      Settings/<br />│   │<br />│   ├── components/<br />│   │<br />│   │      common/<br />│   │      dashboard/<br />│   │      task/<br />│   │      decision/<br />│   │      notification/<br />│   │      timeline/<br />│   │<br />│   ├── layouts/<br />│   │<br />│   ├── services/<br />│   │<br />│   ├── hooks/<br />│   │<br />│   ├── contexts/<br />│   │<br />│   ├── routes/<br />│   │<br />│   ├── utils/<br />│   │<br />│   ├── types/<br />│   │<br />│   └── main.tsx<br />│<br />├── package.json<br />└── vite.config.ts</p>
+<p><strong>22.4 Backend Structure</strong></p>
+<p>backend/<br /><br />├── src/<br />│<br />│   ├── routes/<br />│   │<br />│   ├── controllers/<br />│   │<br />│   ├── application/<br />│   │<br />│   │      DashboardApplication/<br />│   │      TaskApplication/<br />│   │      DecisionApplication/<br />│   │      EventApplication/<br />│   │<br />│   ├── execution_core/<br />│   │<br />│   │      planner/<br />│   │      scheduler/<br />│   │      risk/<br />│   │      focus/<br />│   │      decision/<br />│   │      notification/<br />│   │      learning/<br />│   │<br />│   ├── ai/<br />│   │<br />│   │      orchestrator/<br />│   │      capabilities/<br />│   │      parsers/<br />│   │<br />│   ├── repositories/<br />│   │<br />│   ├── models/<br />│   │<br />│   ├── middleware/<br />│   │<br />│   ├── config/<br />│   │<br />│   ├── services/<br />│   │<br />│   ├── events/<br />│   │<br />│   ├── utils/<br />│   │<br />│   └── server.ts<br />│<br />└── package.json</p>
+<p><strong>22.5 Prompt Library</strong></p>
+<p>One prompt per capability.</p>
+<p>prompts/<br /><br />├── task_understanding.md<br />├── milestone_planner.md<br />├── recovery.md<br />├── conversation.md<br />├── reflection.md<br />├── evidence.md<br />├── learning.md<br />├── explanation.md<br />└── schemas/</p>
+<p>Each prompt has its own schema and version.</p>
+<p><strong>22.6 Shared Package</strong></p>
+<p>Contains types shared by frontend and backend.</p>
+<p>shared/<br /><br />├── types/<br />│<br />├── constants/<br />│<br />├── dto/<br />│<br />├── enums/<br />│<br />└── validation/</p>
+<p>Examples:</p>
+<p>TaskDTO<br /><br />DecisionDTO<br /><br />RiskLevel<br /><br />TaskStatus</p>
+<p>This avoids duplicate type definitions.</p>
+<p><strong>22.7 Documentation</strong></p>
+<p>docs/<br /><br />├── SSD.pdf<br /><br />├── API.md<br /><br />├── PromptGuide.md<br /><br />├── Architecture.md<br /><br />├── Deployment.md<br /><br />└── DemoScript.md</p>
+<p>The Demo Script is particularly useful during the hackathon presentation.</p>
+<p><strong>22.8 Scripts</strong></p>
+<p>Utility scripts.</p>
+<p>scripts/<br /><br />setup.sh<br /><br />seed.ts<br /><br />deploy.sh<br /><br />reset.ts</p>
+<p>Examples:</p>
+<ul><li>Seed sample tasks. </li>
+<li>Deploy backend. </li>
+<li>Reset development database. </li>
+</ul>
+<p><strong>22.9 Configuration</strong></p>
+<p>Environment variables are never committed.</p>
+<p>.env<br /><br />.env.local<br /><br />.env.production<br /><br />.env.example</p>
+<p>The example file documents required variables.</p>
+<p>Example:</p>
+<p>GEMINI_API_KEY=<br /><br />FIREBASE_PROJECT_ID=<br /><br />FIREBASE_STORAGE_BUCKET=<br /><br />JWT_SECRET=</p>
+<p><strong>22.10 Naming Conventions</strong></p>
+<p><strong>Files</strong></p>
+<p>camelCase.ts</p>
+<p>Example</p>
+<p>taskRepository.ts</p>
+<p><strong>React Components</strong></p>
+<p>PascalCase.tsx</p>
+<p>Example</p>
+<p>DashboardPage.tsx</p>
+<p><strong>Interfaces</strong></p>
+<p>TaskDTO<br /><br />DecisionDTO</p>
+<p><strong>Constants</strong></p>
+<p>UPPER_SNAKE_CASE</p>
+<p>Example</p>
+<p>MAX_BUFFER_DAYS</p>
+<p><strong>22.11 Feature Ownership</strong></p>
+<p>Each major feature owns its resources.</p>
+<p>Example</p>
+<p>Task<br /><br />↓<br /><br />Controller<br /><br />↓<br /><br />Application<br /><br />↓<br /><br />Repository<br /><br />↓<br /><br />Execution Logic</p>
+<p>Avoid placing unrelated logic in feature folders.</p>
+<p><strong>22.12 AI Folder</strong></p>
+<p>ai/<br /><br />├── orchestrator/<br /><br />├── capabilities/<br /><br />│      planner.ts<br /><br />│      recovery.ts<br /><br />│      reflection.ts<br /><br />│      evidence.ts<br /><br />│      learning.ts<br /><br />├── parsers/<br /><br />├── validators/<br /><br />└── client.ts</p>
+<p>Only this folder communicates with Gemini.</p>
+<p><strong>22.13 Execution Core Folder</strong></p>
+<p>execution_core/<br /><br />planner/<br /><br />scheduler/<br /><br />risk/<br /><br />focus/<br /><br />decision/<br /><br />notification/<br /><br />learning/</p>
+<p>Each module contains:</p>
+<p>index.ts<br /><br />service.ts<br /><br />types.ts<br /><br />helpers.ts</p>
+<p>No module accesses Firestore directly.</p>
+<p><strong>22.14 Repository Layer</strong></p>
+<p>repositories/<br /><br />TaskRepository.ts<br /><br />MilestoneRepository.ts<br /><br />DecisionRepository.ts<br /><br />EvidenceRepository.ts<br /><br />EventRepository.ts<br /><br />NotificationRepository.ts<br /><br />LearningRepository.ts</p>
+<p>Repositories hide Firestore implementation details.</p>
+<p><strong>22.15 Events</strong></p>
+<p>The Event Bus lives here.</p>
+<p>events/<br /><br />EventBus.ts<br /><br />TaskCreated.ts<br /><br />PlanGenerated.ts<br /><br />MilestoneCompleted.ts<br /><br />DecisionAccepted.ts<br /><br />RecoveryStarted.ts</p>
+<p>The Event Bus coordinates internal workflows without tightly coupling modules.</p>
+<p><strong>22.16 Assets</strong></p>
+<p>assets/<br /><br />icons/<br /><br />illustrations/<br /><br />animations/<br /><br />logos/<br /><br />images/</p>
+<p>Static assets are grouped by type for easier management.</p>
+<p><strong>22.17 Build Outputs</strong></p>
+<p>Generated artifacts should not be committed.</p>
+<p>Ignored folders include:</p>
+<p>node_modules/<br /><br />dist/<br /><br />build/<br /><br />coverage/<br /><br />.firebase/</p>
+<p>These are recreated during builds or deployments.</p>
+<p><strong>22.18 Project Structure Summary</strong></p>
+<p>The folder organization mirrors the architectural layers of the system. Each directory has a clearly defined responsibility, reducing coupling and making the codebase easier to navigate, test, and extend. This structure supports rapid hackathon development while remaining suitable for future production-scale evolution.</p>
+<p><strong>✅ Chapter 22 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 23 — MVP Scope vs Full Product</strong></p>
+<p><strong>23.1 Purpose</strong></p>
+<p>This chapter defines the implementation scope for the hackathon MVP and distinguishes it from the long-term product vision.</p>
+<p>The purpose is to maximize the quality, stability, and demonstration value of the submission by focusing development effort on features that best showcase the Buddy-AI's core innovation.</p>
+<p>Features are classified into four categories:</p>
+<ul><li>Must Build </li>
+<li>Should Build </li>
+<li>Can Mock </li>
+<li>Future Version </li>
+</ul>
+<p><strong>23.2 MVP Philosophy</strong></p>
+<p>The MVP should demonstrate one complete story:</p>
+<p><strong>A user creates a task → AI plans it → Scheduler creates a safety buffer → User misses work → AI detects risk → AI replans → User accepts → Task returns on track.</strong></p>
+<p>If this works flawlessly, judges will understand the product.</p>
+<p>Everything else supports this story.</p>
+<p><strong>23.3 Must Build (Core Demo)</strong></p>
+<p>These features are essential. Without them, the product loses its unique value.</p>
+<p><strong>User Authentication</strong></p>
+<ul><li>Google Sign-In </li>
+<li>User profile creation </li>
+</ul>
+<p><strong>Dashboard</strong></p>
+<p>Must include:</p>
+<ul><li>Today's Focus </li>
+<li>Active Tasks </li>
+<li>Pending Decisions </li>
+<li>Quick Tasks </li>
+<li>Risk Summary </li>
+</ul>
+<p><strong>Execution Task Creation</strong></p>
+<p>User enters:</p>
+<ul><li>Title </li>
+<li>Deadline </li>
+<li>Priority </li>
+</ul>
+<p>AI:</p>
+<ul><li>Understands task </li>
+<li>Generates milestones </li>
+</ul>
+<p><strong>Execution Scheduler</strong></p>
+<p>Must:</p>
+<ul><li>Schedule milestones </li>
+<li>Reserve safety buffer </li>
+<li>Display timeline </li>
+</ul>
+<p><strong>Focus Engine</strong></p>
+<p>Must display:</p>
+<p>Today's Focus<br /><br />↓<br /><br />Milestone<br /><br />↓<br /><br />Estimated Time<br /><br />↓<br /><br />Reason</p>
+<p><strong>Risk Engine</strong></p>
+<p>Must:</p>
+<ul><li>Calculate risk </li>
+<li>Detect deadline collision </li>
+<li>Display explanations </li>
+</ul>
+<p><strong>Decision Engine</strong></p>
+<p>Must generate Decision Cards.</p>
+<p>Example:</p>
+<p>New assignment detected.</p>
+<p>↓</p>
+<p>Update schedule?</p>
+<ul><li>Accept </li>
+<li>Modify </li>
+<li>Reject </li>
+</ul>
+<p><strong>Recovery Planning</strong></p>
+<p>Scenario:</p>
+<p>Miss milestone.</p>
+<p>↓</p>
+<p>AI asks:</p>
+<p>What happened?</p>
+<p>↓</p>
+<p>User answers.</p>
+<p>↓</p>
+<p>Recovery plan generated.</p>
+<p>↓</p>
+<p>User approves.</p>
+<p>↓</p>
+<p>Schedule updated.</p>
+<p><strong>Event Management</strong></p>
+<p>Allow users to add:</p>
+<ul><li>Marriage </li>
+<li>Vacation </li>
+<li>Medical appointment </li>
+<li>College event </li>
+</ul>
+<p>Scheduler must respect these events.</p>
+<p><strong>Evidence Upload</strong></p>
+<p>Support:</p>
+<ul><li>Image </li>
+<li>Screenshot </li>
+</ul>
+<p>Gemini estimates progress.</p>
+<p>Reflection text is optional.</p>
+<p><strong>Quick Tasks</strong></p>
+<p>Examples:</p>
+<ul><li>Bill payment </li>
+<li>Interview </li>
+<li>Meeting </li>
+</ul>
+<p>Interactive notification:</p>
+<p>Electricity Bill<br /><br />[Done]<br /><br />[Remind Later]</p>
+<p><strong>23.4 Should Build</strong></p>
+<p>These features improve the experience but are not essential for judging.</p>
+<p>Learning Center</p>
+<p>Display learned patterns.</p>
+<p>Notification History</p>
+<p>View previous notifications.</p>
+<p>Decision History</p>
+<p>View previous AI recommendations.</p>
+<p>Recurring Quick Tasks</p>
+<p>Electricity bill every month.</p>
+<p>Settings</p>
+<p>Basic preferences.</p>
+<p>Dark/Light Theme</p>
+<p>Nice but not demo-critical.</p>
+<p><strong>23.5 Can Mock</strong></p>
+<p>These features can be simulated during the demo if implementation time is limited.</p>
+<p>Push Notifications</p>
+<p>Instead of real browser push notifications:</p>
+<p>Display in-app notification cards.</p>
+<p>Learning Engine</p>
+<p>Show pattern cards based on demo data.</p>
+<p>Real learning logic can be simplified.</p>
+<p>Evidence AI</p>
+<p>Instead of full image understanding:</p>
+<p>Use one or two predefined demo images.</p>
+<p>Analytics</p>
+<p>Static charts.</p>
+<p>No complex calculations required.</p>
+<p>Conversation Memory</p>
+<p>Keep only current recovery conversation.</p>
+<p>No long-term history.</p>
+<p><strong>23.6 Future Version</strong></p>
+<p>These are intentionally excluded from the MVP.</p>
+<p>Multiple LLM support</p>
+<p>Shared workspaces</p>
+<p>Team collaboration</p>
+<p>Calendar synchronization</p>
+<p>Google Calendar</p>
+<p>Outlook</p>
+<p>Apple Calendar</p>
+<p>Email reminders</p>
+<p>Voice assistant</p>
+<p>Wearables</p>
+<p>Browser extension</p>
+<p>Cross-device synchronization improvements</p>
+<p>Offline execution</p>
+<p>Advanced analytics dashboard</p>
+<p>Productivity scoring</p>
+<p>Habit prediction</p>
+<p>Enterprise dashboards</p>
+<p>Organization accounts</p>
+<p><strong>23.7 Demo Dataset</strong></p>
+<p>Instead of creating tasks live during judging, prepare sample data.</p>
+<p>Student</p>
+<p>Fundamentals of AI Assignment<br /><br />↓<br /><br />Operating Systems Assignment<br /><br />↓<br /><br />Mini Project</p>
+<p>Professional</p>
+<p>Client Presentation<br /><br />↓<br /><br />Quarterly Report<br /><br />↓<br /><br />Performance Review</p>
+<p>Entrepreneur</p>
+<p>Investor Pitch<br /><br />↓<br /><br />Product Launch<br /><br />↓<br /><br />Hiring Plan</p>
+<p>Switching personas instantly demonstrates versatility.</p>
+<p><strong>23.8 Demo Story</strong></p>
+<p>The demo should follow a narrative.</p>
+<p>Scene 1</p>
+<p>Create:</p>
+<p>AI Assignment<br /><br />↓<br /><br />Deadline<br /><br />10 Days</p>
+<p>Gemini creates milestones.</p>
+<p>Scheduler generates plan.</p>
+<p>Scene 2</p>
+<p>Unexpected task appears.</p>
+<p>Operating Systems<br /><br />↓<br /><br />Tomorrow</p>
+<p>Risk increases.</p>
+<p>Decision Card appears.</p>
+<p>Scene 3</p>
+<p>User misses milestone.</p>
+<p>AI asks:</p>
+<p>What happened?</p>
+<p>User:</p>
+<p>College announced extra lab.</p>
+<p>Recovery generated.</p>
+<p>Scene 4</p>
+<p>User uploads notebook screenshot.</p>
+<p>Gemini estimates progress.</p>
+<p>Scene 5</p>
+<p>Dashboard updates.</p>
+<p>Focus changes.</p>
+<p>Risk decreases.</p>
+<p>Safety buffer restored.</p>
+<p>This demonstrates the complete execution loop.</p>
+<p><strong>23.9 Features Removed from MVP</strong></p>
+<p>To avoid scope creep, the following are excluded:</p>
+<ul><li>Complex habit analytics </li>
+<li>Multi-user collaboration </li>
+<li>Real-time chat </li>
+<li>Advanced gamification </li>
+<li>AI-generated productivity scores </li>
+<li>Social features </li>
+<li>Marketplace </li>
+<li>Plugin architecture </li>
+</ul>
+<p><strong>23.10 Success Criteria</strong></p>
+<p>The MVP is considered successful if it can demonstrate:</p>
+<ul><li>AI understands tasks. </li>
+<li>AI creates milestones. </li>
+<li>Scheduler creates safety buffers. </li>
+<li>Risk Engine detects execution problems. </li>
+<li>Decision Engine generates recommendations. </li>
+<li>Recovery planning works. </li>
+<li>Dashboard reflects updates. </li>
+<li>Quick Tasks work. </li>
+<li>Evidence upload influences progress. </li>
+<li>All interactions feel cohesive. </li>
+</ul>
+<p><strong>23.11 Time Allocation (3-Day Hackathon)</strong></p>
+<p><strong>Day 1</strong></p>
+<ul><li>Authentication </li>
+<li>Database </li>
+<li>Task creation </li>
+<li>Planner </li>
+<li>Scheduler </li>
+<li>Dashboard </li>
+</ul>
+<p><strong>Day 2</strong></p>
+<ul><li>Risk Engine </li>
+<li>Focus Engine </li>
+<li>Decision Cards </li>
+<li>Recovery </li>
+<li>Event Manager </li>
+</ul>
+<p><strong>Day 3</strong></p>
+<ul><li>Evidence upload </li>
+<li>Quick Tasks </li>
+<li>UI polish </li>
+<li>Bug fixes </li>
+<li>Demo preparation </li>
+<li>Deployment </li>
+</ul>
+<p><strong>23.12 MVP Summary</strong></p>
+<p>The MVP focuses on delivering a complete, end-to-end execution experience rather than implementing every planned feature. By prioritizing task planning, scheduling, risk detection, recovery, and AI-assisted decision-making, the prototype demonstrates the platform's core innovation while remaining achievable within the hackathon timeline.</p>
+<p><strong>✅ Chapter 23 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 24 — Deployment Architecture</strong></p>
+<p><strong>24.1 Purpose</strong></p>
+<p>This chapter defines the deployment architecture of the Buddy-AI. It describes how the frontend, backend, AI services, database, authentication, storage, and notification infrastructure are deployed and interconnected to provide a secure, scalable, and production-ready application.</p>
+<p>The deployment strategy prioritizes simplicity, rapid hackathon deployment, and a clear migration path toward future production use.</p>
+<p><strong>24.2 Deployment Philosophy</strong></p>
+<p>The deployment follows these principles:</p>
+<ul><li>Fully cloud-based. </li>
+<li>No local server dependencies. </li>
+<li>One-click deployment where possible. </li>
+<li>Secure API communication. </li>
+<li>Independent deployment of frontend and backend. </li>
+<li>Easy environment configuration. </li>
+</ul>
+<p><strong>24.3 Overall Deployment Architecture</strong></p>
+<p>                         User<br />                           │<br />                 Desktop Browser / Mobile PWA<br />                           │<br />                    HTTPS Requests<br />                           │<br />         ┌─────────────────┴──────────────────┐<br />         ▼                                    ▼<br /> Firebase Hosting                     Express Backend<br /> (React PWA)                           (Cloud Run)<br />         │                                    │<br />         │                                    │<br />         ▼                                    ▼<br /> Firebase Auth                    Execution Core<br />                                          │<br />             ┌────────────────────────────┼──────────────────────────┐<br />             ▼                            ▼                          ▼<br />      Gemini API                   Firestore DB              Firebase Storage<br />      (Google AI)                  User Data                 Evidence Files</p>
+<p><strong>24.4 Deployment Components</strong></p>
+<p><strong>Frontend</strong></p>
+<p>Technology:</p>
+<ul><li>React </li>
+<li>TypeScript </li>
+<li>Tailwind </li>
+<li>PWA </li>
+</ul>
+<p>Hosting:</p>
+<p><strong>Firebase Hosting</strong></p>
+<p>Reason:</p>
+<ul><li>Native Firebase integration </li>
+<li>HTTPS by default </li>
+<li>Fast CDN </li>
+<li>Easy deployment </li>
+</ul>
+<p><strong>Backend</strong></p>
+<p>Technology</p>
+<ul><li>Node.js </li>
+<li>Express </li>
+</ul>
+<p>Hosting</p>
+<p><strong>Google Cloud Run</strong></p>
+<p>Reason</p>
+<ul><li>Auto scaling </li>
+<li>Containerized </li>
+<li>Easy Gemini integration </li>
+<li>Independent deployment </li>
+<li>Better than Cloud Functions for a growing backend </li>
+</ul>
+<p><strong>Database</strong></p>
+<p>Technology</p>
+<p><strong>Cloud Firestore</strong></p>
+<p>Stores</p>
+<ul><li>Users </li>
+<li>Tasks </li>
+<li>Milestones </li>
+<li>Decisions </li>
+<li>Events </li>
+<li>Notifications </li>
+<li>Learning </li>
+<li>Logs </li>
+</ul>
+<p><strong>Authentication</strong></p>
+<p>Technology</p>
+<p>Firebase Authentication</p>
+<p>Provider</p>
+<p>Google Login</p>
+<p>Benefits</p>
+<ul><li>No password management </li>
+<li>Secure authentication </li>
+<li>Easy integration </li>
+</ul>
+<p><strong>Storage</strong></p>
+<p>Technology</p>
+<p>Firebase Storage</p>
+<p>Stores</p>
+<ul><li>Screenshots </li>
+<li>PDFs </li>
+<li>Assignment images </li>
+<li>Evidence uploads </li>
+</ul>
+<p>Firestore stores only metadata.</p>
+<p><strong>AI</strong></p>
+<p>Technology</p>
+<p>Google Gemini API</p>
+<p>Responsible for</p>
+<ul><li>Planning </li>
+<li>Recovery </li>
+<li>Conversation </li>
+<li>Reflection </li>
+<li>Evidence analysis </li>
+<li>Learning summaries </li>
+</ul>
+<p><strong>24.5 Environment Variables</strong></p>
+<p>Sensitive information must never be hardcoded.</p>
+<p>Backend:</p>
+<p>GEMINI_API_KEY=<br /><br />FIREBASE_PROJECT_ID=<br /><br />FIREBASE_PRIVATE_KEY=<br /><br />FIREBASE_CLIENT_EMAIL=<br /><br />JWT_SECRET=<br /><br />NODE_ENV=</p>
+<p>Frontend:</p>
+<p>VITE_FIREBASE_API_KEY=<br /><br />VITE_FIREBASE_AUTH_DOMAIN=<br /><br />VITE_FIREBASE_PROJECT_ID=<br /><br />VITE_BACKEND_URL=</p>
+<p>Only public configuration appears in the frontend.</p>
+<p><strong>24.6 Deployment Flow</strong></p>
+<p>Frontend deployment</p>
+<p>GitHub<br /><br />↓<br /><br />Firebase Hosting<br /><br />↓<br /><br />Live Website</p>
+<p>Backend deployment</p>
+<p>GitHub<br /><br />↓<br /><br />Docker Build<br /><br />↓<br /><br />Cloud Run<br /><br />↓<br /><br />Backend URL</p>
+<p>Firestore and Storage remain managed services.</p>
+<p><strong>24.7 Runtime Request Flow</strong></p>
+<p>Example</p>
+<p>Create Task</p>
+<p>Browser<br /><br />↓<br /><br />React<br /><br />↓<br /><br />Express API<br /><br />↓<br /><br />Task Application<br /><br />↓<br /><br />Execution Core<br /><br />↓<br /><br />Gemini<br /><br />↓<br /><br />Execution Scheduler<br /><br />↓<br /><br />Firestore<br /><br />↓<br /><br />API Response<br /><br />↓<br /><br />Dashboard Update</p>
+<p>No direct browser communication with Gemini.</p>
+<p><strong>24.8 Security</strong></p>
+<p>Communication</p>
+<p>HTTPS<br /><br />↓<br /><br />Firebase Authentication<br /><br />↓<br /><br />JWT Verification<br /><br />↓<br /><br />Backend Validation<br /><br />↓<br /><br />Execution Core</p>
+<p>Every request is authenticated.</p>
+<p>Every task ownership is verified.</p>
+<p><strong>24.9 Failure Recovery</strong></p>
+<p><strong>Gemini Failure</strong></p>
+<p>If Gemini becomes unavailable</p>
+<p>System should</p>
+<ul><li>Continue deterministic features </li>
+<li>Allow task creation </li>
+<li>Retry AI reasoning when appropriate </li>
+<li>Inform the user only when AI reasoning is essential </li>
+</ul>
+<p><strong>Firestore Failure</strong></p>
+<p>Show</p>
+<p>Unable to synchronize your latest changes.</p>
+<p>Retry automatically.</p>
+<p><strong>Storage Failure</strong></p>
+<p>Allow user to retry upload.</p>
+<p>Do not discard local file immediately.</p>
+<p><strong>24.10 Logging</strong></p>
+<p>The backend logs:</p>
+<ul><li>API requests </li>
+<li>AI requests </li>
+<li>Scheduler updates </li>
+<li>Decision generation </li>
+<li>Recovery actions </li>
+<li>Errors </li>
+</ul>
+<p>These logs assist debugging during the hackathon.</p>
+<p><strong>24.11 Performance</strong></p>
+<p>The deployment should target:</p>
+<p>Dashboard</p>
+<p>&lt; 2 seconds</p>
+<p>Task creation</p>
+<p>&lt; 5 seconds</p>
+<p>AI planning</p>
+<p>&lt; 8 seconds</p>
+<p>Recovery generation</p>
+<p>&lt; 8 seconds</p>
+<p>Evidence analysis</p>
+<p>&lt; 10 seconds</p>
+<p>These are practical goals for the MVP.</p>
+<p><strong>24.12 Scalability</strong></p>
+<p>The architecture supports future growth.</p>
+<p>Possible additions include:</p>
+<ul><li>Team workspaces </li>
+<li>Enterprise organizations </li>
+<li>Multiple AI models </li>
+<li>Calendar integrations </li>
+<li>Mobile applications </li>
+<li>Analytics services </li>
+</ul>
+<p>No redesign is required.</p>
+<p><strong>24.13 CI/CD (Future)</strong></p>
+<p>For the hackathon, manual deployment is acceptable.</p>
+<p>Future pipeline:</p>
+<p>GitHub Push<br /><br />↓<br /><br />GitHub Actions<br /><br />↓<br /><br />Build<br /><br />↓<br /><br />Tests<br /><br />↓<br /><br />Deploy<br /><br />↓<br /><br />Firebase<br /><br />↓<br /><br />Cloud Run</p>
+<p><strong>24.14 Deployment Summary</strong></p>
+<p>The Buddy-AI is deployed using a cloud-native architecture that separates the frontend, backend, AI reasoning, and persistent storage into independent services. Firebase Hosting serves the React PWA, Cloud Run hosts the backend and Execution Core, Firestore stores application data, Firebase Storage manages uploaded evidence, and Gemini provides AI reasoning through secure backend orchestration. This architecture balances simplicity for rapid hackathon delivery with scalability for future product evolution.</p>
+<p><strong>✅ Chapter 24 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 25 — Testing Strategy</strong></p>
+<p><strong>25.1 Purpose</strong></p>
+<p>This chapter defines the testing strategy for the Buddy-AI.</p>
+<p>The objective is to verify that all core product workflows operate correctly, AI interactions remain reliable, deterministic components produce expected results, and the complete execution lifecycle functions seamlessly during demonstration and evaluation.</p>
+<p>Rather than maximizing automated test coverage, the MVP prioritizes testing the most critical user journeys and AI-assisted workflows.</p>
+<p><strong>25.2 Testing Philosophy</strong></p>
+<p>The testing strategy follows five principles:</p>
+<ol><li>Test user journeys rather than isolated functions. </li>
+<li>Validate AI outputs before using them. </li>
+<li>Test deterministic logic independently of AI. </li>
+<li>Focus on demonstration reliability. </li>
+<li>Every major feature must have at least one end-to-end scenario. </li>
+</ol><p><strong>25.3 Testing Levels</strong></p>
+<p>The project is tested at five levels.</p>
+<p>Unit Tests<br /><br />↓<br /><br />Integration Tests<br /><br />↓<br /><br />AI Validation Tests<br /><br />↓<br /><br />End-to-End Workflow Tests<br /><br />↓<br /><br />Hackathon Demo Tests</p>
+<p><strong>25.4 Unit Testing</strong></p>
+<p>Purpose:</p>
+<p>Verify deterministic modules individually.</p>
+<p>Modules include:</p>
+<ul><li>Planner helpers </li>
+<li>Execution Scheduler </li>
+<li>Risk calculations </li>
+<li>Focus selection </li>
+<li>Decision generation </li>
+<li>Repository methods </li>
+</ul>
+<p>Example:</p>
+<p>Input<br /><br />Task<br /><br />↓<br /><br />Risk Engine<br /><br />↓<br /><br />Expected Risk Level</p>
+<p>Gemini is not involved.</p>
+<p><strong>25.5 Integration Testing</strong></p>
+<p>Purpose:</p>
+<p>Verify communication between modules.</p>
+<p>Examples:</p>
+<p>Task Creation</p>
+<p>Create Task<br /><br />↓<br /><br />Planner<br /><br />↓<br /><br />Scheduler<br /><br />↓<br /><br />Risk<br /><br />↓<br /><br />Focus</p>
+<p>Verify:</p>
+<ul><li>Milestones created. </li>
+<li>Schedule generated. </li>
+<li>Focus updated. </li>
+<li>Risk initialized. </li>
+</ul>
+<p>Recovery</p>
+<p>Miss Milestone<br /><br />↓<br /><br />Conversation<br /><br />↓<br /><br />Recovery<br /><br />↓<br /><br />Scheduler<br /><br />↓<br /><br />Dashboard</p>
+<p>Verify complete flow.</p>
+<p><strong>25.6 AI Validation Testing</strong></p>
+<p>Unlike deterministic code, Gemini responses require validation.</p>
+<p>Every response is checked for:</p>
+<ul><li>Valid JSON. </li>
+<li>Required fields. </li>
+<li>Confidence score. </li>
+<li>Schema compliance. </li>
+<li>Reasonable values. </li>
+</ul>
+<p>Invalid responses must be rejected gracefully.</p>
+<p><strong>25.7 Prompt Testing</strong></p>
+<p>Each prompt should be tested using:</p>
+<p><strong>Normal Input</strong></p>
+<p>Example:</p>
+<p>Fundamentals of AI Assignment</p>
+<p><strong>Minimal Input</strong></p>
+<p>Assignment</p>
+<p><strong>Ambiguous Input</strong></p>
+<p>Finish project</p>
+<p><strong>Unexpected Input</strong></p>
+<p>aaaaaaaaaaa</p>
+<p><strong>Conflicting Input</strong></p>
+<p>Finish in 2 days<br /><br />Deadline<br /><br />Tomorrow</p>
+<p>Verify graceful handling.</p>
+<p><strong>25.8 API Testing</strong></p>
+<p>Every endpoint is tested.</p>
+<p>Examples:</p>
+<p>POST /tasks<br /><br />GET /dashboard<br /><br />POST /recover<br /><br />POST /progress</p>
+<p>Verify:</p>
+<ul><li>Authentication </li>
+<li>Validation </li>
+<li>Success </li>
+<li>Failure </li>
+<li>Permission checks </li>
+</ul>
+<p><strong>25.9 Frontend Testing</strong></p>
+<p>Verify:</p>
+<p>Navigation</p>
+<p>Responsive layout</p>
+<p>Forms</p>
+<p>Dialogs</p>
+<p>Uploads</p>
+<p>Loading indicators</p>
+<p>Error states</p>
+<p>Desktop and mobile browsers should behave consistently.</p>
+<p><strong>25.10 Execution Core Testing</strong></p>
+<p>Each engine is tested independently.</p>
+<p><strong>Planner</strong></p>
+<p>Generates logical milestones.</p>
+<p><strong>Scheduler</strong></p>
+<p>Creates safety buffers.</p>
+<p>Handles events.</p>
+<p>Rebuilds plans.</p>
+<p><strong>Risk Engine</strong></p>
+<p>Detects:</p>
+<ul><li>Missed milestones. </li>
+<li>Deadline collisions. </li>
+<li>Increasing workload. </li>
+</ul>
+<p><strong>Focus Engine</strong></p>
+<p>Always selects one clear next action.</p>
+<p><strong>Decision Engine</strong></p>
+<p>Generates appropriate Decision Cards.</p>
+<p><strong>Notification Engine</strong></p>
+<p>Generates actionable notifications.</p>
+<p><strong>Learning Engine</strong></p>
+<p>Does not learn from a single observation.</p>
+<p>Requires repeated evidence.</p>
+<p><strong>25.11 Security Testing</strong></p>
+<p>Verify:</p>
+<ul><li>Authentication required. </li>
+<li>Users cannot access other users' tasks. </li>
+<li>Invalid uploads rejected. </li>
+<li>Unauthorized API requests blocked. </li>
+<li>Environment secrets remain hidden. </li>
+</ul>
+<p><strong>25.12 Performance Testing</strong></p>
+<p>Target response times:</p>
+<table><thead><tr><th><p><strong>Feature</strong></p>
+</th><th><p><strong>Target</strong></p>
+</th></tr></thead><tbody><tr><td><p>Dashboard</p>
+</td><td><p>&lt;2 seconds</p>
+</td></tr><tr><td><p>Task Creation</p>
+</td><td><p>&lt;5 seconds</p>
+</td></tr><tr><td><p>AI Planning</p>
+</td><td><p>&lt;8 seconds</p>
+</td></tr><tr><td><p>Recovery</p>
+</td><td><p>&lt;8 seconds</p>
+</td></tr><tr><td><p>Dashboard Refresh</p>
+</td><td><p>&lt;2 seconds</p>
+</td></tr><tr><td><p>Image Upload</p>
+</td><td><p>&lt;10 seconds</p>
+</td></tr></tbody></table><p>These are practical expectations for the MVP.</p>
+<p><strong>25.13 End-to-End User Journey Testing</strong></p>
+<p>The most important tests are complete workflows.</p>
+<p><strong>Scenario 1</strong></p>
+<p>Student</p>
+<p>↓</p>
+<p>Create assignment</p>
+<p>↓</p>
+<p>Planner</p>
+<p>↓</p>
+<p>Scheduler</p>
+<p>↓</p>
+<p>Dashboard</p>
+<p>Verify:</p>
+<p>Everything generated correctly.</p>
+<p><strong>Scenario 2</strong></p>
+<p>Unexpected assignment</p>
+<p>↓</p>
+<p>Risk increases</p>
+<p>↓</p>
+<p>Decision Card appears</p>
+<p>↓</p>
+<p>Accept</p>
+<p>↓</p>
+<p>Schedule updates</p>
+<p><strong>Scenario 3</strong></p>
+<p>Miss milestone</p>
+<p>↓</p>
+<p>Conversation</p>
+<p>↓</p>
+<p>Recovery</p>
+<p>↓</p>
+<p>New schedule</p>
+<p>↓</p>
+<p>Risk reduced</p>
+<p><strong>Scenario 4</strong></p>
+<p>Upload notebook image</p>
+<p>↓</p>
+<p>Evidence analysis</p>
+<p>↓</p>
+<p>Progress updated</p>
+<p><strong>Scenario 5</strong></p>
+<p>Electricity bill</p>
+<p>↓</p>
+<p>Notification</p>
+<p>↓</p>
+<p>Mark Paid</p>
+<p>↓</p>
+<p>Recurring reminder updated</p>
+<p><strong>25.14 Demo Validation Checklist</strong></p>
+<p>Before submission, verify:</p>
+<ul><li>Login works. </li>
+<li>Dashboard loads. </li>
+<li>Task creation succeeds. </li>
+<li>AI planning succeeds. </li>
+<li>Timeline appears. </li>
+<li>Safety buffer visible. </li>
+<li>Focus updates correctly. </li>
+<li>Decision Cards appear. </li>
+<li>Recovery works. </li>
+<li>Evidence upload works. </li>
+<li>Quick Tasks work. </li>
+<li>Events affect scheduling. </li>
+<li>Mobile layout works. </li>
+<li>Desktop layout works. </li>
+<li>Deployment is accessible. </li>
+<li>No console errors. </li>
+</ul>
+<p>This checklist should be completed before recording the demo video or presenting to judges.</p>
+<p><strong>25.15 Bug Severity</strong></p>
+<table><thead><tr><th><p><strong>Severity</strong></p>
+</th><th><p><strong>Action</strong></p>
+</th></tr></thead><tbody><tr><td><p>Critical</p>
+</td><td><p>Fix immediately</p>
+</td></tr><tr><td><p>High</p>
+</td><td><p>Fix before submission</p>
+</td></tr><tr><td><p>Medium</p>
+</td><td><p>Fix if time permits</p>
+</td></tr><tr><td><p>Low</p>
+</td><td><p>Document for future versions</p>
+</td></tr></tbody></table><p>Examples:</p>
+<p>Critical:</p>
+<ul><li>Cannot create task. </li>
+<li>Dashboard crashes. </li>
+<li>Login fails. </li>
+</ul>
+<p>High:</p>
+<ul><li>Scheduler incorrect. </li>
+<li>Risk not updating. </li>
+</ul>
+<p>Medium:</p>
+<ul><li>Animation glitch. </li>
+<li>Layout issue. </li>
+</ul>
+<p>Low:</p>
+<ul><li>Minor styling inconsistencies. </li>
+</ul>
+<p><strong>25.16 Failure Handling Tests</strong></p>
+<p>Simulate:</p>
+<ul><li>Gemini unavailable. </li>
+<li>Network interruption. </li>
+<li>Firestore timeout. </li>
+<li>Invalid image upload. </li>
+<li>Missing fields. </li>
+<li>Expired authentication. </li>
+</ul>
+<p>The application should fail gracefully whenever possible.</p>
+<p><strong>25.17 Acceptance Criteria</strong></p>
+<p>The MVP is considered ready when:</p>
+<ul><li>Every Must Build feature functions. </li>
+<li>End-to-end student workflow succeeds. </li>
+<li>No critical bugs remain. </li>
+<li>Deployment is stable. </li>
+<li>Demo completes without manual intervention. </li>
+<li>Judges can use the application without developer assistance. </li>
+</ul>
+<p><strong>25.18 Testing Summary</strong></p>
+<p>The testing strategy emphasizes reliability over exhaustive coverage. By validating deterministic logic, AI outputs, API behavior, frontend workflows, and complete execution journeys, the project ensures a stable and convincing hackathon demonstration. The primary success metric is a seamless end-to-end experience that clearly demonstrates the product's innovation and execution quality.</p>
+<p><strong>✅ Chapter 25 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 26 — Development Roadmap</strong></p>
+<p><strong>26.1 Purpose</strong></p>
+<p>This chapter defines the implementation strategy for the Buddy-AI hackathon MVP.</p>
+<p>The objective is to transform the approved software design into a working product within the available hackathon timeline while minimizing implementation risk.</p>
+<p>Rather than developing isolated modules independently, the roadmap follows a <strong>vertical feature development approach</strong>, ensuring that complete user workflows become functional as early as possible.</p>
+<p><strong>26.2 Development Philosophy</strong></p>
+<p>The project follows these principles:</p>
+<ul><li>Build complete features instead of isolated components. </li>
+<li>Prioritize demo-critical functionality. </li>
+<li>Keep the application deployable at the end of each day. </li>
+<li>Integrate AI incrementally. </li>
+<li>Avoid premature optimization. </li>
+<li>Reserve the final day primarily for testing, polishing, and deployment. </li>
+</ul>
+<p><strong>26.3 Milestone Strategy</strong></p>
+<p>Development is divided into four milestones.</p>
+<p>Milestone 1<br />Foundation<br /><br />↓<br /><br />Milestone 2<br />Core Execution Flow<br /><br />↓<br /><br />Milestone 3<br />AI Recovery &amp; Interaction<br /><br />↓<br /><br />Milestone 4<br />Demo Polish</p>
+<p>Each milestone produces a demonstrable improvement.</p>
+<p><strong>26.4 Day 1 — Foundation &amp; Core Flow</strong></p>
+<p><strong>Goal</strong></p>
+<p>By the end of Day 1, a user should be able to:</p>
+<ul><li>Log in. </li>
+<li>Create a task. </li>
+<li>Receive AI-generated milestones. </li>
+<li>View the generated schedule. </li>
+<li>Open the dashboard. </li>
+</ul>
+<p><strong>Task 1 — Project Setup</strong></p>
+<p>Deliverables:</p>
+<ul><li>Git repository </li>
+<li>React project </li>
+<li>Express backend </li>
+<li>Firebase project </li>
+<li>Firestore </li>
+<li>Gemini API integration </li>
+<li>Environment variables </li>
+<li>Deployment skeleton </li>
+</ul>
+<p><strong>Task 2 — Authentication</strong></p>
+<p>Implement:</p>
+<ul><li>Google Sign-In </li>
+<li>Protected routes </li>
+<li>User profile creation </li>
+</ul>
+<p>Verify:</p>
+<ul><li>Login </li>
+<li>Logout </li>
+<li>Session persistence </li>
+</ul>
+<p><strong>Task 3 — Database</strong></p>
+<p>Implement:</p>
+<p>Collections:</p>
+<ul><li>Users </li>
+<li>Tasks </li>
+<li>Milestones </li>
+</ul>
+<p>Repositories.</p>
+<p><strong>Task 4 — Backend Skeleton</strong></p>
+<p>Implement:</p>
+<ul><li>Routes </li>
+<li>Controllers </li>
+<li>Application layer </li>
+<li>Repository layer </li>
+<li>Event Bus </li>
+</ul>
+<p>No business logic yet.</p>
+<p><strong>Task 5 — Gemini Integration</strong></p>
+<p>Implement:</p>
+<ul><li>Gemini client </li>
+<li>Prompt loader </li>
+<li>JSON validation </li>
+</ul>
+<p>Test with a simple prompt.</p>
+<p><strong>Task 6 — Planner</strong></p>
+<p>Implement:</p>
+<ul><li>Task Understanding </li>
+<li>Milestone generation </li>
+</ul>
+<p>Output:</p>
+<p>Editable milestones.</p>
+<p><strong>Task 7 — Execution Scheduler</strong></p>
+<p>Implement:</p>
+<ul><li>Timeline generation </li>
+<li>Safety buffer </li>
+</ul>
+<p>Output:</p>
+<p>Working execution plan.</p>
+<p><strong>Task 8 — Dashboard</strong></p>
+<p>Display:</p>
+<ul><li>Active task </li>
+<li>Timeline </li>
+<li>Focus placeholder </li>
+</ul>
+<p><strong>Day 1 Deliverable</strong></p>
+<p>Working flow:</p>
+<p>Login<br /><br />↓<br /><br />Create Task<br /><br />↓<br /><br />Gemini<br /><br />↓<br /><br />Milestones<br /><br />↓<br /><br />Schedule<br /><br />↓<br /><br />Dashboard</p>
+<p><strong>26.5 Day 2 — Intelligence Layer</strong></p>
+<p><strong>Goal</strong></p>
+<p>Demonstrate adaptive execution.</p>
+<p><strong>Task 1 — Risk Engine</strong></p>
+<p>Implement:</p>
+<ul><li>Risk calculation </li>
+<li>Risk explanation </li>
+</ul>
+<p><strong>Task 2 — Focus Engine</strong></p>
+<p>Implement:</p>
+<p>Today's Focus.</p>
+<p><strong>Task 3 — Decision Engine</strong></p>
+<p>Implement:</p>
+<p>Decision Cards.</p>
+<p><strong>Task 4 — Events</strong></p>
+<p>Implement:</p>
+<p>Add unavailable day.</p>
+<p>Scheduler updates.</p>
+<p><strong>Task 5 — Recovery Conversation</strong></p>
+<p>Implement:</p>
+<p>Conversation prompt.</p>
+<p>Recovery plan.</p>
+<p>Decision approval.</p>
+<p><strong>Task 6 — Schedule Update</strong></p>
+<p>Accept recovery.</p>
+<p>Timeline rebuilt.</p>
+<p><strong>Day 2 Deliverable</strong></p>
+<p>Working flow:</p>
+<p>Miss Milestone<br /><br />↓<br /><br />Conversation<br /><br />↓<br /><br />Recovery<br /><br />↓<br /><br />Accept<br /><br />↓<br /><br />Updated Timeline<br /><br />↓<br /><br />Dashboard</p>
+<p><strong>26.6 Day 3 — Completion &amp; Polish</strong></p>
+<p><strong>Goal</strong></p>
+<p>Prepare a judge-ready product.</p>
+<p><strong>Task 1 — Evidence Upload</strong></p>
+<p>Implement:</p>
+<p>Image upload.</p>
+<p>Gemini estimates progress.</p>
+<p><strong>Task 2 — Quick Tasks</strong></p>
+<p>Implement:</p>
+<p>Bills.</p>
+<p>Meetings.</p>
+<p>Interviews.</p>
+<p>Interactive actions.</p>
+<p><strong>Task 3 — Notifications</strong></p>
+<p>Implement:</p>
+<p>In-app notification cards.</p>
+<p>Browser push notifications are optional.</p>
+<p><strong>Task 4 — UI Polish</strong></p>
+<p>Improve:</p>
+<ul><li>Layout </li>
+<li>Colors </li>
+<li>Animations </li>
+<li>Loading states </li>
+<li>Empty states </li>
+</ul>
+<p><strong>Task 5 — Testing</strong></p>
+<p>Execute Chapter 25 checklist.</p>
+<p>Fix:</p>
+<p>Critical bugs.</p>
+<p>High-priority bugs.</p>
+<p><strong>Task 6 — Deployment</strong></p>
+<p>Deploy:</p>
+<p>Frontend.</p>
+<p>Backend.</p>
+<p>Verify:</p>
+<p>Production environment.</p>
+<p><strong>Task 7 — Demo Data</strong></p>
+<p>Prepare:</p>
+<p>Student scenario.</p>
+<p>Professional scenario.</p>
+<p>Entrepreneur scenario.</p>
+<p><strong>Task 8 — Demo Recording</strong></p>
+<p>Record:</p>
+<p>Full execution story.</p>
+<p><strong>Day 3 Deliverable</strong></p>
+<p>Production-ready MVP.</p>
+<p><strong>26.7 Development Order</strong></p>
+<p>Features are built in this order:</p>
+<p>Infrastructure<br /><br />↓<br /><br />Authentication<br /><br />↓<br /><br />Database<br /><br />↓<br /><br />Planner<br /><br />↓<br /><br />Scheduler<br /><br />↓<br /><br />Dashboard<br /><br />↓<br /><br />Risk<br /><br />↓<br /><br />Focus<br /><br />↓<br /><br />Decision<br /><br />↓<br /><br />Recovery<br /><br />↓<br /><br />Events<br /><br />↓<br /><br />Evidence<br /><br />↓<br /><br />Quick Tasks<br /><br />↓<br /><br />Notifications<br /><br />↓<br /><br />Learning<br /><br />↓<br /><br />Polish</p>
+<p>This minimizes blockers.</p>
+<p><strong>26.8 Definition of Done</strong></p>
+<p>A feature is complete only when:</p>
+<ul><li>Backend implemented. </li>
+<li>Frontend integrated. </li>
+<li>Database updated. </li>
+<li>AI integrated (if required). </li>
+<li>Tested. </li>
+<li>Demo verified. </li>
+</ul>
+<p><strong>26.9 Daily Checkpoints</strong></p>
+<p><strong>End of Day 1</strong></p>
+<p>The application is deployed and can generate a plan for a newly created task.</p>
+<p><strong>End of Day 2</strong></p>
+<p>The application successfully handles a missed milestone and generates an updated execution plan.</p>
+<p><strong>End of Day 3</strong></p>
+<p>All demo scenarios execute successfully without developer intervention.</p>
+<p><strong>26.10 Risk Management</strong></p>
+<table><thead><tr><th><p><strong>Risk</strong></p>
+</th><th><p><strong>Mitigation</strong></p>
+</th></tr></thead><tbody><tr><td><p>Gemini API issues</p>
+</td><td><p>Validate JSON, use retry logic, degrade gracefully</p>
+</td></tr><tr><td><p>Time shortage</p>
+</td><td><p>Focus only on Must Build features</p>
+</td></tr><tr><td><p>UI delays</p>
+</td><td><p>Build functional UI first, polish later</p>
+</td></tr><tr><td><p>Deployment issues</p>
+</td><td><p>Deploy a minimal version on Day 1 and update it incrementally</p>
+</td></tr><tr><td><p>Bugs before submission</p>
+</td><td><p>Freeze new features after Day 2 and dedicate Day 3 to stabilization</p>
+</td></tr></tbody></table><p><strong>26.11 Demo Freeze</strong></p>
+<p>No new features should be added after the Day 2 checkpoint.</p>
+<p>Day 3 is reserved for:</p>
+<ul><li>Bug fixes. </li>
+<li>UI improvements. </li>
+<li>Testing. </li>
+<li>Deployment. </li>
+<li>Presentation preparation. </li>
+</ul>
+<p>This reduces the risk of introducing regressions immediately before submission.</p>
+<p><strong>26.12 Success Criteria</strong></p>
+<p>The roadmap is considered successful if, by the submission deadline:</p>
+<ul><li>All <strong>Must Build</strong> features from Chapter 23 are functional. </li>
+<li>The application is publicly accessible through the submitted website link. </li>
+<li>The complete student workflow executes successfully. </li>
+<li>The AI planning, scheduling, risk detection, recovery, and dashboard update can be demonstrated live. </li>
+<li>The system remains stable during repeated demonstrations. </li>
+</ul>
+<p><strong>Chapter Summary</strong></p>
+<p>The development roadmap transforms the software design into a structured execution plan optimized for a solo developer and a three-day hackathon. By prioritizing complete user journeys, minimizing context switching, and freezing feature development before final testing, the roadmap maximizes the probability of delivering a polished, reliable MVP within the available timeframe.</p>
+<p><strong>✅ Chapter 26 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 27 — Judge Experience &amp; Demo Script</strong></p>
+<p><strong>27.1 Purpose</strong></p>
+<p>This chapter defines the complete demonstration strategy for the Buddy-AI during the hackathon evaluation.</p>
+<p>Rather than presenting isolated features, the demonstration follows a coherent real-world story that allows judges to experience how the system proactively helps users complete important commitments before deadlines are missed.</p>
+<p>The objective is to communicate the product's value, AI capabilities, and technical innovation within the available presentation time while maintaining a smooth, engaging flow.</p>
+<p><strong>27.2 Demo Philosophy</strong></p>
+<p>The demonstration follows three principles:</p>
+<ol><li>Demonstrate a problem before presenting the solution. </li>
+<li>Showcase AI decision-making rather than AI conversation. </li>
+<li>Tell one complete story instead of many disconnected examples. </li>
+</ol><p>The audience should leave with the understanding that this is an <strong>execution companion</strong>, not another reminder application.</p>
+<p><strong>27.3 Opening (30–45 Seconds)</strong></p>
+<p>Begin with a relatable scenario rather than discussing technology.</p>
+<p>Example:</p>
+<p>"Almost everyone has experienced this situation. We receive an assignment due next week and think, 'I'll do it later.' Two days later, another assignment appears. Then a lab session is announced. Suddenly, both deadlines are tomorrow. Existing productivity apps remind us that work exists, but they don't help us complete it. We built an Buddy-AI that actively increases the probability of finishing work before deadlines."</p>
+<p>This immediately establishes the problem and differentiates the product.</p>
+<p><strong>27.4 System Overview (30 Seconds)</strong></p>
+<p>Display the dashboard.</p>
+<p>Briefly explain:</p>
+<ul><li>This is today's execution plan. </li>
+<li>The AI has already analyzed active tasks. </li>
+<li>It has identified today's highest-impact work. </li>
+<li>It maintains safety buffers to absorb unexpected events. </li>
+</ul>
+<p>Avoid explaining implementation details at this stage.</p>
+<p><strong>27.5 Story Part 1 — Creating a Long-Term Task</strong></p>
+<p>Action:</p>
+<p>Create a new task.</p>
+<p>Fundamentals of AI Assignment<br /><br />Deadline<br /><br />10 Days</p>
+<p>Explain:</p>
+<p>"The AI first understands the task. It doesn't simply create reminders. It generates an editable execution strategy."</p>
+<p>Show:</p>
+<ul><li>Milestones </li>
+<li>Timeline </li>
+<li>Target completion date before the actual deadline </li>
+<li>Safety buffer </li>
+</ul>
+<p>Key message:</p>
+<p><strong>The goal is not to finish on the deadline. The goal is to finish before the deadline.</strong></p>
+<p><strong>27.6 Story Part 2 — Daily Execution</strong></p>
+<p>Return to the dashboard.</p>
+<p>Point to:</p>
+<p>Today's Focus.</p>
+<p>Explain:</p>
+<p>"Instead of overwhelming users with ten tasks, the AI identifies the single most valuable action for today."</p>
+<p>Click <strong>Start</strong> (or equivalent).</p>
+<p>This reinforces that the product focuses on execution rather than planning alone.</p>
+<p><strong>27.7 Story Part 3 — Unexpected Event</strong></p>
+<p>Now introduce an interruption.</p>
+<p>Example:</p>
+<p>Operating Systems Assignment<br /><br />Due Tomorrow</p>
+<p>The system should:</p>
+<ul><li>Detect reduced safety buffer. </li>
+<li>Recalculate workload. </li>
+<li>Generate a Decision Card. </li>
+</ul>
+<p>Display:</p>
+<p>"Your original plan now has a high probability of failure."</p>
+<p>Show the AI recommendation.</p>
+<p><strong>27.8 Story Part 4 — Human Collaboration</strong></p>
+<p>Do not automatically apply the new plan.</p>
+<p>Instead, show the Decision Card.</p>
+<p>Example:</p>
+<p>"I recommend updating your schedule because a higher-priority assignment has reduced your safety buffer. Would you like to review the proposed changes?"</p>
+<p>Buttons:</p>
+<ul><li>Accept </li>
+<li>Modify </li>
+<li>Reject </li>
+</ul>
+<p>Explain:</p>
+<p>"The AI never silently changes the user's plan. The user remains in control."</p>
+<p>This addresses trust and transparency.</p>
+<p><strong>27.9 Story Part 5 — Missed Milestone</strong></p>
+<p>Simulate a missed work session.</p>
+<p>The AI should ask:</p>
+<p>"I noticed today's planned work wasn't completed. What happened?"</p>
+<p>User response:</p>
+<p>"The college announced an extra lab."</p>
+<p>The AI should:</p>
+<ul><li>Understand the reason. </li>
+<li>Preserve completed work. </li>
+<li>Generate a recovery strategy. </li>
+<li>Highlight what changed. </li>
+</ul>
+<p>Explain:</p>
+<p>"The AI doesn't punish the user. It adapts to reality."</p>
+<p><strong>27.10 Story Part 6 — Evidence Upload</strong></p>
+<p>Upload a notebook image or a screenshot showing partial work.</p>
+<p>Explain:</p>
+<p>"Instead of asking users to manually estimate progress, the AI uses evidence as one input to estimate how far the task has progressed."</p>
+<p>Clarify that this is an estimate, not proof.</p>
+<p><strong>27.11 Story Part 7 — Quick Tasks</strong></p>
+<p>Switch to a quick recurring task.</p>
+<p>Example:</p>
+<p>Electricity Bill</p>
+<p>Notification:</p>
+<p>Electricity Bill Due Today<br /><br />[Paid]<br /><br />[Remind Me Later]</p>
+<p>Explain:</p>
+<p>"Quick tasks don't need complex planning. They need timely action with minimal friction."</p>
+<p>Click <strong>Paid</strong>.</p>
+<p>Then show the recurring reminder configuration.</p>
+<p><strong>27.12 Story Part 8 — Events</strong></p>
+<p>Add:</p>
+<p>Family Wedding<br /><br />Saturday</p>
+<p>Show:</p>
+<p>The scheduler automatically avoids scheduling work during that period.</p>
+<p>Explain:</p>
+<p>"Users don't need to rebuild plans manually. The system adapts."</p>
+<p><strong>27.13 Closing</strong></p>
+<p>Return to the dashboard.</p>
+<p>Summarize:</p>
+<ul><li>Safety buffer maintained. </li>
+<li>Tasks updated. </li>
+<li>Focus adjusted. </li>
+<li>Risk reduced. </li>
+</ul>
+<p>Conclude with:</p>
+<p>"Most productivity tools ask users to manage tasks. Our AI actively manages execution with the user."</p>
+<p><strong>27.14 Likely Judge Questions</strong></p>
+<p><strong>Why not Google Calendar?</strong></p>
+<p>Answer:</p>
+<p>"Calendars tell users <em>when</em> events happen. Our system decides <em>how</em> work should adapt around those events."</p>
+<p><strong>Why use AI?</strong></p>
+<p>Answer:</p>
+<p>"Static rules cannot interpret incomplete task descriptions, understand blockers, generate recovery strategies, or explain schedule changes. AI provides reasoning while deterministic logic ensures consistent scheduling."</p>
+<p><strong>Why not simple reminders?</strong></p>
+<p>Answer:</p>
+<p>"Reminders increase awareness. They don't increase the probability of completion. Our system plans ahead, creates safety buffers, detects risk, and adapts when reality changes."</p>
+<p><strong>What makes this different?</strong></p>
+<p>Answer:</p>
+<p>"Our innovation is not AI chat. It is the combination of proactive planning, safety-buffer management, deadline collision detection, dynamic replanning, and collaborative decision-making."</p>
+<p><strong>How is user trust maintained?</strong></p>
+<p>Answer:</p>
+<p>"The AI never silently changes plans. Every significant modification is presented as a Decision Card with an explanation, impact assessment, and user approval."</p>
+<p><strong>27.15 Demo Rules</strong></p>
+<p>During the presentation:</p>
+<ul><li>Never show logs or raw JSON. </li>
+<li>Never expose prompts. </li>
+<li>Avoid switching between many pages unnecessarily. </li>
+<li>Keep the dashboard visible whenever possible. </li>
+<li>Let the story drive the feature sequence. </li>
+<li>If something fails, continue the story using prepared demo data rather than debugging live. </li>
+</ul>
+<p><strong>27.16 Backup Plan</strong></p>
+<p>Prepare a fallback dataset containing:</p>
+<ul><li>Three execution tasks. </li>
+<li>One missed milestone. </li>
+<li>One pending Decision Card. </li>
+<li>One uploaded evidence image. </li>
+<li>One recurring bill. </li>
+<li>One unavailable event. </li>
+</ul>
+<p>If live AI responses are delayed, the demonstration can continue using this prepared state without breaking the narrative.</p>
+<p><strong>27.17 Success Criteria</strong></p>
+<p>A successful demonstration ensures judges understand:</p>
+<ul><li>The product solves a genuine productivity problem. </li>
+<li>AI is used for reasoning rather than novelty. </li>
+<li>The system is proactive, not reactive. </li>
+<li>Users retain control over important decisions. </li>
+<li>The MVP is functional today while the architecture supports future growth. </li>
+</ul>
+<p><strong>Chapter Summary</strong></p>
+<p>The demonstration is designed as a guided experience rather than a feature tour. By following a single, realistic execution journey—from planning to disruption, recovery, and completion—it communicates both the product's technical depth and its practical value. This approach makes it easier for judges to remember not just what the application does, but why it is fundamentally different from traditional reminder and task-management tools.</p>
+<p><strong>✅ Chapter 27 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>
+<p><strong>Chapter 28 — Product Evolution Roadmap</strong></p>
+<p><strong>28.1 Purpose</strong></p>
+<p>This chapter defines the long-term evolution strategy for the Buddy-AI beyond the hackathon MVP.</p>
+<p>The roadmap outlines how the platform can mature from a proof of concept into a comprehensive AI-powered execution companion capable of assisting students, professionals, entrepreneurs, and teams in completing meaningful work more effectively.</p>
+<p>Rather than adding unrelated features, every future enhancement strengthens one of the platform's core capabilities:</p>
+<ul><li>Better planning. </li>
+<li>Better execution. </li>
+<li>Better adaptation. </li>
+<li>Better personalization. </li>
+</ul>
+<p><strong>28.2 Product Vision</strong></p>
+<p>The long-term vision is:</p>
+<p><strong>To become the operating system for personal execution—an AI companion that doesn't just organize work, but continuously helps people finish meaningful work before it becomes urgent.</strong></p>
+<p>The platform should become increasingly proactive while preserving user trust, transparency, and control.</p>
+<p><strong>28.3 Evolution Strategy</strong></p>
+<p>The product evolves through five stages.</p>
+<p>Phase 1<br /><br />Hackathon MVP<br /><br />↓<br /><br />Phase 2<br /><br />Personal AI Companion<br /><br />↓<br /><br />Phase 3<br /><br />Deep Personalization<br /><br />↓<br /><br />Phase 4<br /><br />Professional &amp; Team Collaboration<br /><br />↓<br /><br />Phase 5<br /><br />Enterprise Execution Intelligence</p>
+<p>Each phase builds upon the previous one without requiring architectural redesign.</p>
+<p><strong>28.4 Phase 1 — Hackathon MVP</strong></p>
+<p>Objective:</p>
+<p>Validate the core concept.</p>
+<p>Capabilities:</p>
+<ul><li>AI task understanding. </li>
+<li>Milestone generation. </li>
+<li>Safety buffer scheduling. </li>
+<li>Risk detection. </li>
+<li>Dynamic replanning. </li>
+<li>Decision Cards. </li>
+<li>Quick Tasks. </li>
+<li>Evidence uploads. </li>
+</ul>
+<p>Success Metric:</p>
+<p>Users understand the difference between reminders and execution guidance.</p>
+<p><strong>28.5 Phase 2 — Personal AI Companion</strong></p>
+<p>Objective:</p>
+<p>Expand beyond the MVP into daily personal productivity.</p>
+<p>New capabilities:</p>
+<ul><li>Calendar integration (Google Calendar, Outlook). </li>
+<li>Email parsing for deadlines (user-approved). </li>
+<li>Better recurring task management. </li>
+<li>Smarter availability prediction. </li>
+<li>Richer dashboard insights. </li>
+<li>Cross-device synchronization. </li>
+<li>Push notifications. </li>
+</ul>
+<p>The companion begins reducing manual input while keeping the user in control.</p>
+<p><strong>28.6 Phase 3 — Deep Personalization</strong></p>
+<p>Objective:</p>
+<p>Allow the AI to adapt to each individual over time.</p>
+<p>Examples:</p>
+<ul><li>Detect preferred work periods. </li>
+<li>Learn realistic work durations. </li>
+<li>Identify recurring procrastination patterns. </li>
+<li>Improve milestone estimation. </li>
+<li>Adapt communication style. </li>
+<li>Suggest healthier execution habits. </li>
+</ul>
+<p>Decision Cards become increasingly personalized based on observed behavior.</p>
+<p><strong>28.7 Phase 4 — Professional &amp; Team Collaboration</strong></p>
+<p>Objective:</p>
+<p>Support collaborative work.</p>
+<p>Capabilities:</p>
+<ul><li>Shared projects. </li>
+<li>Team timelines. </li>
+<li>Role-based task ownership. </li>
+<li>AI conflict detection across team schedules. </li>
+<li>Meeting-aware replanning. </li>
+<li>Shared decision workflows. </li>
+<li>Manager dashboards. </li>
+</ul>
+<p>The product evolves from individual productivity to collaborative execution.</p>
+<p><strong>28.8 Phase 5 — Enterprise Execution Intelligence</strong></p>
+<p>Objective:</p>
+<p>Scale to organizations.</p>
+<p>Potential capabilities:</p>
+<ul><li>Department-level planning. </li>
+<li>Portfolio execution dashboards. </li>
+<li>Organization-wide workload balancing. </li>
+<li>Enterprise authentication. </li>
+<li>Compliance and audit trails. </li>
+<li>Custom AI policies. </li>
+<li>Analytics for execution performance. </li>
+</ul>
+<p>The Execution Core remains fundamentally the same, demonstrating the value of the architecture designed in this SDD.</p>
+<p><strong>28.9 AI Evolution</strong></p>
+<p>The AI itself evolves alongside the product.</p>
+<p><strong>MVP</strong></p>
+<p>Reactive reasoning.</p>
+<ul><li>Understand. </li>
+<li>Plan. </li>
+<li>Recover. </li>
+</ul>
+<p><strong>Phase 2</strong></p>
+<p>Context-aware reasoning.</p>
+<ul><li>Availability. </li>
+<li>Recurring tasks. </li>
+<li>Historical behavior. </li>
+</ul>
+<p><strong>Phase 3</strong></p>
+<p>Predictive reasoning.</p>
+<p>Examples:</p>
+<p>"You usually struggle with similar assignments. I recommend beginning earlier this week."</p>
+<p><strong>Phase 4</strong></p>
+<p>Collaborative reasoning.</p>
+<p>Examples:</p>
+<p>"Rescheduling your milestone will delay the design review for two teammates."</p>
+<p><strong>Phase 5</strong></p>
+<p>Strategic reasoning.</p>
+<p>Examples:</p>
+<p>"Engineering capacity is likely to become overloaded next month based on current commitments."</p>
+<p><strong>28.10 Learning Engine Evolution</strong></p>
+<p>The Learning Engine becomes progressively more capable.</p>
+<p><strong>MVP</strong></p>
+<p>Basic preferences.</p>
+<p><strong>Phase 2</strong></p>
+<p>Execution habits.</p>
+<p><strong>Phase 3</strong></p>
+<p>Behavior prediction.</p>
+<p><strong>Phase 4</strong></p>
+<p>Team interaction patterns.</p>
+<p><strong>Phase 5</strong></p>
+<p>Long-term execution modeling.</p>
+<p><strong>28.11 Future Integrations</strong></p>
+<p>Potential integrations include:</p>
+<p>Productivity</p>
+<ul><li>Google Calendar. </li>
+<li>Outlook Calendar. </li>
+<li>Notion. </li>
+<li>Trello. </li>
+<li>Jira. </li>
+</ul>
+<p>Development</p>
+<ul><li>GitHub. </li>
+<li>GitLab. </li>
+</ul>
+<p>Communication</p>
+<ul><li>Gmail. </li>
+<li>Outlook Mail. </li>
+<li>Slack. </li>
+<li>Microsoft Teams. </li>
+</ul>
+<p>Cloud Storage</p>
+<ul><li>Google Drive. </li>
+<li>OneDrive. </li>
+<li>Dropbox. </li>
+</ul>
+<p>Each integration should reduce manual effort while respecting user privacy and requiring explicit user authorization.</p>
+<p><strong>28.12 Mobile Applications</strong></p>
+<p>Following validation of the PWA, native mobile applications may be developed.</p>
+<p>Advantages:</p>
+<ul><li>Improved push notification reliability. </li>
+<li>Background synchronization. </li>
+<li>Better offline support. </li>
+<li>Native widgets. </li>
+<li>Platform-specific optimizations. </li>
+</ul>
+<p>The PWA remains the reference implementation.</p>
+<p><strong>28.13 Advanced AI Features</strong></p>
+<p>Potential future capabilities include:</p>
+<ul><li>Multi-step execution coaching. </li>
+<li>Long-term goal decomposition. </li>
+<li>Context-aware focus recommendations. </li>
+<li>Adaptive workload balancing. </li>
+<li>Burnout risk detection. </li>
+<li>Meeting impact analysis. </li>
+<li>AI-generated weekly reviews. </li>
+</ul>
+<p>These features extend the execution philosophy rather than changing it.</p>
+<p><strong>28.14 Success Metrics</strong></p>
+<p>Future versions may evaluate success using measurable outcomes such as:</p>
+<ul><li>Increase in task completion rate. </li>
+<li>Reduction in last-minute work. </li>
+<li>Percentage of tasks completed before deadline. </li>
+<li>Average preserved safety buffer. </li>
+<li>Decision Card acceptance rate. </li>
+<li>User retention. </li>
+<li>Weekly active users. </li>
+</ul>
+<p>These metrics focus on behavior change rather than application usage alone.</p>
+<p><strong>28.15 Product Principles (Never Change)</strong></p>
+<p>Regardless of future expansion, the following principles remain constant:</p>
+<ul><li>AI assists rather than replaces the user. </li>
+<li>Users approve important changes. </li>
+<li>Recommendations are explainable. </li>
+<li>Planning prioritizes completion before deadlines. </li>
+<li>Simplicity is preferred over feature overload. </li>
+<li>The platform remains execution-focused rather than becoming another generic task manager. </li>
+</ul>
+<p>These principles preserve the identity of the product.</p>
+<p><strong>28.16 Long-Term Vision</strong></p>
+<p>The long-term aspiration is not to create another productivity application.</p>
+<p>It is to create an intelligent execution companion that:</p>
+<ul><li>Understands commitments. </li>
+<li>Builds realistic execution strategies. </li>
+<li>Protects users from deadline collisions. </li>
+<li>Learns from experience. </li>
+<li>Adapts when life changes. </li>
+<li>Helps users consistently finish meaningful work before it becomes urgent. </li>
+</ul>
+<p>The success of the platform will ultimately be measured not by how many reminders it sends, but by how often it helps people achieve their goals with less stress and greater confidence.</p>
+<p><strong>28.17 Software Design Document Conclusion</strong></p>
+<p>This Software Design Document has defined the Buddy-AI from product vision through implementation.</p>
+<p>It covers:</p>
+<ul><li>Product objectives. </li>
+<li>Functional and non-functional requirements. </li>
+<li>System architecture. </li>
+<li>Execution Core design. </li>
+<li>AI architecture. </li>
+<li>Backend architecture. </li>
+<li>Database architecture. </li>
+<li>API contracts. </li>
+<li>Frontend architecture. </li>
+<li>UI specification. </li>
+<li>Prompt architecture. </li>
+<li>Deployment strategy. </li>
+<li>Testing methodology. </li>
+<li>Development roadmap. </li>
+<li>Product evolution. </li>
+</ul>
+<p>The resulting design provides a complete blueprint for implementing the hackathon MVP while establishing a scalable foundation for future development.</p>
+<p><strong>✅ Chapter 28 Status</strong></p>
+<p><strong>Status:</strong> Finalized (Frozen)</p>

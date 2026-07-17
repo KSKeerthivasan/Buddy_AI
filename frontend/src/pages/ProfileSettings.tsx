@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { UserProfileV2 } from '../types/profile';
-import { Save, User, Clock, Target, CalendarDays, Moon, Sun, Briefcase } from 'lucide-react';
+import type { UserProfileV2 } from '@buddy-ai/shared';
+import { Save, User, Clock, Target, Sun } from 'lucide-react';
 
 export default function ProfileSettings() {
   const { user } = useAuth();

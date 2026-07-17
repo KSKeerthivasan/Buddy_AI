@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
-import { UserProfileV2, Persona, PrimaryGoal, WeekendRoutine, SessionLength, BreakStyle, WeekendPlanning } from '../types/profile';
+import type { UserProfileV2 } from '@buddy-ai/shared';
 import { CheckCircle2, ChevronRight, ChevronLeft, Briefcase, GraduationCap, Laptop, Sparkles, User as UserIcon } from 'lucide-react';
 
 const ONBOARDING_STEPS = [

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { testScheduler } from '../controllers/schedulerController';
 import { scheduleExecutionPlan } from '../executionCore/scheduler/schedulerEngineV2';
 
@@ -8,7 +8,7 @@ const router = Router();
 router.post('/test', testScheduler);
 
 // [TEMPORARY] Route for v2 Scheduler development testing
-router.post('/v2/test', async (req, res) => {
+router.post('/v2/test', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = req.body;
     

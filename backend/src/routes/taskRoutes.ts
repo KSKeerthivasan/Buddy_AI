@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router , NextFunction } from 'express';
 import { analyzeTask, createTask, getTasks, updateTaskStatus, updateSessionProgress } from '../controllers/taskController';
 import { startSession, pauseSession, resumeSession, cancelSession, completeSessionAction as completeSession } from '../controllers/sessionLifecycleController';
 

@@ -1,17 +1,13 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { getTaskById } from '../repositories/taskRepository';
 import { saveReflection, getReflectionForSession, getReflectionsForTask, updateReflection, getReflectionById } from '../repositories/reflectionRepository';
 import { validateReflection, shouldAllowEdit, ReflectionEngineError } from '../executionCore/reflection/reflectionEngine';
+import { eventBus } from '../executionCore/events/EventBus';
+import { EventType } from '../executionCore/events/eventTypes';
 
 const router = Router();
 
-// Domain Event Stub
-const emitReflectionSubmittedEvent = (reflection: any) => {
-  console.log(`[EVENT] ReflectionSubmitted for session ${reflection.sessionId}`);
-  // Future: Learning Engine, Analytics Engine, Recovery Engine listen here.
-};
-
-router.post('/', async (req, res) => {
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, taskId, sessionId, completionResult, primaryReason, notes } = req.body;
 
@@ -40,7 +36,7 @@ router.post('/', async (req, res) => {
     }
 
     // 2. Uniqueness check
-    const existing = await getReflectionForSession(sessionId);
+    const existing = await getReflectionForSession(sessionId as string);
     if (existing) {
       return res.status(409).json({ success: false, message: 'A reflection already exists for this session' });
     }
@@ -61,24 +57,26 @@ router.post('/', async (req, res) => {
     const saved = await saveReflection(reflectionData);
     
     // 5. Emit event
-    emitReflectionSubmittedEvent(saved);
+    eventBus.publish(EventType.REFLECTION_SUBMITTED, {
+      userId: reflectionData.userId,
+      taskId: reflectionData.taskId,
+      sessionId: reflectionData.sessionId,
+      reflectionId: (saved as any).id || 'unknown',
+      payload: saved
+    });
 
     res.json({ success: true, reflection: saved });
   } catch (error: any) {
-    if (error instanceof ReflectionEngineError) {
-      return res.status(400).json({ success: false, message: error.message });
-    }
-    console.error('Error submitting reflection:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.patch('/:reflectionId', async (req, res) => {
+router.patch('/:reflectionId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { reflectionId } = req.params;
     const { completionResult, primaryReason, notes } = req.body;
 
-    const existing = await getReflectionById(reflectionId);
+    const existing = await getReflectionById(reflectionId as string);
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Reflection not found' });
     }
@@ -94,38 +92,32 @@ router.patch('/:reflectionId', async (req, res) => {
 
     validateReflection({ ...existing, ...updates });
 
-    await updateReflection(reflectionId, updates);
-    const updated = await getReflectionById(reflectionId);
+    await updateReflection(reflectionId as string, updates);
+    const updated = await getReflectionById(reflectionId as string);
 
     res.json({ success: true, reflection: updated });
   } catch (error: any) {
-    if (error instanceof ReflectionEngineError) {
-      return res.status(400).json({ success: false, message: error.message });
-    }
-    console.error('Error updating reflection:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.get('/session/:sessionId', async (req, res) => {
+router.get('/session/:sessionId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { sessionId } = req.params;
-    const reflection = await getReflectionForSession(sessionId);
+    const reflection = await getReflectionForSession(sessionId as string);
     res.json({ success: true, reflection });
   } catch (error: any) {
-    console.error('Error fetching reflection by session:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.get('/task/:taskId', async (req, res) => {
+router.get('/task/:taskId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { taskId } = req.params;
-    const reflections = await getReflectionsForTask(taskId);
+    const reflections = await getReflectionsForTask(taskId as string);
     res.json({ success: true, reflections });
   } catch (error: any) {
-    console.error('Error fetching reflections by task:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    next(error);
   }
 });
 

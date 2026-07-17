@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import type { WeeklyCommitment, DayOfWeek, CommitmentCategory } from '../types';
+import type { WeeklyCommitment, DayOfWeek, CommitmentCategory } from '@buddy-ai/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Trash2, MapPin, Power } from 'lucide-react';
 
