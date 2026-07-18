@@ -9,6 +9,13 @@ export type PrimaryReason =
   | 'Health' 
   | 'Other';
 
+export interface ReflectionAnalysis {
+  completionConfidence: number; // 0-100
+  emotionalState: string;
+  detectedBlockers: string[];
+  actionableAdvice: string;
+}
+
 export interface Reflection {
   reflectionId?: string;
   userId: string;
@@ -17,5 +24,6 @@ export interface Reflection {
   completionResult: CompletionResult;
   primaryReason?: PrimaryReason;
   notes?: string;
+  aiAnalysis?: ReflectionAnalysis;
   submittedAt: string; // ISO String
 }

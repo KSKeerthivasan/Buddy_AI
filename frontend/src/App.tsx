@@ -12,6 +12,7 @@ import Availability from './pages/Availability';
 import Onboarding from './pages/Onboarding';
 import ProfileSettings from './pages/ProfileSettings';
 import Commitments from './pages/Commitments';
+import DecisionCenter from './pages/DecisionCenter';
 import { TaskProvider } from './context/TaskContext';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
             <Route path="activity" element={<Activity />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="focus/:taskId/:sessionId" element={<FocusMode />} />
+            <Route path="tasks/:taskId/decisions" element={<DecisionCenter />} />
             <Route path="new-task" element={<NewTask />} />
             <Route path="review-plan" element={<ReviewPlan />} />
             <Route path="task/:taskId" element={<TaskDetail />} />

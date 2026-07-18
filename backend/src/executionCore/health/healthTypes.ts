@@ -37,4 +37,6 @@ export interface HealthAnalysisInput {
     safetyBufferDays: number;
     estimatedMinutes: number;
   };
+  completionConfidence?: number;
+  detectedBlockers?: string[];
 }

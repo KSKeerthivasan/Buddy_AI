@@ -1,7 +1,9 @@
-import { storage } from '../../config/firebase';
+import { localFileSystemProvider } from '../../infrastructure/storage/LocalFileSystemProvider';
 import { evidenceRepository } from '../../repositories/evidenceRepository';
 import { Evidence } from './evidenceTypes';
 import { randomUUID } from 'crypto';
+import { eventBus } from '../events/EventBus';
+import { EventType } from '../events/eventTypes';
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
 const ALLOWED_MIME_TYPES = [
@@ -36,9 +38,7 @@ export const evidenceEngine = {
     }
 
     const evidenceId = randomUUID();
-    const storagePath = `evidence/${userId}/${sessionId}/${evidenceId}-${originalName}`;
-    const bucket = storage.bucket();
-    const file = bucket.file(storagePath);
+    const pathPrefix = `evidence/${userId}/${sessionId}`;
 
     console.log(`[Evidence Engine] Upload Started: ${evidenceId}`);
 
@@ -48,27 +48,41 @@ export const evidenceEngine = {
       taskId,
       sessionId,
       milestoneId,
-      storagePath,
+      storagePath: '', // Will update
       fileName: originalName,
       fileSize,
       mimeType,
       uploadedAt: new Date().toISOString(),
       status: 'UPLOADING',
+      analysisStatus: 'UPLOAD_COMPLETE'
     };
 
     try {
+      // We first create with an empty storage path or placeholder
       await evidenceRepository.createEvidence(evidence);
 
-      // Upload buffer to Firebase Storage
-      await file.save(fileBuffer, {
-        metadata: {
-          contentType: mimeType,
-        }
-      });
+      // Upload buffer via Storage Provider
+      const storagePath = await localFileSystemProvider.upload(fileBuffer, originalName, mimeType, pathPrefix);
       
+      evidence.storagePath = storagePath;
       evidence.status = 'UPLOADED';
+      evidence.analysisStatus = 'ANALYSIS_PENDING';
+      
+      // Update DB with final storage path and status
       await evidenceRepository.updateEvidenceStatus(evidenceId, 'UPLOADED');
+      await evidenceRepository.updateEvidenceAnalysis(evidenceId, 'ANALYSIS_PENDING');
+      
       console.log(`[Evidence Engine] Upload Completed: ${evidenceId}`);
+
+      // Emit event for Vision Analysis
+      eventBus.publish(EventType.EVIDENCE_UPLOADED, {
+        userId,
+        taskId,
+        sessionId,
+        evidenceId,
+        payload: { evidence }
+      });
+
     } catch (error) {
       evidence.status = 'FAILED';
       await evidenceRepository.updateEvidenceStatus(evidenceId, 'FAILED');
@@ -99,14 +113,10 @@ export const evidenceEngine = {
     }
 
     try {
-      const bucket = storage.bucket();
-      const file = bucket.file(evidence.storagePath);
-      await file.delete();
+      await localFileSystemProvider.delete(evidence.storagePath);
     } catch (error: any) {
-      // If file doesn't exist in storage (e.g. upload failed), we still want to mark as deleted.
-      if (error.code !== 404) {
-        throw error;
-      }
+      // If file doesn't exist in storage, we still want to mark as deleted.
+      console.warn(`[Evidence Engine] File deletion failed or file not found for ${evidenceId}`);
     }
 
     await evidenceRepository.updateEvidenceStatus(evidenceId, 'DELETED');
@@ -114,7 +124,7 @@ export const evidenceEngine = {
   },
   
   /**
-   * Get a signed URL for previewing evidence (if needed).
+   * Get a public URL for previewing evidence.
    */
   async getSignedUrl(evidenceId: string): Promise<string> {
     const evidence = await evidenceRepository.getEvidenceById(evidenceId);
@@ -122,12 +132,6 @@ export const evidenceEngine = {
       throw new Error('Evidence not found or deleted.');
     }
     
-    const bucket = storage.bucket();
-    const file = bucket.file(evidence.storagePath);
-    const [url] = await file.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-    });
-    return url;
+    return await localFileSystemProvider.getPublicUrl(evidence.storagePath);
   }
 };

@@ -21,6 +21,18 @@ export const evidenceRepository = {
     await db.collection(EVIDENCE_COLLECTION).doc(evidenceId).update({ status });
   },
 
+  async updateEvidenceAnalysis(
+    evidenceId: string, 
+    analysisStatus: Evidence['analysisStatus'], 
+    aiAnalysis?: Evidence['aiAnalysis']
+  ): Promise<void> {
+    const updateData: any = { analysisStatus };
+    if (aiAnalysis) {
+      updateData.aiAnalysis = aiAnalysis;
+    }
+    await db.collection(EVIDENCE_COLLECTION).doc(evidenceId).update(updateData);
+  },
+
   async getEvidenceById(evidenceId: string): Promise<Evidence | null> {
     const doc = await db.collection(EVIDENCE_COLLECTION).doc(evidenceId).get();
     if (!doc.exists) return null;

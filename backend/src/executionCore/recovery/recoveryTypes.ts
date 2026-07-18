@@ -10,7 +10,8 @@ export type RecoveryTrigger =
   | 'AVAILABILITY_CHANGED'
   | 'COMMITMENTS_CHANGED'
   | 'TEMPORARY_EVENT_ADDED'
-  | 'MANUAL_REQUEST';
+  | 'MANUAL_REQUEST'
+  | 'DEVIATION_DETECTED';
 
 export interface RecoveryStrategy {
   strategyId: string;
@@ -32,6 +33,7 @@ export interface RecoveryMetrics {
 }
 
 export interface RecoveryReport {
+  id?: string;
   taskId: string;
   sessionId?: string;
   triggerReason: string;

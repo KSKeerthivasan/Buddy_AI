@@ -1,5 +1,7 @@
-import { Reflection, CompletionResult, PrimaryReason } from './reflectionTypes';
+import { Reflection, CompletionResult, PrimaryReason, ReflectionAnalysis } from './reflectionTypes';
 import { SessionState } from '../focus/focusTypes';
+import { aiClient } from '../../ai/client';
+import { REFLECTION_SYSTEM_INSTRUCTION, reflectionSchema } from '../../prompts/reflectionPrompt';
 
 export class ReflectionEngineError extends Error {
   constructor(message: string) {
@@ -34,4 +36,52 @@ export const shouldAllowEdit = (reflection: Reflection, currentTime?: Date): boo
 
 export const requiresReflection = (sessionStatus: SessionState): boolean => {
   return ['CANCELLED', 'FAILED', 'SKIPPED'].includes(sessionStatus);
+};
+
+export const analyzeReflection = async (reflection: Reflection, taskInfo?: any): Promise<ReflectionAnalysis> => {
+  // If there are no notes, and they just checked YES, it's a basic reflection
+  if (reflection.completionResult === 'YES' && (!reflection.notes || reflection.notes.trim() === '')) {
+    return {
+      completionConfidence: 100,
+      emotionalState: 'Neutral',
+      detectedBlockers: [],
+      actionableAdvice: 'Great job completing the session!'
+    };
+  }
+
+  const promptText = `
+User reported completion: ${reflection.completionResult}
+Primary Reason (if any): ${reflection.primaryReason || 'N/A'}
+User Notes: "${reflection.notes || 'None'}"
+Task Context: ${JSON.stringify(taskInfo || {})}
+  `.trim();
+
+  try {
+    const response = await aiClient.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptText,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: reflectionSchema,
+        systemInstruction: REFLECTION_SYSTEM_INSTRUCTION
+      }
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    // Fallback if parsing fails
+    if (result.completionConfidence === undefined) {
+       result.completionConfidence = reflection.completionResult === 'YES' ? 100 : (reflection.completionResult === 'PARTIALLY' ? 50 : 0);
+    }
+    return result as ReflectionAnalysis;
+  } catch (error) {
+    console.error('[Reflection Engine] Failed to analyze reflection with AI:', error);
+    // Graceful fallback
+    return {
+      completionConfidence: reflection.completionResult === 'YES' ? 100 : (reflection.completionResult === 'PARTIALLY' ? 50 : 0),
+      emotionalState: 'Unknown',
+      detectedBlockers: [],
+      actionableAdvice: 'Keep pushing forward!'
+    };
+  }
 };

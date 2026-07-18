@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, X, File, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
+interface EvidenceAnalysis {
+  summary: string;
+  observedProgress: number;
+}
+
 interface Evidence {
   evidenceId: string;
   fileName: string;
@@ -10,6 +15,8 @@ interface Evidence {
   mimeType: string;
   previewUrl?: string;
   status: string;
+  analysisStatus: 'UPLOAD_COMPLETE' | 'ANALYSIS_PENDING' | 'ANALYZING' | 'ANALYZED' | 'ANALYSIS_FAILED';
+  aiAnalysis?: EvidenceAnalysis;
 }
 
 interface EvidenceSectionProps {
@@ -39,6 +46,20 @@ export default function EvidenceSection({ taskId, sessionId, milestoneId }: Evid
       console.error('Failed to fetch evidence:', err);
     }
   };
+
+  useEffect(() => {
+    // Poll if any evidence is pending analysis
+    const hasPending = evidenceList.some(
+      (e) => e.analysisStatus === 'ANALYSIS_PENDING' || e.analysisStatus === 'ANALYZING'
+    );
+    if (!hasPending) return;
+
+    const intervalId = setInterval(() => {
+      fetchEvidence();
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [evidenceList]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0 || !user) return;
@@ -116,8 +137,9 @@ export default function EvidenceSection({ taskId, sessionId, milestoneId }: Evid
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100"
+              className="flex flex-col p-4 bg-gray-50 rounded-2xl border border-gray-100"
             >
+              <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
                   {ev.mimeType.startsWith('image/') ? (
@@ -137,6 +159,40 @@ export default function EvidenceSection({ taskId, sessionId, milestoneId }: Evid
               >
                 <X size={18} />
               </button>
+              </div>
+
+              {/* AI Analysis Section */}
+              {ev.analysisStatus === 'ANALYSIS_PENDING' || ev.analysisStatus === 'ANALYZING' ? (
+                <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-2 text-indigo-500 text-sm font-bold">
+                  <Loader2 size={16} className="animate-spin" />
+                  Vision AI Analysis in progress...
+                </div>
+              ) : ev.analysisStatus === 'ANALYSIS_FAILED' ? (
+                <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-2 text-amber-600 text-sm font-bold">
+                  <X size={16} />
+                  AI Analysis unavailable for this file format.
+                </div>
+              ) : ev.aiAnalysis ? (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1">
+                      <ImageIcon size={12} /> AI Observation
+                    </span>
+                    <span className="text-xs font-bold text-gray-500">
+                      Progress: {ev.aiAnalysis.observedProgress}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div 
+                      className="bg-indigo-500 h-1.5 rounded-full" 
+                      style={{ width: `${Math.min(100, Math.max(0, ev.aiAnalysis.observedProgress))}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-700 italic">
+                    "{ev.aiAnalysis.summary}"
+                  </p>
+                </div>
+              ) : null}
             </motion.div>
           ))}
         </AnimatePresence>

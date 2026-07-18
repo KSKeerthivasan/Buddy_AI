@@ -24,7 +24,7 @@ function determineDeadlinePressure(bufferStatus: BufferStatus, priority: string)
 }
 
 export async function analyzeExecutionHealth(input: HealthAnalysisInput): Promise<HealthReport> {
-  const { executionPlan, taskInfo, userId, taskId } = input;
+  const { executionPlan, taskInfo, userId, taskId, completionConfidence, detectedBlockers } = input;
   const conflicts: { type: ConflictType; severity: 'LOW' | 'MEDIUM' | 'HIGH'; message: string }[] = [];
 
   // 1. Feasibility
@@ -132,7 +132,11 @@ export async function analyzeExecutionHealth(input: HealthAnalysisInput): Promis
   overallHealth -= conflicts.filter(c => c.severity === 'MEDIUM').length * 5;
   overallHealth -= conflicts.filter(c => c.severity === 'LOW').length * 2;
   
-  overallHealth = Math.max(0, Math.min(100, overallHealth));
+  if (completionConfidence !== undefined && completionConfidence < 50) {
+    overallHealth -= (50 - completionConfidence) * 0.5; // Penalize health if user lacks confidence
+  }
+  
+  overallHealth = Math.max(0, Math.min(100, Math.round(overallHealth)));
 
   return {
     overallHealth,

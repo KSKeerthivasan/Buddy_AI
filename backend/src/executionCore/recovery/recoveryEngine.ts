@@ -1,12 +1,18 @@
 import { getTaskById } from '../../repositories/taskRepository';
 import { getCapacityForDate } from '../capacity/capacityEngine';
 import { 
-  RecoverySeverity, 
+  RecoverySeverity,
   RecoveryTrigger, 
   RecoveryReport, 
-  RecoveryStrategy, 
+  RecoveryStrategy,
   RecoveryMetrics 
 } from './recoveryTypes';
+import { aiClient } from '../../ai/client';
+import { RECOVERY_SYSTEM_INSTRUCTION, recoveryStrategySchema } from '../../prompts/recoveryPrompt';
+import { ConversationContext } from '@buddy-ai/shared';
+import { saveRecoveryReport } from '../../repositories/recoveryRepository';
+import { eventBus } from '../events/EventBus';
+import { EventType } from '../events/eventTypes';
 
 function addDaysToDateString(dateStr: string, days: number): string {
   const d = new Date(dateStr);
@@ -22,7 +28,7 @@ export const recoveryEngine = {
     throw new Error('Not fully implemented yet. Use recoverTask.');
   },
 
-  async recoverTask(taskId: string, trigger: RecoveryTrigger = 'MANUAL_REQUEST'): Promise<RecoveryReport> {
+  async recoverTask(taskId: string, trigger: RecoveryTrigger = 'MANUAL_REQUEST', conversation?: ConversationContext): Promise<RecoveryReport> {
     const task = await getTaskById(taskId);
     if (!task) {
       throw new Error(`Task ${taskId} not found.`);
@@ -122,49 +128,54 @@ export const recoveryEngine = {
 
     if (capacityDeficitMinutes > 0 || bufferRemainingDays < 0 || deadlinePressure > 1) {
       severity = 'CRITICAL';
-      recommendedStrategies.push({
-        strategyId: 'EXTEND_DEADLINE',
-        name: 'Request Deadline Extension',
-        description: 'You do not have enough capacity to finish this task by the deadline. You need more days.',
-        actionPayload: { suggestedDays: Math.abs(bufferRemainingDays) + 1 }
-      });
-      recommendedStrategies.push({
-        strategyId: 'INCREASE_CAPACITY',
-        name: 'Increase Daily Workload',
-        description: 'Increase your maximum allowed daily work hours to create more capacity.',
-      });
     } else if (bufferRemainingDays === 0 || deadlinePressure > 0.8) {
       severity = 'HIGH';
-      recommendedStrategies.push({
-        strategyId: 'REDUCE_SAFETY_BUFFER',
-        name: 'Reduce Safety Buffer',
-        description: 'You are cutting it close. Every remaining session is now critical.',
-      });
-      recommendedStrategies.push({
-        strategyId: 'SPREAD_WORK',
-        name: 'Spread Remaining Work',
-        description: 'Rebalance the remaining effort evenly across the remaining days.',
-      });
     } else if (bufferRemainingDays <= 2 || deadlinePressure > 0.5) {
       severity = 'MEDIUM';
-      recommendedStrategies.push({
-        strategyId: 'CONTINUE_EXISTING',
-        name: 'Continue Existing Schedule',
-        description: 'The schedule is tighter, but still fully feasible.',
-      });
-      recommendedStrategies.push({
-        strategyId: 'SPREAD_WORK',
-        name: 'Spread Remaining Work',
-        description: 'Rebalance the remaining effort evenly.',
-      });
     } else {
       severity = 'LOW';
-      recommendedStrategies.push({
+    }
+
+    // AI Generation of Strategies
+    const promptContext = `
+      Task Deadline: ${deadlineStr}
+      Remaining Effort (Minutes): ${remainingEffortMinutes}
+      Remaining Sessions: ${remainingSessionsCount}
+      Available Capacity to Deadline: ${availableCapacityToDeadline}
+      Buffer Remaining (Days): ${bufferRemainingDays}
+      Capacity Deficit (Minutes): ${capacityDeficitMinutes}
+      
+      Conversation Context (Why this happened):
+      ${conversation ? conversation.messages.map(m => `${m.role}: ${m.text}`).join('\n') : 'No conversation context provided.'}
+    `;
+
+    const aiResponse = await aiClient.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptContext,
+      config: {
+        systemInstruction: RECOVERY_SYSTEM_INSTRUCTION,
+        responseMimeType: 'application/json',
+        responseSchema: recoveryStrategySchema,
+        temperature: 0.2
+      }
+    });
+
+    let generatedStrategies: RecoveryStrategy[] = [];
+    try {
+      if (aiResponse.text) {
+        generatedStrategies = JSON.parse(aiResponse.text);
+      }
+    } catch (err) {
+      console.error('Failed to parse Gemini recovery strategy JSON:', err);
+      // Fallback
+      generatedStrategies.push({
         strategyId: 'CONTINUE_EXISTING',
         name: 'Continue Existing Schedule',
-        description: 'You still have plenty of buffer. No action needed.',
+        description: 'An error occurred while generating strategies. Continue with caution.'
       });
     }
+
+    recommendedStrategies.push(...generatedStrategies);
 
     const report: RecoveryReport = {
       taskId,
@@ -177,8 +188,17 @@ export const recoveryEngine = {
       generatedAt: new Date().toISOString()
     };
 
+    const savedReport = await saveRecoveryReport(report);
+
     console.log(`[Recovery Engine] Task ${taskId} | Severity: ${severity} | Deficit: ${capacityDeficitMinutes}m`);
 
-    return report;
+    eventBus.publish(EventType.RECOVERY_PLAN_GENERATED, {
+      userId: task.userId,
+      taskId,
+      reportId: savedReport.id || 'unknown',
+      payload: savedReport
+    });
+
+    return savedReport;
   }
 };

@@ -13,7 +13,14 @@ export enum EventType {
   OBSERVATION_RECORDED = 'OBSERVATION_RECORDED',
   
   SYSTEM_ERROR = 'SYSTEM_ERROR',
-  HEALTH_STATE_CHANGED = 'HEALTH_STATE_CHANGED'
+  HEALTH_STATE_CHANGED = 'HEALTH_STATE_CHANGED',
+  
+  DEVIATION_CONTEXT_GATHERED = 'DEVIATION_CONTEXT_GATHERED',
+  RECOVERY_PLAN_GENERATED = 'RECOVERY_PLAN_GENERATED',
+
+  EVIDENCE_UPLOADED = 'EVIDENCE_UPLOADED',
+  EVIDENCE_ANALYSIS_COMPLETED = 'EVIDENCE_ANALYSIS_COMPLETED',
+  EVIDENCE_ANALYSIS_FAILED = 'EVIDENCE_ANALYSIS_FAILED'
 }
 
 export interface BaseEvent {
@@ -69,5 +76,11 @@ export type EventPayloadMap = {
   [EventType.OBSERVATION_RECORDED]: ObservationEvent;
   
   [EventType.SYSTEM_ERROR]: SystemErrorEvent;
-  [EventType.HEALTH_STATE_CHANGED]: BaseEvent & { payload: any };
+  [EventType.HEALTH_STATE_CHANGED]: BaseEvent & { taskId: string, payload: any };
+  [EventType.DEVIATION_CONTEXT_GATHERED]: BaseEvent & { taskId: string, conversationId: string, payload: any };
+  [EventType.RECOVERY_PLAN_GENERATED]: BaseEvent & { taskId: string, reportId: string, payload: any };
+  
+  [EventType.EVIDENCE_UPLOADED]: BaseEvent & { taskId: string, sessionId: string, evidenceId: string, payload: any };
+  [EventType.EVIDENCE_ANALYSIS_COMPLETED]: BaseEvent & { taskId: string, sessionId: string, evidenceId: string, payload: any };
+  [EventType.EVIDENCE_ANALYSIS_FAILED]: BaseEvent & { taskId: string, sessionId: string, evidenceId: string, payload: any };
 };

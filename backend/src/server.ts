@@ -16,7 +16,9 @@ import healthRoutes from './routes/healthRoutes';
 import observationRoutes from './routes/observationRoutes';
 import reflectionRoutes from './routes/reflectionRoutes';
 import recoveryRoutes from './routes/recoveryRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import decisionRoutes from './routes/decisionRoutes';
+import conversationRoutes from './routes/conversationRoutes';
 import path from 'path';
 
 // Load environment variables
@@ -43,8 +45,10 @@ app.use('/api/routine', routineRoutes);
 app.use('/api/capacity', capacityRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/observations', observationRoutes);
-app.use('/api/reflections', reflectionRoutes);
+app.use('/api/reflection', reflectionRoutes);
 app.use('/api/recovery', recoveryRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/tasks', conversationRoutes); // since they are grouped under /api/tasks/:taskId/conversation
 app.use('/api', decisionRoutes);
 
 app.get('/health', (req, res) => {

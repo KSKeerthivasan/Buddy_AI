@@ -91,3 +91,22 @@ export interface UserProfileV2 {
   weeklySchedule?: any;
   activityStyles?: any;
 }
+
+export type ConversationRole = 'user' | 'model' | 'system';
+
+export interface ConversationMessage {
+  role: ConversationRole;
+  text: string;
+  timestamp: string; // ISO String
+}
+
+export interface ConversationContext {
+  id?: string;
+  taskId: string;
+  userId: string;
+  triggerEvent: string;
+  status: 'ACTIVE' | 'RECOVERY_READY' | 'RESOLVED';
+  messages: ConversationMessage[];
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
+}

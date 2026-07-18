@@ -10,6 +10,7 @@ import {
 import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import TaskCard from '../components/common/TaskCard';
+import { NotificationTray } from '../components/NotificationTray';
 
 const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void, isCompleted: boolean }> = ({ reminder, onComplete, isCompleted }) => {
   const handleCheck = () => {
@@ -268,6 +269,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-4">
+            <NotificationTray userId={user.uid} />
             <button
               onClick={() => navigate('/commitments')}
               className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
