@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LogOut, User as UserIcon, CheckSquare, Target, 
+  User as UserIcon, CheckSquare, Target, 
   Clock, ShieldAlert, CalendarDays, Play, 
-  Activity, ArrowRight, StickyNote, CheckCircle, Settings
+  Activity, ArrowRight, StickyNote, CheckCircle
 } from 'lucide-react';
-import { auth } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import TaskCard from '../components/common/TaskCard';
 import { NotificationTray } from '../components/NotificationTray';
@@ -23,10 +21,10 @@ const ReminderCard: React.FC<{ reminder: any, onComplete: (id: string) => void, 
       layoutId={`reminder-${reminder.id}`}
       layout
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
-      animate={{ opacity: isCompleted ? 0.5 : 1, scale: 1, y: 0 }}
+      animate={{ opacity: isCompleted ? 0.7 : 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.4 }}
-      className={`relative w-48 sm:w-56 shrink-0 bg-[#fffcd9] p-5 rounded-md shadow-md border border-[#f0ebc0] flex flex-col group
+      className={`relative w-48 sm:w-56 shrink-0 p-5 rounded-md shadow-sm border flex flex-col group bg-[#fffcd9] border-[#f0ebc0]
         before:absolute before:bottom-0 before:right-0 before:border-[12px] before:border-transparent 
         before:border-b-[#e5e1b3] before:border-r-[#e5e1b3] before:rounded-tl-md
       `}
@@ -134,14 +132,7 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/login', { replace: true });
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+
 
   const handleCompleteReminder = async (id: string) => {
     // Optimistic UI Update
@@ -238,7 +229,7 @@ const Dashboard: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fbffb1] via-[#e2f4de] to-[#d6e3ff] p-6 md:p-12 font-sans selection:bg-indigo-100 overflow-x-hidden">
+    <div className="p-6 md:p-12 font-sans overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -248,11 +239,11 @@ const Dashboard: React.FC = () => {
         
         {/* Top Header Row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-          {/* Left Side: Welcome & Inline Nav */}
+          {/* Left Side: Welcome */}
           <div className="flex flex-col items-center md:items-start gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                Welcome back, <span className="truncate max-w-[200px] inline-block align-bottom">{user.displayName ? user.displayName.split(' ')[0] : 'User'}</span> 👋
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2 flex-wrap">
+                Welcome back, <span className="break-words max-w-[300px] sm:max-w-full inline-block align-bottom">{user.displayName ? user.displayName.split(' ')[0] : 'User'}</span> 👋
               </h1>
               <div className="flex items-center gap-3 mt-1">
                 <p className="text-gray-500 text-sm font-medium">{user.email}</p>
@@ -260,21 +251,7 @@ const Dashboard: React.FC = () => {
                 {backendStatus === 'offline' && <span className="w-2 h-2 bg-red-500 rounded-full" title="Offline" />}
               </div>
             </div>
-            
-            <div className="flex items-center gap-6 mt-2">
-              <button onClick={() => navigate('/commitments')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
-                <CalendarDays size={18} strokeWidth={2} /> Commitments
-              </button>
-              <button onClick={() => navigate('/calendar')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
-                <CalendarDays size={18} strokeWidth={2} /> Calendar
-              </button>
-              <button onClick={() => navigate('/activity')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
-                <Activity size={18} strokeWidth={2} /> Activity
-              </button>
-            </div>
-          </div>
-          
-          {/* Right Side: Actions & Profile */}
+          </div>          {/* Right Side: Actions & Profile */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/new-task')}
@@ -283,20 +260,7 @@ const Dashboard: React.FC = () => {
               <Target size={18} />
               New Goal
             </button>
-            <button
-              onClick={() => navigate('/settings/profile')}
-              className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/40 backdrop-blur-md text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-colors border border-white/60 shadow-sm"
-              title="Settings"
-            >
-              <Settings size={18} />
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/40 backdrop-blur-md text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-colors border border-white/60 shadow-sm"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
+
             <div className="ml-2">
               <NotificationTray userId={user.uid} />
             </div>
@@ -312,8 +276,8 @@ const Dashboard: React.FC = () => {
 
         {/* Overview Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
-            <div className="w-14 h-14 rounded-2xl bg-[#e6deff] text-[#5d46e2] flex items-center justify-center shrink-0">
+          <div className="bg-black/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-sm flex items-center gap-4 hover:bg-white transition-colors group">
+            <div className="w-14 h-14 rounded-2xl bg-white/60 text-[#5d46e2] flex items-center justify-center shrink-0 group-hover:bg-[#f4f0ff]">
               <Activity size={26} strokeWidth={2} />
             </div>
             <div>
@@ -322,8 +286,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
-            <div className="w-14 h-14 rounded-2xl bg-amber-100/80 text-amber-700 flex items-center justify-center shrink-0">
+          <div className="bg-black/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-sm flex items-center gap-4 hover:bg-white transition-colors group">
+            <div className="w-14 h-14 rounded-2xl bg-white/60 text-amber-600 flex items-center justify-center shrink-0 group-hover:bg-amber-50">
               <Clock size={26} strokeWidth={2} />
             </div>
             <div>
@@ -332,8 +296,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
-            <div className="w-14 h-14 rounded-2xl bg-red-100/80 text-red-700 flex items-center justify-center shrink-0">
+          <div className="bg-black/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-sm flex items-center gap-4 hover:bg-white transition-colors group">
+            <div className="w-14 h-14 rounded-2xl bg-white/60 text-red-600 flex items-center justify-center shrink-0 group-hover:bg-red-50">
               <ShieldAlert size={26} strokeWidth={2} />
             </div>
             <div>
@@ -342,8 +306,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
-            <div className="w-14 h-14 rounded-2xl bg-teal-100/80 text-teal-700 flex items-center justify-center shrink-0">
+          <div className="bg-black/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-sm flex items-center gap-4 hover:bg-white transition-colors group">
+            <div className="w-14 h-14 rounded-2xl bg-white/60 text-teal-600 flex items-center justify-center shrink-0 group-hover:bg-teal-50">
               <CalendarDays size={26} strokeWidth={2} />
             </div>
             <div>
@@ -355,45 +319,26 @@ const Dashboard: React.FC = () => {
 
         {/* Quick Reminders Widget */}
         {(pendingReminders.length > 0 || completedTodayReminders.length > 0) && (
-          <section className="pt-2 flex flex-col gap-6">
+          <section className="bg-white rounded-[2rem] p-4 md:p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
             
-            {/* Pending Reminders Row */}
-            {pendingReminders.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <StickyNote size={18} className="text-amber-500" />
-                  <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Quick Reminders</h2>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
-                  <AnimatePresence>
-                    {pendingReminders.map(reminder => (
-                      <div key={reminder.id} className="snap-start shrink-0">
-                        <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} isCompleted={false} />
-                      </div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <StickyNote size={18} className="text-amber-500" />
+                <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Quick Reminders</h2>
               </div>
-            )}
-
-            {/* Completed Today Row */}
-            {completedTodayReminders.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle size={18} className="text-emerald-500" />
-                  <h2 className="text-sm font-bold tracking-widest text-emerald-600/70 uppercase">Completed Today</h2>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x opacity-80">
-                  <AnimatePresence>
-                    {completedTodayReminders.map(reminder => (
+              <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+                <AnimatePresence>
+                  {[...pendingReminders, ...completedTodayReminders].map(reminder => {
+                    const isCompleted = completedTodayReminders.some(r => r.id === reminder.id);
+                    return (
                       <div key={reminder.id} className="snap-start shrink-0">
-                        <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} isCompleted={true} />
+                        <ReminderCard reminder={reminder} onComplete={handleCompleteReminder} isCompleted={isCompleted} />
                       </div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
-            )}
+            </div>
             
           </section>
         )}
@@ -464,9 +409,9 @@ const Dashboard: React.FC = () => {
         </section>
 
         {/* Existing Task List */}
-        <section className="pt-4">
+        <section className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Active Projects</h2>
+            <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Ongoing Goals</h2>
           </div>
 
           {tasksLoading ? (
@@ -479,7 +424,7 @@ const Dashboard: React.FC = () => {
               <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
                 <CheckSquare size={32} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No active projects</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">No ongoing goals</h3>
               <p className="text-gray-500 font-medium mb-6">You don't have any tasks in your backlog.</p>
               <button
                 onClick={() => navigate('/new-task')}
