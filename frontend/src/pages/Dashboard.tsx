@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans selection:bg-indigo-100 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#fbffb1] via-[#e2f4de] to-[#d6e3ff] p-6 md:p-12 font-sans selection:bg-indigo-100 overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -247,113 +247,108 @@ const Dashboard: React.FC = () => {
       >
         
         {/* Top Header Row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
-          <div className="flex items-center gap-5 text-center md:text-left">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 border border-indigo-100 shadow-sm">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
-              ) : (
-                <UserIcon size={24} />
-              )}
-            </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          {/* Left Side: Welcome & Inline Nav */}
+          <div className="flex flex-col items-center md:items-start gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Welcome, {user.displayName || 'User'}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                Welcome back, <span className="truncate max-w-[200px] inline-block align-bottom">{user.displayName ? user.displayName.split(' ')[0] : 'User'}</span> 👋
+              </h1>
               <div className="flex items-center gap-3 mt-1">
                 <p className="text-gray-500 text-sm font-medium">{user.email}</p>
-                <div className="h-1 w-1 bg-gray-300 rounded-full" />
-                {backendStatus === 'checking' && <span className="text-xs font-bold text-gray-400">CONNECTING...</span>}
-                {backendStatus === 'connected' && <span className="text-xs font-bold text-emerald-500 tracking-wider">ONLINE</span>}
-                {backendStatus === 'offline' && <span className="text-xs font-bold text-red-500 tracking-wider">OFFLINE</span>}
+                {backendStatus === 'connected' && <span className="w-2 h-2 bg-emerald-500 rounded-full" title="Online" />}
+                {backendStatus === 'offline' && <span className="w-2 h-2 bg-red-500 rounded-full" title="Offline" />}
               </div>
+            </div>
+            
+            <div className="flex items-center gap-6 mt-2">
+              <button onClick={() => navigate('/commitments')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
+                <CalendarDays size={18} strokeWidth={2} /> Commitments
+              </button>
+              <button onClick={() => navigate('/calendar')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
+                <CalendarDays size={18} strokeWidth={2} /> Calendar
+              </button>
+              <button onClick={() => navigate('/activity')} className="flex items-center gap-2 text-gray-700 hover:text-black font-medium transition-colors">
+                <Activity size={18} strokeWidth={2} /> Activity
+              </button>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <NotificationTray userId={user.uid} />
-            <button
-              onClick={() => navigate('/commitments')}
-              className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
-            >
-              <CalendarDays size={18} strokeWidth={2.5} />
-              Commitments
-            </button>
-            <button
-              onClick={() => navigate('/calendar')}
-              className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
-            >
-              <CalendarDays size={18} strokeWidth={2.5} />
-              Calendar
-            </button>
-            <button
-              onClick={() => navigate('/activity')}
-              className="flex items-center gap-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-5 py-3 rounded-2xl font-bold transition-colors"
-            >
-              <Activity size={18} strokeWidth={2.5} />
-              Activity
-            </button>
+          {/* Right Side: Actions & Profile */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/new-task')}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-md shadow-indigo-200 hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2 bg-[#5d46e2] hover:bg-[#4b38b5] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md mr-2"
             >
               <Target size={18} />
               New Goal
             </button>
             <button
               onClick={() => navigate('/settings/profile')}
-              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors border border-gray-200 shadow-sm"
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/40 backdrop-blur-md text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-colors border border-white/60 shadow-sm"
               title="Settings"
             >
               <Settings size={18} />
             </button>
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200 shadow-sm"
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/40 backdrop-blur-md text-gray-700 hover:text-gray-900 hover:bg-white/60 transition-colors border border-white/60 shadow-sm"
               title="Logout"
             >
               <LogOut size={18} />
             </button>
+            <div className="ml-2">
+              <NotificationTray userId={user.uid} />
+            </div>
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-white text-gray-400 flex items-center justify-center flex-shrink-0 border-2 border-white shadow-md ml-2">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
+              ) : (
+                <UserIcon size={20} />
+              )}
+            </div>
           </div>
         </div>
 
         {/* Overview Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <Activity size={24} strokeWidth={2.5} />
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-[#e6deff] text-[#5d46e2] flex items-center justify-center shrink-0">
+              <Activity size={26} strokeWidth={2} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Today's Sessions</p>
-              <p className="text-2xl font-black text-gray-900">{todaySessions.length}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Today's Sessions</p>
+              <p className="text-3xl font-black text-gray-900">{todaySessions.length} <span className="text-sm font-medium text-gray-500">sessions</span></p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <Clock size={24} strokeWidth={2.5} />
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-amber-100/80 text-amber-700 flex items-center justify-center shrink-0">
+              <Clock size={26} strokeWidth={2} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Due Soon</p>
-              <p className="text-2xl font-black text-gray-900">{tasksDueSoon}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Due Soon</p>
+              <p className="text-3xl font-black text-gray-900">{tasksDueSoon} <span className="text-sm font-medium text-gray-500">items</span></p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-              <ShieldAlert size={24} strokeWidth={2.5} />
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-red-100/80 text-red-700 flex items-center justify-center shrink-0">
+              <ShieldAlert size={26} strokeWidth={2} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">At Risk</p>
-              <p className="text-2xl font-black text-gray-900">{tasksAtRisk}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">At Risk</p>
+              <p className="text-3xl font-black text-gray-900">{tasksAtRisk} <span className="text-sm font-medium text-gray-500">items</span></p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <CalendarDays size={24} strokeWidth={2.5} />
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm flex items-center gap-4 hover:bg-white/50 transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-teal-100/80 text-teal-700 flex items-center justify-center shrink-0">
+              <CalendarDays size={26} strokeWidth={2} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Total Buffer</p>
-              <p className="text-2xl font-black text-gray-900">{totalBufferDays} <span className="text-sm font-bold text-gray-400">days</span></p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Total Buffer</p>
+              <p className="text-3xl font-black text-gray-900">{totalBufferDays} <span className="text-sm font-medium text-gray-500">days</span></p>
             </div>
           </div>
         </div>
@@ -404,37 +399,39 @@ const Dashboard: React.FC = () => {
         )}
 
         {/* Today's Focus Section */}
-        <section className="bg-indigo-900 rounded-[2rem] p-8 md:p-10 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-indigo-500 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <section className="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden border border-white">
+          <div className="absolute bottom-0 left-0 w-64 h-64 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #d6e3ff 2px, transparent 2px)', backgroundSize: '24px 24px' }} />
           
           <div className="flex items-center gap-3 mb-8 relative z-10">
-            <div className="p-2 bg-indigo-500/20 rounded-xl backdrop-blur-sm border border-indigo-400/20">
-              <Target size={24} className="text-indigo-200" />
+            <div className="p-2 bg-[#e6deff] rounded-xl">
+              <Target size={24} className="text-[#5d46e2]" />
             </div>
-            <h2 className="text-2xl font-black text-white tracking-tight">Today's Focus</h2>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Today's Focus</h2>
           </div>
 
           {tasksLoading ? (
              <div className="py-12 flex justify-center">
-               <div className="animate-pulse flex items-center gap-3 text-indigo-300 font-bold">
-                 <div className="w-5 h-5 border-2 border-indigo-300 border-t-transparent rounded-full animate-spin" />
+               <div className="animate-pulse flex items-center gap-3 text-gray-400 font-bold">
+                 <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
                  Scanning schedule...
                </div>
              </div>
           ) : todaySessions.length === 0 ? (
-            <div className="bg-indigo-800/40 border border-indigo-700/50 rounded-2xl p-10 text-center backdrop-blur-sm">
-              <div className="w-16 h-16 bg-indigo-500/20 text-indigo-300 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-400/20 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                <CheckSquare size={32} />
+            <div className="py-16 text-center relative z-10">
+              <div className="w-20 h-20 bg-[#f4f0ff] text-[#5d46e2] rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                <CheckSquare size={36} strokeWidth={2.5} />
+                <div className="absolute -top-2 -right-2 text-[#b09dff] animate-pulse">✨</div>
+                <div className="absolute -bottom-1 -left-3 text-[#b09dff] animate-pulse delay-150">✨</div>
               </div>
-              <h3 className="text-xl font-extrabold text-white mb-2">You're all caught up today.</h3>
-              <p className="text-indigo-200 font-medium">Enjoy your free time or jump ahead by starting a future session.</p>
+              <h3 className="text-2xl font-extrabold text-[#4b38b5] mb-3">You're all caught up today.</h3>
+              <p className="text-gray-500 font-medium max-w-sm mx-auto">Enjoy your free time or jump ahead by starting a future session.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
               {todaySessions.map((item, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-6 border border-indigo-100 shadow-xl shadow-black/5 flex flex-col group hover:-translate-y-1 transition-transform duration-300">
+                <div key={idx} className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div className="flex justify-between items-start mb-4">
-                    <span className="text-xs font-bold text-indigo-700 bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200/50">
+                    <span className="text-xs font-bold text-[#5d46e2] bg-[#e6deff] px-3 py-1.5 rounded-lg">
                       {item.session.durationMinutes} min
                     </span>
                     <span className="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1.5">
@@ -443,18 +440,18 @@ const Dashboard: React.FC = () => {
                     </span>
                   </div>
                   
-                  <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-indigo-600 transition-colors">
+                  <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-[#5d46e2] transition-colors">
                     {item.task.title}
                   </h3>
                   <p className="text-sm font-medium text-gray-500 mb-6 flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded bg-gray-100 flex items-center justify-center text-[10px] shrink-0 border border-gray-200">⏱️</span>
+                    <span className="w-4 h-4 rounded bg-gray-200 flex items-center justify-center text-[10px] shrink-0 border border-gray-300">⏱️</span>
                     <span className="truncate">{item.session.sessionTitle}</span>
                   </p>
                   
-                  <div className="mt-auto pt-5 border-t border-gray-100">
+                  <div className="mt-auto pt-5 border-t border-gray-200">
                     <button 
                       onClick={() => navigate(`/focus/${item.task.id}/${item.session.sessionId || item.task.analysis?.scheduleDetails?.executionSessions.indexOf(item.session).toString()}`)}
-                      className="w-full py-3.5 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group/btn shadow-md"
+                      className="w-full py-3.5 bg-[#5d46e2] hover:bg-[#4b38b5] text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group/btn shadow-md"
                     >
                       <Play size={16} className="group-hover/btn:scale-110 transition-transform" />
                       Start Session
